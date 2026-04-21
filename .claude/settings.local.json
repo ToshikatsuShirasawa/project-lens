@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "additionalDirectories": [
+      "c:\\work\\ai\\project-lens\\app\\projects\\[projectId]"
+    ],
+    "allow": [
+      "Bash(npx tsc *)"
+    ]
+  }
+}

@@ -220,11 +220,31 @@ export interface ProjectKanbanColumnApi {
   colorKey?: string | null
   columnType?: string | null
   isArchived: boolean
+  /** GET ?includeArchived=true のときのみ付与されることがある */
+  taskCount?: number
 }
 
-/** PATCH /api/projects/[projectId]/kanban-columns/[columnId] — 表示名のみ更新 */
+/** PATCH /api/projects/[projectId]/kanban-columns/[columnId] — name / isArchived を部分更新 */
 export interface ProjectKanbanColumnUpdateRequest {
-  name: string
+  name?: string
+  isArchived?: boolean
+}
+
+/** DELETE /api/projects/[projectId]/kanban-columns/[columnId] — 無効列のみ物理削除 */
+export interface ProjectKanbanColumnDeleteResponse {
+  deleted: true
+  id: string
+}
+
+/** POST /api/projects/[projectId]/kanban-columns/[columnId]/archive-with-move */
+export interface ArchiveKanbanColumnWithMoveRequest {
+  targetColumnId: string
+}
+
+/** archive-with-move 成功時の最小レスポンス */
+export interface ArchiveKanbanColumnWithMoveResponse {
+  sourceColumn: ProjectKanbanColumnApi
+  movedTaskCount: number
 }
 
 /** PATCH /api/projects/[projectId]/kanban-columns/reorder — 列 ID を並び順どおりに並べる */

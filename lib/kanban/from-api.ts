@@ -18,7 +18,14 @@ export function buildBoardFromApiTasks(
       id: t.id,
       title: t.title,
       description: t.description ?? undefined,
-      assignee: t.assignee?.name ? { name: t.assignee.name } : undefined,
+      assigneeUserId: t.assigneeId,
+      assignee: t.assignee
+        ? {
+            id: t.assignee.id,
+            name: t.assignee.name,
+            email: t.assignee.email,
+          }
+        : undefined,
       dueDate: t.dueDate ?? undefined,
       priority: t.priority ?? undefined,
     }

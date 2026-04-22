@@ -6,7 +6,6 @@ import { ProjectSettingsPanel } from '@/components/settings/project-settings-pan
 import { MemberSettingsPanel } from '@/components/settings/member-settings-panel'
 import { IntegrationSettingsPanel } from '@/components/settings/integration-settings-panel'
 import { AiSettingsPanel } from '@/components/settings/ai-settings-panel'
-import { getProject } from '@/lib/mock/project'
 import { Settings, Users, Plug, Brain } from 'lucide-react'
 import { cn } from '@/lib/utils'
 
@@ -26,7 +25,6 @@ interface SettingsPageProps {
 export default function SettingsPage({ params }: SettingsPageProps) {
   const { projectId } = use(params)
   const [activeTab, setActiveTab] = useState<TabId>('general')
-  const project = getProject(projectId)
 
   return (
     <ProjectShell projectId={projectId}>
@@ -59,9 +57,7 @@ export default function SettingsPage({ params }: SettingsPageProps) {
 
           {/* タブコンテンツ */}
           {activeTab === 'general' && <ProjectSettingsPanel projectId={projectId} />}
-          {activeTab === 'members' && (
-            <MemberSettingsPanel members={project?.members ?? []} />
-          )}
+          {activeTab === 'members' && <MemberSettingsPanel projectId={projectId} />}
           {activeTab === 'integrations' && <IntegrationSettingsPanel />}
           {activeTab === 'ai' && <AiSettingsPanel />}
         </div>

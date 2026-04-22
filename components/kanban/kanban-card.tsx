@@ -26,6 +26,26 @@ const aiOriginLabel = {
   ai: 'AI抽出',
 }
 
+function cardAssigneeParts(task: KanbanTask): { initials: string; short: string; full: string } | null {
+  if (!task.assignee) return null
+  const n = task.assignee.name?.trim()
+  if (n) {
+    const short = n.length > 8 ? `${n.slice(0, 8)}…` : n
+    return { initials: n.slice(0, 2), short, full: n }
+  }
+  const e = task.assignee.email?.trim()
+  if (e) {
+    const local = e.split('@')[0] ?? e
+    const short = local.length > 10 ? `${local.slice(0, 10)}…` : local
+    return {
+      initials: local.slice(0, 2).toUpperCase(),
+      short,
+      full: e,
+    }
+  }
+  return null
+}
+
 export function KanbanCard({ task, onEdit, onDragStart, columnId }: KanbanCardProps) {
   return (
     <div
@@ -57,13 +77,23 @@ export function KanbanCard({ task, onEdit, onDragStart, columnId }: KanbanCardPr
               {priorityLabel[task.priority]}
             </Badge>
           ) : null}
-          {task.assignee && (
-            <Avatar className="h-5 w-5 shrink-0">
-              <AvatarFallback className="text-[9px] bg-secondary">
-                {task.assignee.name.slice(0, 2)}
-              </AvatarFallback>
-            </Avatar>
-          )}
+          {(() => {
+            const ap = cardAssigneeParts(task)
+            if (!ap) return null
+            return (
+              <span
+                className="flex items-center gap-1 min-w-0 shrink-0 max-w-[42%]"
+                title={`担当: ${ap.full}`}
+              >
+                <Avatar className="h-5 w-5 shrink-0">
+                  <AvatarFallback className="text-[9px] bg-secondary">{ap.initials}</AvatarFallback>
+                </Avatar>
+                <span className="text-[9px] text-muted-foreground truncate max-w-[3.5rem] sm:max-w-[5rem]">
+                  担当:{ap.short}
+                </span>
+              </span>
+            )
+          })()}
           {task.dueDate && (
             <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground truncate">
               <Calendar className="h-3 w-3 shrink-0" />

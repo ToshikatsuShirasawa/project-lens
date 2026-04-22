@@ -38,11 +38,32 @@ import type {
   KanbanTask,
   KanbanTaskApiRecord,
   ProjectKanbanColumnApi,
+  ProjectMemberApiRecord,
   TaskCandidate,
   TaskPriority,
 } from '@/lib/types'
 
 type TaskFormPriority = 'none' | TaskPriority
+
+const ASSIGNEE_NONE_VALUE = '__none__'
+
+function memberOptionLabel(m: ProjectMemberApiRecord): string {
+  const n = m.name?.trim()
+  if (n) return n
+  return m.email.split('@')[0] ?? m.email
+}
+
+function displayAssigneeLabel(task: KanbanTask): string | undefined {
+  if (!task.assignee) return undefined
+  const n = task.assignee.name?.trim()
+  if (n) return n
+  const e = task.assignee.email?.trim()
+  if (e) {
+    const local = e.split('@')[0]
+    return (local || e).trim() || undefined
+  }
+  return undefined
+}
 
 function toDateInputValue(s: string | undefined): string {
   if (!s) return ''
@@ -55,6 +76,7 @@ const emptyTaskForm = () => ({
   description: '',
   dueDate: '',
   priority: 'none' as TaskFormPriority,
+  assigneeUserId: '',
 })
 
 interface KanbanBoardProps {
@@ -86,6 +108,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   const [addSaving, setAddSaving] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
   const [candidates, setCandidates] = useState<TaskCandidate[]>(mockKanbanCandidates)
+  const [projectMembers, setProjectMembers] = useState<ProjectMemberApiRecord[]>([])
 
   const loadTasks = useCallback(
     async (options?: { silent?: boolean }) => {
@@ -141,6 +164,32 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   useEffect(() => {
     void loadTasks()
   }, [loadTasks])
+
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      try {
+        const res = await fetch(`/api/projects/${encodeURIComponent(projectId)}/members`)
+        const body: unknown = await res.json().catch(() => null)
+        if (cancelled) return
+        if (!res.ok) {
+          setProjectMembers([])
+          return
+        }
+        const parsed = body && typeof body === 'object' ? body : null
+        const list =
+          parsed && 'members' in parsed && Array.isArray((parsed as { members: unknown }).members)
+            ? (parsed as { members: ProjectMemberApiRecord[] }).members
+            : []
+        setProjectMembers(list)
+      } catch {
+        if (!cancelled) setProjectMembers([])
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [projectId])
 
   useEffect(() => {
     const onColumnsUpdated = (ev: Event) => {
@@ -225,6 +274,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
       description: task.description || '',
       dueDate: toDateInputValue(task.dueDate),
       priority: task.priority ?? 'none',
+      assigneeUserId: task.assigneeUserId ?? task.assignee?.id ?? '',
     })
     setNewCardColumn(null)
     setIsDialogOpen(true)
@@ -247,6 +297,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
             description: form.description.trim() || null,
             dueDate: form.dueDate.trim() ? form.dueDate.trim() : null,
             priority: form.priority === 'none' ? null : form.priority,
+            assigneeId: form.assigneeUserId.trim() ? form.assigneeUserId.trim() : null,
           }),
         })
         const body: unknown = await res.json().catch(() => null)
@@ -284,6 +335,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
         if (desc) createBody.description = desc
         if (form.dueDate.trim()) createBody.dueDate = form.dueDate.trim()
         if (form.priority !== 'none') createBody.priority = form.priority
+        if (form.assigneeUserId.trim()) createBody.assigneeId = form.assigneeUserId.trim()
         const res = await fetch('/api/kanban-tasks', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -314,10 +366,17 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   }
 
   const getFiltered = (columnKey: string) =>
-    cards[columnKey]?.filter((t) => filterAssignee === 'all' || t.assignee?.name === filterAssignee) ?? []
+    cards[columnKey]?.filter(
+      (t) => filterAssignee === 'all' || displayAssigneeLabel(t) === filterAssignee
+    ) ?? []
 
   const allAssignees = Array.from(
-    new Set(Object.values(cards).flat().map((t) => t.assignee?.name).filter(Boolean) as string[])
+    new Set(
+      Object.values(cards)
+        .flat()
+        .map((t) => displayAssigneeLabel(t))
+        .filter((x): x is string => Boolean(x))
+    )
   )
 
   const backlogColumnKey =
@@ -327,7 +386,9 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
     const task: KanbanTask = {
       id: `from-ai-${candidate.id}`,
       title: candidate.title,
-      assignee: candidate.suggestedAssignee ? { name: candidate.suggestedAssignee } : undefined,
+      assignee: candidate.suggestedAssignee
+        ? { name: candidate.suggestedAssignee }
+        : undefined,
       dueDate: candidate.suggestedDueDate,
       aiOrigin: candidate.source,
     }
@@ -465,6 +526,31 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
                   <SelectItem value="LOW">低</SelectItem>
                   <SelectItem value="MEDIUM">中</SelectItem>
                   <SelectItem value="HIGH">高</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="kanban-dialog-assignee">担当者</Label>
+              <Select
+                value={form.assigneeUserId.trim() ? form.assigneeUserId.trim() : ASSIGNEE_NONE_VALUE}
+                onValueChange={(v) =>
+                  setForm({
+                    ...form,
+                    assigneeUserId: v === ASSIGNEE_NONE_VALUE ? '' : v,
+                  })
+                }
+                disabled={addSaving || editSaving}
+              >
+                <SelectTrigger id="kanban-dialog-assignee" className="w-full max-w-[20rem]">
+                  <SelectValue placeholder="未設定" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value={ASSIGNEE_NONE_VALUE}>未設定</SelectItem>
+                  {projectMembers.map((m) => (
+                    <SelectItem key={m.userId} value={m.userId}>
+                      {memberOptionLabel(m)}
+                    </SelectItem>
+                  ))}
                 </SelectContent>
               </Select>
             </div>

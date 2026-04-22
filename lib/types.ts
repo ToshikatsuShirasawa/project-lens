@@ -38,6 +38,11 @@ export interface ProjectCreateRequest {
   description?: string | null
   /** 未指定時は API 側で `simple` を適用 */
   templateKey?: KanbanTemplateKey
+  /**
+   * 指定時のみ、作成したプロジェクトに `project_members`（role: OWNER）を1件追加する。
+   * Auth 連携後はログインユーザー id を渡す想定。
+   */
+  ownerUserId?: string | null
 }
 
 export interface ProjectApiRecord {
@@ -46,6 +51,12 @@ export interface ProjectApiRecord {
   description: string | null
   createdAt: string
   updatedAt: string
+}
+
+/** POST /api/projects 成功時。一覧用 `ProjectApiRecord` と互換の本体に、作成時メタのみ付与可能 */
+export interface ProjectCreateResponse extends ProjectApiRecord {
+  /** `ownerUserId` が有効に指定され、`project_members` に OWNER を作成したとき true */
+  ownerMemberCreated?: boolean
 }
 
 /** PATCH /api/projects/[projectId] — 指定キーのみ更新 */
@@ -65,6 +76,20 @@ export interface NewProjectFormState {
   description: string
   /** カンバン初期列テンプレート（未指定時は API 側でも `simple`） */
   templateKey: KanbanTemplateKey
+  /** 空文字は未選択。`POST /api/projects` の `ownerUserId` に対応 */
+  ownerUserId: string
+}
+
+/** GET /api/users の1件 */
+export interface UserApiRecord {
+  id: string
+  name: string | null
+  email: string
+}
+
+/** GET /api/users */
+export interface UserListResponse {
+  users: UserApiRecord[]
 }
 
 export interface ProjectMember {
@@ -203,7 +228,9 @@ export interface KanbanTask {
   id: string
   title: string
   description?: string
-  assignee?: { name: string }
+  /** 担当ユーザー id（API 永続タスク向け。仮カードでは省略可） */
+  assigneeUserId?: string | null
+  assignee?: { id?: string; name: string | null; email?: string }
   /** 永続化タスクは主に YYYY-MM-DD 相当の文字列 */
   dueDate?: string
   /** 永続化タスク。候補からの仮タスク等では省略可 */
@@ -228,6 +255,44 @@ export interface ProjectKanbanColumnApi {
   isArchived: boolean
   /** GET ?includeArchived=true のときのみ付与されることがある */
   taskCount?: number
+}
+
+// ============================================================
+// Project dashboard — GET /api/projects/[projectId]/dashboard
+// ============================================================
+
+export interface ProjectDashboardSummary {
+  totalTasks: number
+  openTasks: number
+  doneTasks: number
+  memberCount: number
+  overdueTasks: number
+  upcomingTasks: number
+}
+
+export interface ProjectDashboardColumnStat {
+  columnId: string
+  columnKey: string
+  columnName: string
+  taskCount: number
+  sortOrder: number
+}
+
+export interface ProjectDashboardRecentTask {
+  id: string
+  title: string
+  updatedAt: string
+  columnName: string
+  columnKey: string
+  assignee: { name: string | null; email: string } | null
+  dueDate: string | null
+  priority: TaskPriority | null
+}
+
+export interface ProjectDashboardResponse {
+  summary: ProjectDashboardSummary
+  columns: ProjectDashboardColumnStat[]
+  recentTasks: ProjectDashboardRecentTask[]
 }
 
 /** PATCH /api/projects/[projectId]/kanban-columns/[columnId] — name / isArchived を部分更新 */
@@ -278,16 +343,52 @@ export interface KanbanTaskApiRecord {
   sortOrder: number
   createdAt: string
   updatedAt: string
-  assignee: { name: string | null } | null
+  assigneeId: string | null
+  assignee: { id: string; name: string | null; email: string } | null
 }
 
-/** PATCH /api/kanban-tasks/[taskId] — 列移動は column* / sortOrder。本文は title / description / dueDate / priority */
+/** Prisma `ProjectMemberRole` と同じ3値（API の role 文字列） */
+export type ProjectMemberRoleApi = 'OWNER' | 'ADMIN' | 'MEMBER'
+
+/** GET /api/projects/[projectId]/members の1件（`id` は project_members の行 id） */
+export interface ProjectMemberApiRecord {
+  id: string
+  userId: string
+  name: string | null
+  email: string
+  role: ProjectMemberRoleApi
+}
+
+/** GET /api/projects/[projectId]/members */
+export interface ProjectMembersListResponse {
+  members: ProjectMemberApiRecord[]
+}
+
+/** POST /api/projects/[projectId]/members */
+export interface ProjectMemberCreateRequest {
+  userId: string
+  role: ProjectMemberRoleApi
+}
+
+/** PATCH /api/projects/[projectId]/members/[memberId] */
+export interface ProjectMemberUpdateRequest {
+  role: ProjectMemberRoleApi
+}
+
+/** DELETE /api/projects/[projectId]/members/[memberId] */
+export interface ProjectMemberDeleteResponse {
+  deleted: true
+  id: string
+}
+
+/** PATCH /api/kanban-tasks/[taskId] — 列移動は column* / sortOrder。本文は title / description / dueDate / priority / assigneeId */
 export interface KanbanTaskUpdateRequest {
   projectId: string
   title?: string
   description?: string | null
   dueDate?: string | null
   priority?: TaskPriority | null
+  assigneeId?: string | null
   column?: string
   columnKey?: string
   columnId?: string
@@ -301,6 +402,7 @@ export interface KanbanTaskCreateRequest {
   description?: string | null
   dueDate?: string | null
   priority?: TaskPriority | null
+  assigneeId?: string | null
   column?: string
   columnKey?: string
   columnId?: string

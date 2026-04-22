@@ -24,7 +24,7 @@ export async function GET(request: Request) {
     const rows = await prisma.kanbanTask.findMany({
       where: { projectId },
       include: {
-        assignee: { select: { name: true } },
+        assignee: { select: { id: true, name: true, email: true } },
         kanbanColumn: { select: { key: true } },
       },
       orderBy: [
@@ -37,7 +37,10 @@ export async function GET(request: Request) {
     const tasks = rows.map((t) =>
       serializeKanbanTask({
         ...t,
-        assignee: t.assignee ? { name: t.assignee.name } : null,
+        assigneeId: t.assigneeId,
+        assignee: t.assignee
+          ? { id: t.assignee.id, name: t.assignee.name, email: t.assignee.email }
+          : null,
         kanbanColumn: t.kanbanColumn,
       })
     )
@@ -66,7 +69,8 @@ export async function POST(request: Request) {
     }
 
     const raw = body as Record<string, unknown>
-    const { projectId, title, description, dueDate, priority, column, columnKey, columnId } = raw
+    const { projectId, title, description, dueDate, priority, assigneeId: assigneeIdRaw, column, columnKey, columnId } =
+      raw
     const projectIdStr = typeof projectId === 'string' ? projectId.trim() : ''
     const titleStr = typeof title === 'string' ? title.trim() : ''
 
@@ -139,6 +143,37 @@ export async function POST(request: Request) {
       priorityValue = priority as (typeof TaskPriority)[keyof typeof TaskPriority]
     }
 
+    let assigneeIdForCreate: string | null | undefined = undefined
+    if ('assigneeId' in raw) {
+      if (assigneeIdRaw === null) {
+        assigneeIdForCreate = null
+      } else if (typeof assigneeIdRaw === 'string') {
+        const aid = assigneeIdRaw.trim()
+        if (!aid) {
+          return NextResponse.json(
+            {
+              message:
+                'assigneeId は空にできません。担当を外す場合は null を指定するか、キーを省略してください',
+            },
+            { status: 400 }
+          )
+        }
+        const member = await prisma.projectMember.findFirst({
+          where: { projectId: projectIdStr, userId: aid },
+          select: { userId: true },
+        })
+        if (!member) {
+          return NextResponse.json(
+            { message: '指定したユーザーはこのプロジェクトのメンバーではありません' },
+            { status: 400 }
+          )
+        }
+        assigneeIdForCreate = aid
+      } else {
+        return NextResponse.json({ message: 'assigneeId は文字列または null としてください' }, { status: 400 })
+      }
+    }
+
     const agg = await prisma.kanbanTask.aggregate({
       where: { projectId: projectIdStr, columnId: resolved.id },
       _max: { sortOrder: true },
@@ -154,9 +189,10 @@ export async function POST(request: Request) {
         priority: priorityValue,
         columnId: resolved.id,
         sortOrder: nextSortOrder,
+        ...(assigneeIdForCreate !== undefined ? { assigneeId: assigneeIdForCreate } : {}),
       },
       include: {
-        assignee: { select: { name: true } },
+        assignee: { select: { id: true, name: true, email: true } },
         kanbanColumn: { select: { key: true } },
       },
     })
@@ -164,7 +200,10 @@ export async function POST(request: Request) {
     return NextResponse.json(
       serializeKanbanTask({
         ...created,
-        assignee: created.assignee ? { name: created.assignee.name } : null,
+        assigneeId: created.assigneeId,
+        assignee: created.assignee
+          ? { id: created.assignee.id, name: created.assignee.name, email: created.assignee.email }
+          : null,
         kanbanColumn: created.kanbanColumn,
       }),
       { status: 201 }

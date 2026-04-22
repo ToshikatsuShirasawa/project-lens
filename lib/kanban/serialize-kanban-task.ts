@@ -11,7 +11,8 @@ export function serializeKanbanTask(t: {
   sortOrder: number
   createdAt: Date
   updatedAt: Date
-  assignee: { name: string | null } | null
+  assigneeId: string | null
+  assignee: { id: string; name: string | null; email: string } | null
   kanbanColumn: { key: string }
 }): KanbanTaskApiRecord {
   return {
@@ -25,6 +26,9 @@ export function serializeKanbanTask(t: {
     sortOrder: t.sortOrder,
     createdAt: t.createdAt.toISOString(),
     updatedAt: t.updatedAt.toISOString(),
-    assignee: t.assignee ? { name: t.assignee.name } : null,
+    assigneeId: t.assigneeId,
+    assignee: t.assignee
+      ? { id: t.assignee.id, name: t.assignee.name, email: t.assignee.email }
+      : null,
   }
 }

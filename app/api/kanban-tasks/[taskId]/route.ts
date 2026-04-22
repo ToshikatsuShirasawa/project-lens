@@ -13,6 +13,32 @@ const DESC_MAX = 20000
 
 const PRI_SET = new Set([TaskPriority.LOW, TaskPriority.MEDIUM, TaskPriority.HIGH])
 
+type AssigneePatchParsed =
+  | { ok: true; mode: 'omit' }
+  | { ok: true; mode: 'set'; value: string | null }
+  | { ok: false; message: string }
+
+function parseAssigneeIdPatch(raw: Record<string, unknown>): AssigneePatchParsed {
+  if (!('assigneeId' in raw)) {
+    return { ok: true, mode: 'omit' }
+  }
+  const v = raw.assigneeId
+  if (v === null) {
+    return { ok: true, mode: 'set', value: null }
+  }
+  if (typeof v === 'string') {
+    const s = v.trim()
+    if (!s) {
+      return {
+        ok: false,
+        message: 'assigneeId は空にできません。未設定にする場合は null を指定してください',
+      }
+    }
+    return { ok: true, mode: 'set', value: s }
+  }
+  return { ok: false, message: 'assigneeId は文字列または null としてください' }
+}
+
 type ContentData = {
   title?: string
   description?: string | null
@@ -121,6 +147,12 @@ export async function PATCH(request: Request, context: RouteContext) {
       return NextResponse.json({ message: 'projectId が必要です' }, { status: 400 })
     }
 
+    const assigneePatch = parseAssigneeIdPatch(raw)
+    if (!assigneePatch.ok) {
+      return NextResponse.json({ message: assigneePatch.message }, { status: 400 })
+    }
+    const hasAssigneeUpdate = assigneePatch.ok && assigneePatch.mode === 'set'
+
     const hasFieldKeys = 'title' in raw || 'description' in raw || 'dueDate' in raw || 'priority' in raw
     let fieldData: ContentData | null = null
     if (hasFieldKeys) {
@@ -144,11 +176,11 @@ export async function PATCH(request: Request, context: RouteContext) {
       (typeof columnKey === 'string' && columnKey.trim() !== '') ||
       (typeof columnId === 'string' && columnId.trim() !== '')
 
-    if (!hasColumnTarget && !fieldData) {
+    if (!hasColumnTarget && !fieldData && !hasAssigneeUpdate) {
       return NextResponse.json(
         {
           message:
-            'column / columnKey / columnId のいずれか、または title / description / dueDate / priority の有効な更新のいずれかが必要です',
+            'column / columnKey / columnId のいずれか、または title / description / dueDate / priority / assigneeId の有効な更新のいずれかが必要です',
         },
         { status: 400 }
       )
@@ -174,6 +206,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       columnId?: string
       sortOrder?: number
       priority?: (typeof TaskPriority)[keyof typeof TaskPriority] | null
+      assigneeId?: string | null
     } = {}
     if (fieldData) {
       if (fieldData.title !== undefined) data.title = fieldData.title
@@ -209,11 +242,34 @@ export async function PATCH(request: Request, context: RouteContext) {
       }
     }
 
+    if (hasAssigneeUpdate) {
+      if (assigneePatch.mode === 'set' && assigneePatch.value === null) {
+        data.assigneeId = null
+      } else if (assigneePatch.mode === 'set' && assigneePatch.value !== null) {
+        const userId = assigneePatch.value
+        const member = await prisma.projectMember.findFirst({
+          where: { projectId: projectIdStr, userId },
+          select: { userId: true },
+        })
+        if (!member) {
+          return NextResponse.json(
+            { message: '指定したユーザーはこのプロジェクトのメンバーではありません' },
+            { status: 400 }
+          )
+        }
+        data.assigneeId = userId
+      }
+    }
+
+    if (Object.keys(data).length === 0) {
+      return NextResponse.json({ message: '更新対象のフィールドがありません' }, { status: 400 })
+    }
+
     const updated = await prisma.kanbanTask.update({
       where: { id },
       data,
       include: {
-        assignee: { select: { name: true } },
+        assignee: { select: { id: true, name: true, email: true } },
         kanbanColumn: { select: { key: true } },
       },
     })
@@ -221,7 +277,10 @@ export async function PATCH(request: Request, context: RouteContext) {
     return NextResponse.json(
       serializeKanbanTask({
         ...updated,
-        assignee: updated.assignee ? { name: updated.assignee.name } : null,
+        assigneeId: updated.assigneeId,
+        assignee: updated.assignee
+          ? { id: updated.assignee.id, name: updated.assignee.name, email: updated.assignee.email }
+          : null,
         kanbanColumn: updated.kanbanColumn,
       })
     )

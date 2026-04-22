@@ -13,19 +13,40 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
 import { DEFAULT_KANBAN_TEMPLATE_KEY } from '@/lib/kanban/kanban-column-templates'
-import type { NewProjectFormState, ProjectApiRecord, ProjectCreateRequest } from '@/lib/types'
+import type {
+  NewProjectFormState,
+  ProjectApiRecord,
+  ProjectCreateRequest,
+  UserApiRecord,
+} from '@/lib/types'
 
 export interface NewProjectDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
 }
 
+const OWNER_NONE_VALUE = '__none__'
+
+function userOptionLabel(u: UserApiRecord): string {
+  const n = u.name?.trim()
+  if (n) return n
+  return u.email.split('@')[0] ?? u.email
+}
+
 const emptyForm: NewProjectFormState = {
   name: '',
   description: '',
   templateKey: DEFAULT_KANBAN_TEMPLATE_KEY,
+  ownerUserId: '',
 }
 
 /** 名前・説明・カンバンテンプレート。作成後はカンバンへ遷移 */
@@ -35,12 +56,57 @@ export function NewProjectDialog({ open, onOpenChange }: NewProjectDialogProps) 
   const [form, setForm] = useState<NewProjectFormState>(emptyForm)
   const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [ownerCandidates, setOwnerCandidates] = useState<UserApiRecord[]>([])
+  const [usersLoading, setUsersLoading] = useState(false)
+  const [usersListError, setUsersListError] = useState<string | null>(null)
 
   useEffect(() => {
     if (!open) {
       setForm(emptyForm)
       setError(null)
       setSubmitting(false)
+      setUsersListError(null)
+      return
+    }
+
+    let cancelled = false
+    setUsersLoading(true)
+    setUsersListError(null)
+    void (async () => {
+      try {
+        const res = await fetch('/api/users')
+        const body: unknown = await res.json().catch(() => null)
+        if (cancelled) return
+        if (!res.ok) {
+          setOwnerCandidates([])
+          const msg =
+            body &&
+            typeof body === 'object' &&
+            'message' in body &&
+            typeof (body as { message: unknown }).message === 'string'
+              ? (body as { message: string }).message
+              : `ユーザー一覧を取得できませんでした（HTTP ${res.status}）`
+          setUsersListError(msg)
+          return
+        }
+        const parsed = body && typeof body === 'object' ? body : null
+        const list =
+          parsed && 'users' in parsed && Array.isArray((parsed as { users: unknown }).users)
+            ? (parsed as { users: UserApiRecord[] }).users
+            : []
+        setOwnerCandidates(list)
+      } catch {
+        if (!cancelled) {
+          setOwnerCandidates([])
+          setUsersListError('ユーザー一覧の取得に失敗しました')
+        }
+      } finally {
+        if (!cancelled) setUsersLoading(false)
+      }
+    })()
+
+    return () => {
+      cancelled = true
     }
   }, [open])
 
@@ -59,6 +125,9 @@ export function NewProjectDialog({ open, onOpenChange }: NewProjectDialogProps) 
           name: nameTrim,
           description: form.description.trim() || undefined,
           templateKey: form.templateKey,
+          ...(form.ownerUserId.trim()
+            ? { ownerUserId: form.ownerUserId.trim() }
+            : {}),
         } satisfies ProjectCreateRequest),
       })
       const body: unknown = await res.json().catch(() => null)
@@ -117,6 +186,47 @@ export function NewProjectDialog({ open, onOpenChange }: NewProjectDialogProps) 
               rows={3}
               disabled={submitting}
             />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor={`${baseId}-owner`}>オーナー（任意）</Label>
+            <Select
+              value={form.ownerUserId.trim() ? form.ownerUserId.trim() : OWNER_NONE_VALUE}
+              onValueChange={(v) =>
+                setForm((f) => ({ ...f, ownerUserId: v === OWNER_NONE_VALUE ? '' : v }))
+              }
+              disabled={submitting || usersLoading || ownerCandidates.length === 0}
+            >
+              <SelectTrigger id={`${baseId}-owner`} className="w-full">
+                <SelectValue
+                  placeholder={usersLoading ? '読み込み中…' : '未選択'}
+                />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value={OWNER_NONE_VALUE}>未選択</SelectItem>
+                {ownerCandidates.map((u) => (
+                  <SelectItem key={u.id} value={u.id}>
+                    {userOptionLabel(u)}
+                    <span className="text-muted-foreground"> ({u.email})</span>
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            {usersLoading ? (
+              <p className="text-xs text-muted-foreground">ユーザーを読み込み中です…</p>
+            ) : usersListError ? (
+              <p className="text-xs text-destructive/90 leading-relaxed" role="status">
+                {usersListError}
+              </p>
+            ) : ownerCandidates.length === 0 ? (
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                ユーザーが未登録です。Prisma Studio 等で <code className="rounded bg-muted px-1">users</code>{' '}
+                に行を追加すると、ここからオーナーを選べます。
+              </p>
+            ) : (
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                選ぶと作成と同時に <code className="rounded bg-muted px-1">project_members</code>（OWNER）が1件作られ、カンバンの担当者候補に表示されます。
+              </p>
+            )}
           </div>
           <div className="space-y-2" role="radiogroup" aria-labelledby={`${baseId}-tpl-legend`}>
             <span id={`${baseId}-tpl-legend`} className="text-sm font-medium leading-none">

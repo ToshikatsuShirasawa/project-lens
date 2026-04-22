@@ -1,3 +1,4 @@
+import { ProjectMemberRole } from '@/lib/generated/prisma/client'
 import { NextResponse } from 'next/server'
 import {
   DEFAULT_KANBAN_TEMPLATE_KEY,
@@ -48,10 +49,44 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'リクエストボディが不正です' }, { status: 400 })
     }
 
-    const { name, description, templateKey: templateKeyRaw } = body as Record<string, unknown>
+    const { name, description, templateKey: templateKeyRaw, ownerUserId: ownerUserIdRaw } = body as Record<
+      string,
+      unknown
+    >
     const nameStr = typeof name === 'string' ? name.trim() : ''
     if (!nameStr) {
       return NextResponse.json({ message: 'name が必要です' }, { status: 400 })
+    }
+
+    let ownerUserId: string | null = null
+    if ('ownerUserId' in body) {
+      if (ownerUserIdRaw === null || ownerUserIdRaw === undefined) {
+        ownerUserId = null
+      } else if (typeof ownerUserIdRaw === 'string') {
+        const trimmed = ownerUserIdRaw.trim()
+        if (!trimmed) {
+          return NextResponse.json(
+            { message: 'ownerUserId を指定する場合は空にできません' },
+            { status: 400 }
+          )
+        }
+        ownerUserId = trimmed
+      } else {
+        return NextResponse.json({ message: 'ownerUserId は文字列または null としてください' }, { status: 400 })
+      }
+    }
+
+    if (ownerUserId) {
+      const userExists = await prisma.user.findUnique({
+        where: { id: ownerUserId },
+        select: { id: true },
+      })
+      if (!userExists) {
+        return NextResponse.json(
+          { message: 'ownerUserId に一致するユーザーが存在しません' },
+          { status: 400 }
+        )
+      }
     }
 
     const trimmedTemplate =
@@ -88,16 +123,36 @@ export async function POST(request: Request) {
           },
         })
       }
-      return project
+
+      let ownerMemberCreated = false
+      if (ownerUserId) {
+        const existing = await tx.projectMember.findFirst({
+          where: { projectId: project.id, userId: ownerUserId },
+          select: { id: true },
+        })
+        if (!existing) {
+          await tx.projectMember.create({
+            data: {
+              projectId: project.id,
+              userId: ownerUserId,
+              role: ProjectMemberRole.OWNER,
+            },
+          })
+          ownerMemberCreated = true
+        }
+      }
+
+      return { project, ownerMemberCreated }
     })
 
     return NextResponse.json(
       {
-        id: created.id,
-        name: created.name,
-        description: created.description,
-        createdAt: created.createdAt.toISOString(),
-        updatedAt: created.updatedAt.toISOString(),
+        id: created.project.id,
+        name: created.project.name,
+        description: created.project.description,
+        createdAt: created.project.createdAt.toISOString(),
+        updatedAt: created.project.updatedAt.toISOString(),
+        ...(created.ownerMemberCreated ? { ownerMemberCreated: true } : {}),
       },
       { status: 201 }
     )

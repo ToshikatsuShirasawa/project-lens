@@ -58,12 +58,7 @@ export default function SettingsPage({ params }: SettingsPageProps) {
           </div>
 
           {/* タブコンテンツ */}
-          {activeTab === 'general' && (
-            <ProjectSettingsPanel
-              projectName={project?.name ?? ''}
-              projectDescription={project?.description ?? ''}
-            />
-          )}
+          {activeTab === 'general' && <ProjectSettingsPanel projectId={projectId} />}
           {activeTab === 'members' && (
             <MemberSettingsPanel members={project?.members ?? []} />
           )}

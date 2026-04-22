@@ -1,7 +1,7 @@
 // This is your Prisma schema file,
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
-// Get a free hosted Postgres database in seconds: `npx create-db`
+// Get a free hosted database in seconds: `npx create-db`
 
 generator client {
   provider = "prisma-client"
@@ -16,12 +16,6 @@ enum ProjectMemberRole {
   OWNER
   ADMIN
   MEMBER
-}
-
-enum KanbanColumn {
-  BACKLOG
-  IN_PROGRESS
-  DONE
 }
 
 model User {
@@ -44,10 +38,36 @@ model Project {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
-  members ProjectMember[]
-  tasks   KanbanTask[]
+  members        ProjectMember[]
+  tasks          KanbanTask[]
+  kanbanColumns  ProjectKanbanColumn[]
 
   @@map("projects")
+}
+
+/// プロジェクトごとのカンバン列（表示名・並びはプロジェクト単位で変更可能にする前提）
+model ProjectKanbanColumn {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  /// 安定キー（backlog 等）。テンプレート切替や API 入力の基点
+  key       String
+  name      String
+  sortOrder Int      @default(0)
+
+  colorKey   String?
+  columnType String?
+  isArchived Boolean @default(false)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  tasks KanbanTask[] @relation("TaskKanbanColumn")
+
+  @@unique([projectId, key])
+  @@index([projectId, sortOrder])
+  @@map("project_kanban_columns")
 }
 
 model ProjectMember {
@@ -67,20 +87,22 @@ model ProjectMember {
 }
 
 model KanbanTask {
-  id          String       @id @default(cuid())
+  id          String   @id @default(cuid())
   title       String
   description String?
-  column      KanbanColumn @default(BACKLOG)
-  sortOrder   Int          @default(0)
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
+  sortOrder   Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
 
   projectId String
   project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
 
+  columnId     String
+  kanbanColumn ProjectKanbanColumn @relation("TaskKanbanColumn", fields: [columnId], references: [id], onDelete: Cascade)
+
   assigneeId String?
   assignee   User?   @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
 
-  @@index([projectId, column, sortOrder])
+  @@index([projectId, columnId, sortOrder])
   @@map("kanban_tasks")
 }

@@ -11,7 +11,7 @@ export default async function KanbanPage({ params }: KanbanPageProps) {
   return (
     <ProjectShell projectId={projectId}>
       <div className="h-full">
-        <KanbanBoard />
+        <KanbanBoard projectId={projectId} />
       </div>
     </ProjectShell>
   )

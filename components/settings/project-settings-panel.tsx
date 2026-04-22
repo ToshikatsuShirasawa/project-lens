@@ -1,64 +1,151 @@
 'use client'
 
-import { useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select'
+import { Label } from '@/components/ui/label'
+import { Textarea } from '@/components/ui/textarea'
 import { Trash2 } from 'lucide-react'
+import { KanbanColumnsSettings } from '@/components/settings/kanban-columns-settings'
+import { dispatchProjectUpdated } from '@/lib/project-events'
+import type { ProjectApiRecord } from '@/lib/types'
 
 interface ProjectSettingsPanelProps {
-  projectName: string
-  projectDescription: string
+  projectId: string
 }
 
-export function ProjectSettingsPanel({ projectName: initialName, projectDescription: initialDesc }: ProjectSettingsPanelProps) {
-  const [name, setName] = useState(initialName)
-  const [description, setDescription] = useState(initialDesc)
+export function ProjectSettingsPanel({ projectId }: ProjectSettingsPanelProps) {
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState<string | null>(null)
+  const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
+  const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
+  const [saveOk, setSaveOk] = useState(false)
+
+  const load = useCallback(async () => {
+    setLoading(true)
+    setLoadError(null)
+    try {
+      const res = await fetch(`/api/projects/${encodeURIComponent(projectId)}`)
+      const body: unknown = await res.json().catch(() => null)
+      if (!res.ok) {
+        const msg =
+          body &&
+          typeof body === 'object' &&
+          'message' in body &&
+          typeof (body as { message: unknown }).message === 'string'
+            ? (body as { message: string }).message
+            : `HTTP ${res.status}`
+        throw new Error(msg)
+      }
+      const row = body as ProjectApiRecord
+      setName(row.name)
+      setDescription(row.description ?? '')
+    } catch (e) {
+      setLoadError(e instanceof Error ? e.message : '読み込みに失敗しました')
+    } finally {
+      setLoading(false)
+    }
+  }, [projectId])
+
+  useEffect(() => {
+    void load()
+  }, [load])
+
+  const handleSave = async () => {
+    const nameTrim = name.trim()
+    if (!nameTrim || saving) return
+
+    setSaveError(null)
+    setSaveOk(false)
+    setSaving(true)
+    try {
+      const res = await fetch(`/api/projects/${encodeURIComponent(projectId)}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: nameTrim,
+          description: description.trim() || null,
+        }),
+      })
+      const body: unknown = await res.json().catch(() => null)
+      if (!res.ok) {
+        const msg =
+          body &&
+          typeof body === 'object' &&
+          'message' in body &&
+          typeof (body as { message: unknown }).message === 'string'
+            ? (body as { message: string }).message
+            : `HTTP ${res.status}`
+        throw new Error(msg)
+      }
+      const row = body as ProjectApiRecord
+      setName(row.name)
+      setDescription(row.description ?? '')
+      dispatchProjectUpdated(projectId)
+      setSaveOk(true)
+      setTimeout(() => setSaveOk(false), 2500)
+    } catch (e) {
+      setSaveError(e instanceof Error ? e.message : '保存に失敗しました')
+    } finally {
+      setSaving(false)
+    }
+  }
+
+  if (loading) {
+    return <p className="text-sm text-muted-foreground">読み込み中…</p>
+  }
+
+  if (loadError) {
+    return (
+      <p className="text-sm text-destructive" role="alert">
+        {loadError}
+      </p>
+    )
+  }
 
   return (
     <div className="space-y-6">
       <Card className="bg-card">
         <CardHeader>
           <CardTitle>プロジェクト基本情報</CardTitle>
-          <CardDescription>プロジェクトの基本的な情報を設定します</CardDescription>
+          <CardDescription>名前と説明は DB に保存されます（詳細なステータス等は今後拡張予定です）。</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
-            <label className="text-sm font-medium">プロジェクト名</label>
-            <Input value={name} onChange={(e) => setName(e.target.value)} />
-          </div>
-          <div className="space-y-2">
-            <label className="text-sm font-medium">説明</label>
-            <textarea
-              value={description}
-              onChange={(e) => setDescription(e.target.value)}
-              rows={3}
-              className="w-full rounded-md border border-input bg-background px-3 py-2 text-sm resize-none focus:outline-none focus:ring-1 focus:ring-ring"
+            <Label htmlFor="settings-project-name">プロジェクト名</Label>
+            <Input
+              id="settings-project-name"
+              value={name}
+              onChange={(e) => setName(e.target.value)}
+              disabled={saving}
             />
           </div>
           <div className="space-y-2">
-            <label className="text-sm font-medium">ステータス</label>
-            <Select defaultValue="active">
-              <SelectTrigger className="w-48">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="active">進行中</SelectItem>
-                <SelectItem value="paused">一時停止</SelectItem>
-                <SelectItem value="completed">完了</SelectItem>
-              </SelectContent>
-            </Select>
+            <Label htmlFor="settings-project-desc">説明</Label>
+            <Textarea
+              id="settings-project-desc"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              disabled={saving}
+            />
           </div>
-          <Button className="mt-4">変更を保存</Button>
+          {saveError && (
+            <p className="text-sm text-destructive" role="alert">
+              {saveError}
+            </p>
+          )}
+          {saveOk && <p className="text-sm text-muted-foreground">保存しました。</p>}
+          <Button className="mt-2" type="button" onClick={() => void handleSave()} disabled={!name.trim() || saving}>
+            {saving ? '保存中…' : '変更を保存'}
+          </Button>
         </CardContent>
       </Card>
+
+      <KanbanColumnsSettings projectId={projectId} />
 
       <Card className="bg-card border-destructive/50">
         <CardHeader>
@@ -66,7 +153,7 @@ export function ProjectSettingsPanel({ projectName: initialName, projectDescript
           <CardDescription>この操作は取り消すことができません</CardDescription>
         </CardHeader>
         <CardContent>
-          <Button variant="destructive" className="gap-2">
+          <Button variant="destructive" className="gap-2" type="button" disabled title="未実装">
             <Trash2 className="h-4 w-4" />
             プロジェクトを削除
           </Button>

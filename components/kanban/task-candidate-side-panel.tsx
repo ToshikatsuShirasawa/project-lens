@@ -1,9 +1,10 @@
 'use client'
 
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { useState } from 'react'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Sparkles, Plus, Pause, X } from 'lucide-react'
+import { Sparkles, Plus, Pause, X, ChevronLeft, ChevronRight } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { TaskCandidate } from '@/lib/types'
 
@@ -27,16 +28,63 @@ export function TaskCandidateSidePanel({
   onHold,
   onDismiss,
 }: TaskCandidateSidePanelProps) {
+  const [open, setOpen] = useState(true)
+
+  if (!open) {
+    return (
+      <aside
+        className="w-11 shrink-0 flex flex-col border-l border-border bg-ai-panel h-full"
+        aria-label="AIタスク候補パネル（閉じています）"
+      >
+        <div className="flex flex-1 flex-col items-center gap-2 border-b border-border py-2">
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 shrink-0 text-primary"
+            onClick={() => setOpen(true)}
+            title="AIタスク候補を開く"
+            aria-expanded={false}
+          >
+            <ChevronLeft className="h-4 w-4" />
+            <span className="sr-only">AIタスク候補を開く</span>
+          </Button>
+          <Sparkles className="h-4 w-4 text-primary shrink-0" aria-hidden />
+          {candidates.length > 0 ? (
+            <Badge className="text-[10px] h-5 min-w-5 px-1 justify-center bg-primary/10 text-primary border-0">
+              {candidates.length}
+            </Badge>
+          ) : null}
+        </div>
+      </aside>
+    )
+  }
+
   return (
-    <aside className="w-80 shrink-0 flex flex-col border-l border-border bg-ai-panel h-full">
-      <div className="flex items-center gap-2 border-b border-border px-4 py-3">
-        <Sparkles className="h-4 w-4 text-primary" />
-        <span className="text-sm font-semibold text-foreground">AIタスク候補</span>
+    <aside
+      className="w-80 shrink-0 flex flex-col border-l border-border bg-ai-panel h-full"
+      aria-label="AIタスク候補"
+    >
+      <div className="flex items-center gap-2 border-b border-border px-3 py-2.5 pr-2">
+        <Sparkles className="h-4 w-4 shrink-0 text-primary" />
+        <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">AIタスク候補</span>
         {candidates.length > 0 && (
-          <Badge className="ml-auto text-[10px] h-5 px-1.5 bg-primary/10 text-primary border-0">
+          <Badge className="shrink-0 text-[10px] h-5 px-1.5 bg-primary/10 text-primary border-0">
             {candidates.length}件
           </Badge>
         )}
+        <Button
+          type="button"
+          variant="ghost"
+          size="icon"
+          className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
+          onClick={() => setOpen(false)}
+          title="候補パネルを閉じる"
+          aria-expanded={true}
+        >
+          <ChevronRight className="h-4 w-4" />
+          <span className="sr-only">候補パネルを閉じる</span>
+        </Button>
       </div>
       <p className="px-4 py-2 text-xs text-muted-foreground border-b border-border">
         承認するとカンバンに追加されます

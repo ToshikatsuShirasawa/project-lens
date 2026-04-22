@@ -22,6 +22,51 @@ export interface Project {
   createdAt: string
 }
 
+/** プロジェクト作成時に適用するカンバン列テンプレート（`project_kanban_columns` の seed 元） */
+export type KanbanTemplateKey = 'simple' | 'review'
+
+/** テンプレート内の 1 列（DB 投入用の最小形） */
+export interface ProjectKanbanColumnSeed {
+  key: string
+  name: string
+  sortOrder: number
+}
+
+/** POST /api/projects および GET /api/projects/[projectId] の JSON 形 */
+export interface ProjectCreateRequest {
+  name: string
+  description?: string | null
+  /** 未指定時は API 側で `simple` を適用 */
+  templateKey?: KanbanTemplateKey
+}
+
+export interface ProjectApiRecord {
+  id: string
+  name: string
+  description: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+/** PATCH /api/projects/[projectId] — 指定キーのみ更新 */
+export interface ProjectUpdateRequest {
+  name?: string
+  description?: string | null
+}
+
+/** GET /api/projects のレスポンス（各要素は ProjectApiRecord と同一形） */
+export interface ProjectListResponse {
+  projects: ProjectApiRecord[]
+}
+
+/** 新規プロジェクト作成モーダルのフォーム state */
+export interface NewProjectFormState {
+  name: string
+  description: string
+  /** カンバン初期列テンプレート（未指定時は API 側でも `simple`） */
+  templateKey: KanbanTemplateKey
+}
+
 export interface ProjectMember {
   id: string
   name: string
@@ -148,6 +193,7 @@ export interface TimelineEvent {
 // Kanban
 // ============================================================
 
+/** 既定テンプレートの列キー（API・DnD で使う安定識別子） */
 export type KanbanColumnId = 'backlog' | 'inprogress' | 'blocked' | 'review' | 'done'
 
 export interface KanbanTask {
@@ -157,6 +203,71 @@ export interface KanbanTask {
   assignee?: { name: string }
   dueDate?: string
   aiOrigin?: SourceType // if task was originally a candidate
+}
+
+/** GET /api/kanban-tasks のレスポンス本体 */
+export interface KanbanTasksListResponse {
+  columns: ProjectKanbanColumnApi[]
+  tasks: KanbanTaskApiRecord[]
+}
+
+/** GET /api/kanban-tasks に含まれる列定義（project_kanban_columns） */
+export interface ProjectKanbanColumnApi {
+  id: string
+  key: string
+  name: string
+  sortOrder: number
+  colorKey?: string | null
+  columnType?: string | null
+  isArchived: boolean
+}
+
+/** PATCH /api/projects/[projectId]/kanban-columns/[columnId] — 表示名のみ更新 */
+export interface ProjectKanbanColumnUpdateRequest {
+  name: string
+}
+
+/** PATCH /api/projects/[projectId]/kanban-columns/reorder — 列 ID を並び順どおりに並べる */
+export interface ProjectKanbanColumnsReorderRequest {
+  columnIds: string[]
+}
+
+/** 列一覧または並び替え直後の API 応答 */
+export interface ProjectKanbanColumnsListResponse {
+  columns: ProjectKanbanColumnApi[]
+}
+
+/** GET /api/kanban-tasks の1件（Prisma 列名・日付は JSON 用に正規化済み） */
+export interface KanbanTaskApiRecord {
+  id: string
+  title: string
+  description: string | null
+  columnId: string
+  /** 列マスタの key（ボード上のバケットは key 基準） */
+  columnKey: string
+  sortOrder: number
+  createdAt: string
+  updatedAt: string
+  assignee: { name: string | null } | null
+}
+
+/** PATCH /api/kanban-tasks/[taskId] — column / columnKey は列 key、columnId は列マスタ id */
+export interface KanbanTaskUpdateRequest {
+  projectId: string
+  column?: string
+  columnKey?: string
+  columnId?: string
+  sortOrder?: number
+}
+
+/** POST /api/kanban-tasks — 列は project のマスタを columnKey / columnId で指定 */
+export interface KanbanTaskCreateRequest {
+  projectId: string
+  title: string
+  description?: string | null
+  column?: string
+  columnKey?: string
+  columnId?: string
 }
 
 export interface KanbanColumn {

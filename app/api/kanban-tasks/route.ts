@@ -1,8 +1,11 @@
+import { TaskPriority } from '@/lib/generated/prisma/client'
 import { NextResponse } from 'next/server'
 import { resolveProjectKanbanColumn } from '@/lib/kanban/resolve-kanban-column'
 import { serializeProjectKanbanColumn } from '@/lib/kanban/serialize-kanban-column'
 import { serializeKanbanTask } from '@/lib/kanban/serialize-kanban-task'
 import { prisma } from '@/lib/prisma'
+
+const PRIO_SET = new Set([TaskPriority.LOW, TaskPriority.MEDIUM, TaskPriority.HIGH])
 
 export async function GET(request: Request) {
   try {
@@ -63,7 +66,7 @@ export async function POST(request: Request) {
     }
 
     const raw = body as Record<string, unknown>
-    const { projectId, title, description, column, columnKey, columnId } = raw
+    const { projectId, title, description, dueDate, priority, column, columnKey, columnId } = raw
     const projectIdStr = typeof projectId === 'string' ? projectId.trim() : ''
     const titleStr = typeof title === 'string' ? title.trim() : ''
 
@@ -109,6 +112,33 @@ export async function POST(request: Request) {
       descriptionValue = d.length > 0 ? d : null
     }
 
+    let dueDateValue: Date | null = null
+    if (dueDate !== undefined && dueDate !== null) {
+      if (typeof dueDate !== 'string') {
+        return NextResponse.json({ message: 'dueDate の型が不正です' }, { status: 400 })
+      }
+      const s = dueDate.trim()
+      if (!/^\d{4}-\d{2}-\d{2}$/.test(s)) {
+        return NextResponse.json({ message: 'dueDate は YYYY-MM-DD 形式、または null としてください' }, { status: 400 })
+      }
+      const d = new Date(`${s}T00:00:00.000Z`)
+      if (Number.isNaN(d.getTime())) {
+        return NextResponse.json({ message: 'dueDate の日付が不正です' }, { status: 400 })
+      }
+      dueDateValue = d
+    }
+
+    let priorityValue: (typeof TaskPriority)[keyof typeof TaskPriority] | null = null
+    if (priority !== undefined && priority !== null) {
+      if (typeof priority !== 'string' || !PRIO_SET.has(priority as (typeof TaskPriority)[keyof typeof TaskPriority])) {
+        return NextResponse.json(
+          { message: 'priority は LOW / MEDIUM / HIGH のいずれか、または null としてください' },
+          { status: 400 }
+        )
+      }
+      priorityValue = priority as (typeof TaskPriority)[keyof typeof TaskPriority]
+    }
+
     const agg = await prisma.kanbanTask.aggregate({
       where: { projectId: projectIdStr, columnId: resolved.id },
       _max: { sortOrder: true },
@@ -120,6 +150,8 @@ export async function POST(request: Request) {
         projectId: projectIdStr,
         title: titleStr,
         description: descriptionValue,
+        dueDate: dueDateValue,
+        priority: priorityValue,
         columnId: resolved.id,
         sortOrder: nextSortOrder,
       },

@@ -196,12 +196,18 @@ export interface TimelineEvent {
 /** 既定テンプレートの列キー（API・DnD で使う安定識別子） */
 export type KanbanColumnId = 'backlog' | 'inprogress' | 'blocked' | 'review' | 'done'
 
+/** Prisma `TaskPriority` enum と同じ3値（API でもこの文字列を用いる） */
+export type TaskPriority = 'LOW' | 'MEDIUM' | 'HIGH'
+
 export interface KanbanTask {
   id: string
   title: string
   description?: string
   assignee?: { name: string }
+  /** 永続化タスクは主に YYYY-MM-DD 相当の文字列 */
   dueDate?: string
+  /** 永続化タスク。候補からの仮タスク等では省略可 */
+  priority?: TaskPriority
   aiOrigin?: SourceType // if task was originally a candidate
 }
 
@@ -262,6 +268,10 @@ export interface KanbanTaskApiRecord {
   id: string
   title: string
   description: string | null
+  /** YYYY-MM-DD または null */
+  dueDate: string | null
+  /** Prisma `TaskPriority` または null */
+  priority: TaskPriority | null
   columnId: string
   /** 列マスタの key（ボード上のバケットは key 基準） */
   columnKey: string
@@ -271,9 +281,13 @@ export interface KanbanTaskApiRecord {
   assignee: { name: string | null } | null
 }
 
-/** PATCH /api/kanban-tasks/[taskId] — column / columnKey は列 key、columnId は列マスタ id */
+/** PATCH /api/kanban-tasks/[taskId] — 列移動は column* / sortOrder。本文は title / description / dueDate / priority */
 export interface KanbanTaskUpdateRequest {
   projectId: string
+  title?: string
+  description?: string | null
+  dueDate?: string | null
+  priority?: TaskPriority | null
   column?: string
   columnKey?: string
   columnId?: string
@@ -285,6 +299,8 @@ export interface KanbanTaskCreateRequest {
   projectId: string
   title: string
   description?: string | null
+  dueDate?: string | null
+  priority?: TaskPriority | null
   column?: string
   columnKey?: string
   columnId?: string

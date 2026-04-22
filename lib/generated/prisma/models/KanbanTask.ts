@@ -38,6 +38,8 @@ export type KanbanTaskMinAggregateOutputType = {
   id: string | null
   title: string | null
   description: string | null
+  dueDate: Date | null
+  priority: $Enums.TaskPriority | null
   sortOrder: number | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -50,6 +52,8 @@ export type KanbanTaskMaxAggregateOutputType = {
   id: string | null
   title: string | null
   description: string | null
+  dueDate: Date | null
+  priority: $Enums.TaskPriority | null
   sortOrder: number | null
   createdAt: Date | null
   updatedAt: Date | null
@@ -62,6 +66,8 @@ export type KanbanTaskCountAggregateOutputType = {
   id: number
   title: number
   description: number
+  dueDate: number
+  priority: number
   sortOrder: number
   createdAt: number
   updatedAt: number
@@ -84,6 +90,8 @@ export type KanbanTaskMinAggregateInputType = {
   id?: true
   title?: true
   description?: true
+  dueDate?: true
+  priority?: true
   sortOrder?: true
   createdAt?: true
   updatedAt?: true
@@ -96,6 +104,8 @@ export type KanbanTaskMaxAggregateInputType = {
   id?: true
   title?: true
   description?: true
+  dueDate?: true
+  priority?: true
   sortOrder?: true
   createdAt?: true
   updatedAt?: true
@@ -108,6 +118,8 @@ export type KanbanTaskCountAggregateInputType = {
   id?: true
   title?: true
   description?: true
+  dueDate?: true
+  priority?: true
   sortOrder?: true
   createdAt?: true
   updatedAt?: true
@@ -207,6 +219,8 @@ export type KanbanTaskGroupByOutputType = {
   id: string
   title: string
   description: string | null
+  dueDate: Date | null
+  priority: $Enums.TaskPriority | null
   sortOrder: number
   createdAt: Date
   updatedAt: Date
@@ -242,6 +256,8 @@ export type KanbanTaskWhereInput = {
   id?: Prisma.StringFilter<"KanbanTask"> | string
   title?: Prisma.StringFilter<"KanbanTask"> | string
   description?: Prisma.StringNullableFilter<"KanbanTask"> | string | null
+  dueDate?: Prisma.DateTimeNullableFilter<"KanbanTask"> | Date | string | null
+  priority?: Prisma.EnumTaskPriorityNullableFilter<"KanbanTask"> | $Enums.TaskPriority | null
   sortOrder?: Prisma.IntFilter<"KanbanTask"> | number
   createdAt?: Prisma.DateTimeFilter<"KanbanTask"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"KanbanTask"> | Date | string
@@ -257,6 +273,8 @@ export type KanbanTaskOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   title?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
+  dueDate?: Prisma.SortOrderInput | Prisma.SortOrder
+  priority?: Prisma.SortOrderInput | Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -275,6 +293,8 @@ export type KanbanTaskWhereUniqueInput = Prisma.AtLeast<{
   NOT?: Prisma.KanbanTaskWhereInput | Prisma.KanbanTaskWhereInput[]
   title?: Prisma.StringFilter<"KanbanTask"> | string
   description?: Prisma.StringNullableFilter<"KanbanTask"> | string | null
+  dueDate?: Prisma.DateTimeNullableFilter<"KanbanTask"> | Date | string | null
+  priority?: Prisma.EnumTaskPriorityNullableFilter<"KanbanTask"> | $Enums.TaskPriority | null
   sortOrder?: Prisma.IntFilter<"KanbanTask"> | number
   createdAt?: Prisma.DateTimeFilter<"KanbanTask"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"KanbanTask"> | Date | string
@@ -290,6 +310,8 @@ export type KanbanTaskOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   title?: Prisma.SortOrder
   description?: Prisma.SortOrderInput | Prisma.SortOrder
+  dueDate?: Prisma.SortOrderInput | Prisma.SortOrder
+  priority?: Prisma.SortOrderInput | Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -310,6 +332,8 @@ export type KanbanTaskScalarWhereWithAggregatesInput = {
   id?: Prisma.StringWithAggregatesFilter<"KanbanTask"> | string
   title?: Prisma.StringWithAggregatesFilter<"KanbanTask"> | string
   description?: Prisma.StringNullableWithAggregatesFilter<"KanbanTask"> | string | null
+  dueDate?: Prisma.DateTimeNullableWithAggregatesFilter<"KanbanTask"> | Date | string | null
+  priority?: Prisma.EnumTaskPriorityNullableWithAggregatesFilter<"KanbanTask"> | $Enums.TaskPriority | null
   sortOrder?: Prisma.IntWithAggregatesFilter<"KanbanTask"> | number
   createdAt?: Prisma.DateTimeWithAggregatesFilter<"KanbanTask"> | Date | string
   updatedAt?: Prisma.DateTimeWithAggregatesFilter<"KanbanTask"> | Date | string
@@ -322,6 +346,8 @@ export type KanbanTaskCreateInput = {
   id?: string
   title: string
   description?: string | null
+  dueDate?: Date | string | null
+  priority?: $Enums.TaskPriority | null
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -334,6 +360,8 @@ export type KanbanTaskUncheckedCreateInput = {
   id?: string
   title: string
   description?: string | null
+  dueDate?: Date | string | null
+  priority?: $Enums.TaskPriority | null
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -346,6 +374,8 @@ export type KanbanTaskUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  priority?: Prisma.NullableEnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -358,6 +388,8 @@ export type KanbanTaskUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  priority?: Prisma.NullableEnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -370,6 +402,8 @@ export type KanbanTaskCreateManyInput = {
   id?: string
   title: string
   description?: string | null
+  dueDate?: Date | string | null
+  priority?: $Enums.TaskPriority | null
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -382,6 +416,8 @@ export type KanbanTaskUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  priority?: Prisma.NullableEnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -391,6 +427,8 @@ export type KanbanTaskUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  priority?: Prisma.NullableEnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -413,6 +451,8 @@ export type KanbanTaskCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   title?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  dueDate?: Prisma.SortOrder
+  priority?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -429,6 +469,8 @@ export type KanbanTaskMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   title?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  dueDate?: Prisma.SortOrder
+  priority?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -441,6 +483,8 @@ export type KanbanTaskMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   title?: Prisma.SortOrder
   description?: Prisma.SortOrder
+  dueDate?: Prisma.SortOrder
+  priority?: Prisma.SortOrder
   sortOrder?: Prisma.SortOrder
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
@@ -579,10 +623,20 @@ export type KanbanTaskUncheckedUpdateManyWithoutKanbanColumnNestedInput = {
   deleteMany?: Prisma.KanbanTaskScalarWhereInput | Prisma.KanbanTaskScalarWhereInput[]
 }
 
+export type NullableDateTimeFieldUpdateOperationsInput = {
+  set?: Date | string | null
+}
+
+export type NullableEnumTaskPriorityFieldUpdateOperationsInput = {
+  set?: $Enums.TaskPriority | null
+}
+
 export type KanbanTaskCreateWithoutAssigneeInput = {
   id?: string
   title: string
   description?: string | null
+  dueDate?: Date | string | null
+  priority?: $Enums.TaskPriority | null
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -594,6 +648,8 @@ export type KanbanTaskUncheckedCreateWithoutAssigneeInput = {
   id?: string
   title: string
   description?: string | null
+  dueDate?: Date | string | null
+  priority?: $Enums.TaskPriority | null
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -634,6 +690,8 @@ export type KanbanTaskScalarWhereInput = {
   id?: Prisma.StringFilter<"KanbanTask"> | string
   title?: Prisma.StringFilter<"KanbanTask"> | string
   description?: Prisma.StringNullableFilter<"KanbanTask"> | string | null
+  dueDate?: Prisma.DateTimeNullableFilter<"KanbanTask"> | Date | string | null
+  priority?: Prisma.EnumTaskPriorityNullableFilter<"KanbanTask"> | $Enums.TaskPriority | null
   sortOrder?: Prisma.IntFilter<"KanbanTask"> | number
   createdAt?: Prisma.DateTimeFilter<"KanbanTask"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"KanbanTask"> | Date | string
@@ -646,6 +704,8 @@ export type KanbanTaskCreateWithoutProjectInput = {
   id?: string
   title: string
   description?: string | null
+  dueDate?: Date | string | null
+  priority?: $Enums.TaskPriority | null
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -657,6 +717,8 @@ export type KanbanTaskUncheckedCreateWithoutProjectInput = {
   id?: string
   title: string
   description?: string | null
+  dueDate?: Date | string | null
+  priority?: $Enums.TaskPriority | null
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -694,6 +756,8 @@ export type KanbanTaskCreateWithoutKanbanColumnInput = {
   id?: string
   title: string
   description?: string | null
+  dueDate?: Date | string | null
+  priority?: $Enums.TaskPriority | null
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -705,6 +769,8 @@ export type KanbanTaskUncheckedCreateWithoutKanbanColumnInput = {
   id?: string
   title: string
   description?: string | null
+  dueDate?: Date | string | null
+  priority?: $Enums.TaskPriority | null
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -742,6 +808,8 @@ export type KanbanTaskCreateManyAssigneeInput = {
   id?: string
   title: string
   description?: string | null
+  dueDate?: Date | string | null
+  priority?: $Enums.TaskPriority | null
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -753,6 +821,8 @@ export type KanbanTaskUpdateWithoutAssigneeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  priority?: Prisma.NullableEnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -764,6 +834,8 @@ export type KanbanTaskUncheckedUpdateWithoutAssigneeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  priority?: Prisma.NullableEnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -775,6 +847,8 @@ export type KanbanTaskUncheckedUpdateManyWithoutAssigneeInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  priority?: Prisma.NullableEnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -786,6 +860,8 @@ export type KanbanTaskCreateManyProjectInput = {
   id?: string
   title: string
   description?: string | null
+  dueDate?: Date | string | null
+  priority?: $Enums.TaskPriority | null
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -797,6 +873,8 @@ export type KanbanTaskUpdateWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  priority?: Prisma.NullableEnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -808,6 +886,8 @@ export type KanbanTaskUncheckedUpdateWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  priority?: Prisma.NullableEnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -819,6 +899,8 @@ export type KanbanTaskUncheckedUpdateManyWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  priority?: Prisma.NullableEnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -830,6 +912,8 @@ export type KanbanTaskCreateManyKanbanColumnInput = {
   id?: string
   title: string
   description?: string | null
+  dueDate?: Date | string | null
+  priority?: $Enums.TaskPriority | null
   sortOrder?: number
   createdAt?: Date | string
   updatedAt?: Date | string
@@ -841,6 +925,8 @@ export type KanbanTaskUpdateWithoutKanbanColumnInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  priority?: Prisma.NullableEnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -852,6 +938,8 @@ export type KanbanTaskUncheckedUpdateWithoutKanbanColumnInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  priority?: Prisma.NullableEnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -863,6 +951,8 @@ export type KanbanTaskUncheckedUpdateManyWithoutKanbanColumnInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   title?: Prisma.StringFieldUpdateOperationsInput | string
   description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  priority?: Prisma.NullableEnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority | null
   sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
@@ -876,6 +966,8 @@ export type KanbanTaskSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   id?: boolean
   title?: boolean
   description?: boolean
+  dueDate?: boolean
+  priority?: boolean
   sortOrder?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -891,6 +983,8 @@ export type KanbanTaskSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Ex
   id?: boolean
   title?: boolean
   description?: boolean
+  dueDate?: boolean
+  priority?: boolean
   sortOrder?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -906,6 +1000,8 @@ export type KanbanTaskSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Ex
   id?: boolean
   title?: boolean
   description?: boolean
+  dueDate?: boolean
+  priority?: boolean
   sortOrder?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -921,6 +1017,8 @@ export type KanbanTaskSelectScalar = {
   id?: boolean
   title?: boolean
   description?: boolean
+  dueDate?: boolean
+  priority?: boolean
   sortOrder?: boolean
   createdAt?: boolean
   updatedAt?: boolean
@@ -929,7 +1027,7 @@ export type KanbanTaskSelectScalar = {
   assigneeId?: boolean
 }
 
-export type KanbanTaskOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "description" | "sortOrder" | "createdAt" | "updatedAt" | "projectId" | "columnId" | "assigneeId", ExtArgs["result"]["kanbanTask"]>
+export type KanbanTaskOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "title" | "description" | "dueDate" | "priority" | "sortOrder" | "createdAt" | "updatedAt" | "projectId" | "columnId" | "assigneeId", ExtArgs["result"]["kanbanTask"]>
 export type KanbanTaskInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   kanbanColumn?: boolean | Prisma.ProjectKanbanColumnDefaultArgs<ExtArgs>
@@ -957,6 +1055,14 @@ export type $KanbanTaskPayload<ExtArgs extends runtime.Types.Extensions.Internal
     id: string
     title: string
     description: string | null
+    /**
+     * 日付単位。時刻は未使用想定（UTC 00:00 で格納）
+     */
+    dueDate: Date | null
+    /**
+     * 未設定可。既存行は null のまま
+     */
+    priority: $Enums.TaskPriority | null
     sortOrder: number
     createdAt: Date
     updatedAt: Date
@@ -1392,6 +1498,8 @@ export interface KanbanTaskFieldRefs {
   readonly id: Prisma.FieldRef<"KanbanTask", 'String'>
   readonly title: Prisma.FieldRef<"KanbanTask", 'String'>
   readonly description: Prisma.FieldRef<"KanbanTask", 'String'>
+  readonly dueDate: Prisma.FieldRef<"KanbanTask", 'DateTime'>
+  readonly priority: Prisma.FieldRef<"KanbanTask", 'TaskPriority'>
   readonly sortOrder: Prisma.FieldRef<"KanbanTask", 'Int'>
   readonly createdAt: Prisma.FieldRef<"KanbanTask", 'DateTime'>
   readonly updatedAt: Prisma.FieldRef<"KanbanTask", 'DateTime'>

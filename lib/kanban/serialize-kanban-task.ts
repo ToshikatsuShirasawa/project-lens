@@ -1,10 +1,12 @@
-import type { KanbanTaskApiRecord } from '@/lib/types'
+import type { KanbanTaskApiRecord, TaskPriority } from '@/lib/types'
 
 /** API 応答用（GET 一覧・POST・PATCH で共通化） */
 export function serializeKanbanTask(t: {
   id: string
   title: string
   description: string | null
+  dueDate: Date | null
+  priority: TaskPriority | null
   columnId: string
   sortOrder: number
   createdAt: Date
@@ -16,6 +18,8 @@ export function serializeKanbanTask(t: {
     id: t.id,
     title: t.title,
     description: t.description,
+    dueDate: t.dueDate ? t.dueDate.toISOString().slice(0, 10) : null,
+    priority: t.priority ?? null,
     columnId: t.columnId,
     columnKey: t.kanbanColumn.key,
     sortOrder: t.sortOrder,

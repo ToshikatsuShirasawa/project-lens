@@ -19,6 +19,8 @@ export function buildBoardFromApiTasks(
       title: t.title,
       description: t.description ?? undefined,
       assignee: t.assignee?.name ? { name: t.assignee.name } : undefined,
+      dueDate: t.dueDate ?? undefined,
+      priority: t.priority ?? undefined,
     }
     board[key]?.push(card)
   }

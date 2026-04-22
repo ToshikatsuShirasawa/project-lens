@@ -18,6 +18,13 @@ enum ProjectMemberRole {
   MEMBER
 }
 
+/// タスクの優先度（シンプルな3段階）
+enum TaskPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
 model User {
   id        String   @id @default(cuid())
   email     String   @unique
@@ -90,6 +97,10 @@ model KanbanTask {
   id          String   @id @default(cuid())
   title       String
   description String?
+  /// 日付単位。時刻は未使用想定（UTC 00:00 で格納）
+  dueDate     DateTime?
+  /// 未設定可。既存行は null のまま
+  priority    TaskPriority?
   sortOrder   Int      @default(0)
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
@@ -104,5 +115,6 @@ model KanbanTask {
   assignee   User?   @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
 
   @@index([projectId, columnId, sortOrder])
+  @@index([projectId, dueDate])
   @@map("kanban_tasks")
 }

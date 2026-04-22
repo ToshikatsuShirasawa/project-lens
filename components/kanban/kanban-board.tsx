@@ -21,6 +21,7 @@ import {
   DialogFooter,
 } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
+import { Label } from '@/components/ui/label'
 import { Filter, User, Sparkles } from 'lucide-react'
 import { mockKanbanCandidates } from '@/lib/mock/kanban'
 import {
@@ -33,7 +34,28 @@ import {
   KANBAN_COLUMNS_UPDATED_EVENT,
   type KanbanColumnsUpdatedDetail,
 } from '@/lib/project-events'
-import type { KanbanTask, KanbanTaskApiRecord, ProjectKanbanColumnApi, TaskCandidate } from '@/lib/types'
+import type {
+  KanbanTask,
+  KanbanTaskApiRecord,
+  ProjectKanbanColumnApi,
+  TaskCandidate,
+  TaskPriority,
+} from '@/lib/types'
+
+type TaskFormPriority = 'none' | TaskPriority
+
+function toDateInputValue(s: string | undefined): string {
+  if (!s) return ''
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10)
+  return ''
+}
+
+const emptyTaskForm = () => ({
+  title: '',
+  description: '',
+  dueDate: '',
+  priority: 'none' as TaskFormPriority,
+})
 
 interface KanbanBoardProps {
   projectId: string
@@ -137,7 +159,9 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<KanbanTask | null>(null)
   const [newCardColumn, setNewCardColumn] = useState<string | null>(null)
-  const [form, setForm] = useState({ title: '', description: '' })
+  const [form, setForm] = useState(emptyTaskForm)
+  const [editSaving, setEditSaving] = useState(false)
+  const [editError, setEditError] = useState<string | null>(null)
 
   const handleDragStart = (taskId: string, columnKey: string) => {
     setDraggedCard({ taskId, sourceColumn: columnKey })
@@ -188,42 +212,41 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
     setCreateError(null)
     setNewCardColumn(columnKey)
     setEditingTask(null)
-    setForm({ title: '', description: '' })
+    setForm(emptyTaskForm())
     setIsDialogOpen(true)
   }
 
   const handleEditCard = (task: KanbanTask) => {
     setCreateError(null)
+    setEditError(null)
     setEditingTask(task)
-    setForm({ title: task.title, description: task.description || '' })
+    setForm({
+      title: task.title,
+      description: task.description || '',
+      dueDate: toDateInputValue(task.dueDate),
+      priority: task.priority ?? 'none',
+    })
     setNewCardColumn(null)
     setIsDialogOpen(true)
   }
 
   const handleSave = async () => {
     if (editingTask) {
-      const updated = { ...cards }
-      for (const col of Object.keys(updated)) {
-        updated[col] = updated[col].map((t) =>
-          t.id === editingTask.id ? { ...t, title: form.title, description: form.description } : t
-        )
-      }
-      setCards(updated)
-      setIsDialogOpen(false)
-      return
-    }
-    if (newCardColumn) {
-      setCreateError(null)
-      setAddSaving(true)
+      const titleTrim = form.title.trim()
+      if (!titleTrim || editSaving) return
+
+      setEditError(null)
+      setEditSaving(true)
       try {
-        const res = await fetch('/api/kanban-tasks', {
-          method: 'POST',
+        const res = await fetch(`/api/kanban-tasks/${encodeURIComponent(editingTask.id)}`, {
+          method: 'PATCH',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({
             projectId,
-            title: form.title.trim(),
-            description: form.description.trim() || undefined,
-            columnKey: newCardColumn,
+            title: titleTrim,
+            description: form.description.trim() || null,
+            dueDate: form.dueDate.trim() ? form.dueDate.trim() : null,
+            priority: form.priority === 'none' ? null : form.priority,
           }),
         })
         const body: unknown = await res.json().catch(() => null)
@@ -238,8 +261,48 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
           throw new Error(msg)
         }
         setIsDialogOpen(false)
+        setEditingTask(null)
+        setForm(emptyTaskForm())
+        await loadTasks({ silent: true })
+      } catch (e) {
+        setEditError(e instanceof Error ? e.message : '保存に失敗しました')
+      } finally {
+        setEditSaving(false)
+      }
+      return
+    }
+    if (newCardColumn) {
+      setCreateError(null)
+      setAddSaving(true)
+      try {
+        const createBody: Record<string, unknown> = {
+          projectId,
+          title: form.title.trim(),
+          columnKey: newCardColumn,
+        }
+        const desc = form.description.trim()
+        if (desc) createBody.description = desc
+        if (form.dueDate.trim()) createBody.dueDate = form.dueDate.trim()
+        if (form.priority !== 'none') createBody.priority = form.priority
+        const res = await fetch('/api/kanban-tasks', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(createBody),
+        })
+        const body: unknown = await res.json().catch(() => null)
+        if (!res.ok) {
+          const msg =
+            body &&
+            typeof body === 'object' &&
+            'message' in body &&
+            typeof (body as { message: unknown }).message === 'string'
+              ? (body as { message: string }).message
+              : `HTTP ${res.status}`
+          throw new Error(msg)
+        }
+        setIsDialogOpen(false)
         setNewCardColumn(null)
-        setForm({ title: '', description: '' })
+        setForm(emptyTaskForm())
         await loadTasks({ silent: true })
       } catch (e) {
         setCreateError(e instanceof Error ? e.message : '保存に失敗しました')
@@ -342,30 +405,68 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
         open={isDialogOpen}
         onOpenChange={(open) => {
           setIsDialogOpen(open)
-          if (!open) setCreateError(null)
+          if (!open) {
+            setCreateError(null)
+            setEditError(null)
+          }
         }}
       >
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>{editingTask ? 'カードを編集' : '新しいカードを追加'}</DialogTitle>
+            <DialogTitle>{editingTask ? 'タスクの詳細' : '新しいカードを追加'}</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">タイトル</label>
+              <Label htmlFor="kanban-dialog-title">タイトル</Label>
               <Input
+                id="kanban-dialog-title"
                 value={form.title}
                 onChange={(e) => setForm({ ...form, title: e.target.value })}
                 placeholder="タスクのタイトル"
+                disabled={addSaving || editSaving}
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">説明</label>
+              <Label htmlFor="kanban-dialog-desc">説明</Label>
               <Textarea
+                id="kanban-dialog-desc"
                 value={form.description}
                 onChange={(e) => setForm({ ...form, description: e.target.value })}
                 placeholder="タスクの詳細説明"
                 rows={3}
+                disabled={addSaving || editSaving}
               />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="kanban-dialog-due">期限</Label>
+              <Input
+                id="kanban-dialog-due"
+                type="date"
+                value={form.dueDate}
+                onChange={(e) => setForm({ ...form, dueDate: e.target.value })}
+                disabled={addSaving || editSaving}
+                className="w-full max-w-[12rem]"
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="kanban-dialog-priority">優先度</Label>
+              <Select
+                value={form.priority}
+                onValueChange={(v) =>
+                  setForm({ ...form, priority: v as TaskFormPriority })
+                }
+                disabled={addSaving || editSaving}
+              >
+                <SelectTrigger id="kanban-dialog-priority" className="w-full max-w-[12rem]">
+                  <SelectValue placeholder="未設定" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">未設定</SelectItem>
+                  <SelectItem value="LOW">低</SelectItem>
+                  <SelectItem value="MEDIUM">中</SelectItem>
+                  <SelectItem value="HIGH">高</SelectItem>
+                </SelectContent>
+              </Select>
             </div>
           </div>
           {createError && !editingTask && (
@@ -373,12 +474,24 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
               {createError}
             </p>
           )}
+          {editingTask && editError && (
+            <p className="text-sm text-destructive" role="alert">
+              {editError}
+            </p>
+          )}
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsDialogOpen(false)} disabled={addSaving}>
+            <Button
+              variant="outline"
+              onClick={() => setIsDialogOpen(false)}
+              disabled={addSaving || editSaving}
+            >
               キャンセル
             </Button>
-            <Button onClick={() => void handleSave()} disabled={!form.title.trim() || addSaving}>
-              {editingTask ? '保存' : addSaving ? '追加中…' : '追加'}
+            <Button
+              onClick={() => void handleSave()}
+              disabled={!form.title.trim() || addSaving || editSaving}
+            >
+              {editingTask ? (editSaving ? '保存中…' : '保存') : addSaving ? '追加中…' : '追加'}
             </Button>
           </DialogFooter>
         </DialogContent>

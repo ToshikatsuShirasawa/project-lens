@@ -4,7 +4,13 @@ import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { Calendar, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { KanbanTask } from '@/lib/types'
+import type { KanbanTask, TaskPriority } from '@/lib/types'
+
+const priorityLabel: Record<TaskPriority, string> = {
+  LOW: '低',
+  MEDIUM: '中',
+  HIGH: '高',
+}
 
 interface KanbanCardProps {
   task: KanbanTask
@@ -37,18 +43,31 @@ export function KanbanCard({ task, onEdit, onDragStart, columnId }: KanbanCardPr
         </p>
       )}
       <div className="flex items-center justify-between gap-2">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+          {task.priority ? (
+            <Badge
+              variant="secondary"
+              className={cn(
+                'h-4 px-1.5 text-[9px] font-medium border-0 shrink-0',
+                task.priority === 'HIGH' && 'bg-destructive/10 text-destructive',
+                task.priority === 'MEDIUM' && 'bg-amber-500/10 text-amber-800 dark:text-amber-200',
+                task.priority === 'LOW' && 'text-muted-foreground'
+              )}
+            >
+              {priorityLabel[task.priority]}
+            </Badge>
+          ) : null}
           {task.assignee && (
-            <Avatar className="h-5 w-5">
+            <Avatar className="h-5 w-5 shrink-0">
               <AvatarFallback className="text-[9px] bg-secondary">
                 {task.assignee.name.slice(0, 2)}
               </AvatarFallback>
             </Avatar>
           )}
           {task.dueDate && (
-            <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground">
-              <Calendar className="h-3 w-3" />
-              {task.dueDate}
+            <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground truncate">
+              <Calendar className="h-3 w-3 shrink-0" />
+              {task.dueDate.length >= 10 ? task.dueDate.slice(0, 10) : task.dueDate}
             </span>
           )}
         </div>

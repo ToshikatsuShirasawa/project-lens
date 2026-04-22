@@ -870,6 +870,8 @@ export const KanbanTaskScalarFieldEnum = {
   id: 'id',
   title: 'title',
   description: 'description',
+  dueDate: 'dueDate',
+  priority: 'priority',
   sortOrder: 'sortOrder',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt',
@@ -971,6 +973,20 @@ export type EnumProjectMemberRoleFieldRefInput<$PrismaModel> = FieldRefInputType
  * Reference to a field of type 'ProjectMemberRole[]'
  */
 export type ListEnumProjectMemberRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProjectMemberRole[]'>
+    
+
+
+/**
+ * Reference to a field of type 'TaskPriority'
+ */
+export type EnumTaskPriorityFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TaskPriority'>
+    
+
+
+/**
+ * Reference to a field of type 'TaskPriority[]'
+ */
+export type ListEnumTaskPriorityFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TaskPriority[]'>
     
 
 

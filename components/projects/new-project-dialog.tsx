@@ -21,7 +21,9 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { Textarea } from '@/components/ui/textarea'
+import { Loader2 } from 'lucide-react'
 import { DEFAULT_KANBAN_TEMPLATE_KEY } from '@/lib/kanban/kanban-column-templates'
+import { toastError, toastSuccess } from '@/lib/operation-toast'
 import type {
   NewProjectFormState,
   ProjectApiRecord,
@@ -145,10 +147,14 @@ export function NewProjectDialog({ open, onOpenChange }: NewProjectDialogProps) 
       if (!created?.id) {
         throw new Error('レスポンスが不正です')
       }
+      toastSuccess('プロジェクトを作成しました')
       onOpenChange(false)
       router.push(`/projects/${created.id}/kanban`)
     } catch (err) {
-      setError(err instanceof Error ? err.message : '作成に失敗しました')
+      const msg = err instanceof Error ? err.message : '作成に失敗しました'
+      console.error('[projects] create', err)
+      setError(msg)
+      toastError(msg)
     } finally {
       setSubmitting(false)
     }
@@ -293,7 +299,14 @@ export function NewProjectDialog({ open, onOpenChange }: NewProjectDialogProps) 
               キャンセル
             </Button>
             <Button type="submit" disabled={!form.name.trim() || submitting}>
-              {submitting ? '作成中…' : '作成してカンバンへ'}
+              {submitting ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
+                  作成中…
+                </>
+              ) : (
+                '作成してカンバンへ'
+              )}
             </Button>
           </DialogFooter>
         </form>

@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import { AppProviders } from '@/components/app-providers'
 
 export const metadata: Metadata = {
   title: 'ProjectLens - AIプロジェクト可視化ツール',
@@ -19,7 +20,7 @@ export default function RootLayout({
   return (
     <html lang="ja">
       <body className="font-sans antialiased">
-        {children}
+        <AppProviders>{children}</AppProviders>
       </body>
     </html>
   )

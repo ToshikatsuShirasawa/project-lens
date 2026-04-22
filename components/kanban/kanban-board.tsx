@@ -22,7 +22,8 @@ import {
 } from '@/components/ui/dialog'
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
-import { Filter, User, Sparkles } from 'lucide-react'
+import { Filter, Loader2, User, Sparkles } from 'lucide-react'
+import { toastError, toastSuccess } from '@/lib/operation-toast'
 import { mockKanbanCandidates } from '@/lib/mock/kanban'
 import {
   DEFAULT_KANBAN_TEMPLATE_KEY,
@@ -245,14 +246,25 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ projectId, columnKey: targetColumnKey }),
       })
+      const body: unknown = await res.json().catch(() => null)
       if (!res.ok) {
-        console.error('[kanban] PATCH failed', res.status, await res.text().catch(() => ''))
+        const msg =
+          body &&
+          typeof body === 'object' &&
+          'message' in body &&
+          typeof (body as { message: unknown }).message === 'string'
+            ? (body as { message: string }).message
+            : `HTTP ${res.status}`
+        console.error('[kanban] PATCH failed', res.status, msg)
+        toastError(msg)
         await loadTasks({ silent: true })
         return
       }
+      toastSuccess('タスクを移動しました')
       await loadTasks({ silent: true })
     } catch (e) {
       console.error('[kanban] PATCH', e)
+      toastError(e instanceof Error ? e.message : undefined)
       await loadTasks({ silent: true })
     }
   }
@@ -314,9 +326,13 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
         setIsDialogOpen(false)
         setEditingTask(null)
         setForm(emptyTaskForm())
+        toastSuccess('保存しました')
         await loadTasks({ silent: true })
       } catch (e) {
-        setEditError(e instanceof Error ? e.message : '保存に失敗しました')
+        const msg = e instanceof Error ? e.message : '保存に失敗しました'
+        console.error('[kanban] task save', e)
+        setEditError(msg)
+        toastError(msg)
       } finally {
         setEditSaving(false)
       }
@@ -355,9 +371,13 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
         setIsDialogOpen(false)
         setNewCardColumn(null)
         setForm(emptyTaskForm())
+        toastSuccess('タスクを追加しました')
         await loadTasks({ silent: true })
       } catch (e) {
-        setCreateError(e instanceof Error ? e.message : '保存に失敗しました')
+        const msg = e instanceof Error ? e.message : '保存に失敗しました'
+        console.error('[kanban] task create', e)
+        setCreateError(msg)
+        toastError(msg)
       } finally {
         setAddSaving(false)
       }
@@ -577,7 +597,16 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
               onClick={() => void handleSave()}
               disabled={!form.title.trim() || addSaving || editSaving}
             >
-              {editingTask ? (editSaving ? '保存中…' : '保存') : addSaving ? '追加中…' : '追加'}
+              {editSaving || addSaving ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden />
+                  {editingTask ? '保存中…' : '追加中…'}
+                </>
+              ) : editingTask ? (
+                '保存'
+              ) : (
+                '追加'
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

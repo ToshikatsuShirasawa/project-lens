@@ -15,6 +15,7 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog'
 import { dispatchKanbanColumnsUpdated } from '@/lib/project-events'
+import { toastError, toastSuccess } from '@/lib/operation-toast'
 import type {
   ProjectKanbanColumnApi,
   ProjectKanbanColumnDeleteResponse,
@@ -122,7 +123,10 @@ export function KanbanColumnsSettings({ projectId }: KanbanColumnsSettingsProps)
       setReorderError(null)
       setReorderOk(false)
     } catch (e) {
-      setLoadError(e instanceof Error ? e.message : '読み込みに失敗しました')
+      const msg = e instanceof Error ? e.message : '読み込みに失敗しました'
+      console.error('[kanban-columns] load', e)
+      setLoadError(msg)
+      toastError(msg)
     } finally {
       setLoading(false)
     }
@@ -205,8 +209,12 @@ export function KanbanColumnsSettings({ projectId }: KanbanColumnsSettingsProps)
       dispatchKanbanColumnsUpdated(projectId)
       setReorderOk(true)
       setTimeout(() => setReorderOk(false), 2500)
+      toastSuccess('並び順を保存しました')
     } catch (e) {
-      setReorderError(e instanceof Error ? e.message : '並び順の保存に失敗しました')
+      const msg = e instanceof Error ? e.message : '並び順の保存に失敗しました'
+      console.error('[kanban-columns] reorder', e)
+      setReorderError(msg)
+      toastError(msg)
     } finally {
       setReordering(false)
     }
@@ -249,11 +257,15 @@ export function KanbanColumnsSettings({ projectId }: KanbanColumnsSettingsProps)
       setTimeout(() => {
         setRowOk((prev) => ({ ...prev, [columnId]: false }))
       }, 2000)
+      toastSuccess('列名を保存しました')
     } catch (e) {
+      const msg = e instanceof Error ? e.message : '保存に失敗しました'
+      console.error('[kanban-columns] rename', e)
       setRowErrors((prev) => ({
         ...prev,
-        [columnId]: e instanceof Error ? e.message : '保存に失敗しました',
+        [columnId]: msg,
       }))
+      toastError(msg)
     } finally {
       setSavingId(null)
     }
@@ -296,11 +308,15 @@ export function KanbanColumnsSettings({ projectId }: KanbanColumnsSettingsProps)
       setBaselineOrder(orderSignature(normalized.slice(0, nActive)))
       setNames((prev) => ({ ...prev, [updated.id]: updated.name }))
       dispatchKanbanColumnsUpdated(projectId)
+      toastSuccess(nextArchived ? '列を無効化しました' : '列を有効にしました')
     } catch (e) {
+      const msg = e instanceof Error ? e.message : '更新に失敗しました'
+      console.error('[kanban-columns] toggle archive', e)
       setRowErrors((prev) => ({
         ...prev,
-        [columnId]: e instanceof Error ? e.message : '更新に失敗しました',
+        [columnId]: msg,
       }))
+      toastError(msg)
     } finally {
       setTogglingArchiveId(null)
     }
@@ -356,11 +372,15 @@ export function KanbanColumnsSettings({ projectId }: KanbanColumnsSettingsProps)
       closeDeleteColumnDialog()
       await load()
       dispatchKanbanColumnsUpdated(projectId)
+      toastSuccess('列を削除しました')
     } catch (e) {
+      const msg = e instanceof Error ? e.message : '削除に失敗しました'
+      console.error('[kanban-columns] delete', e)
       setRowErrors((prev) => ({
         ...prev,
-        [deleteTargetColumnId]: e instanceof Error ? e.message : '削除に失敗しました',
+        [deleteTargetColumnId]: msg,
       }))
+      toastError(msg)
     } finally {
       setDeleteSubmitting(false)
     }
@@ -393,11 +413,15 @@ export function KanbanColumnsSettings({ projectId }: KanbanColumnsSettingsProps)
       closeMoveArchiveDialog()
       await load()
       dispatchKanbanColumnsUpdated(projectId)
+      toastSuccess('タスクを移動して列を無効化しました')
     } catch (e) {
+      const msg = e instanceof Error ? e.message : '移動と無効化に失敗しました'
+      console.error('[kanban-columns] archive-with-move', e)
       setRowErrors((prev) => ({
         ...prev,
-        [moveArchiveSourceId]: e instanceof Error ? e.message : '移動と無効化に失敗しました',
+        [moveArchiveSourceId]: msg,
       }))
+      toastError(msg)
     } finally {
       setMoveArchiveSubmitting(false)
     }

@@ -12,7 +12,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Trash2, UserPlus } from 'lucide-react'
+import { Loader2, Trash2, UserPlus } from 'lucide-react'
+import { toastError, toastSuccess } from '@/lib/operation-toast'
 import { cn } from '@/lib/utils'
 import type {
   ProjectMemberApiRecord,
@@ -141,9 +142,13 @@ export function MemberSettingsPanel({ projectId }: MemberSettingsPanelProps) {
       }
       setAddUserId('')
       setAddRole('MEMBER')
+      toastSuccess('メンバーを追加しました')
       await loadAll()
     } catch (e) {
-      setActionError(e instanceof Error ? e.message : '追加に失敗しました')
+      const msg = e instanceof Error ? e.message : '追加に失敗しました'
+      console.error('[members] add', e)
+      setActionError(msg)
+      toastError(msg)
     } finally {
       setAdding(false)
     }
@@ -177,9 +182,13 @@ export function MemberSettingsPanel({ projectId }: MemberSettingsPanelProps) {
             : `HTTP ${res.status}`
         throw new Error(msg)
       }
+      toastSuccess('ロールを更新しました')
       await loadAll()
     } catch (e) {
-      setActionError(e instanceof Error ? e.message : 'ロールの更新に失敗しました')
+      const msg = e instanceof Error ? e.message : 'ロールの更新に失敗しました'
+      console.error('[members] role', e)
+      setActionError(msg)
+      toastError(msg)
     } finally {
       setRoleSavingId(null)
     }
@@ -205,9 +214,13 @@ export function MemberSettingsPanel({ projectId }: MemberSettingsPanelProps) {
             : `HTTP ${res.status}`
         throw new Error(msg)
       }
+      toastSuccess('メンバーを削除しました')
       await loadAll()
     } catch (e) {
-      setActionError(e instanceof Error ? e.message : '削除に失敗しました')
+      const msg = e instanceof Error ? e.message : '削除に失敗しました'
+      console.error('[members] delete', e)
+      setActionError(msg)
+      toastError(msg)
     } finally {
       setDeleteSavingId(null)
     }
@@ -341,7 +354,7 @@ export function MemberSettingsPanel({ projectId }: MemberSettingsPanelProps) {
                       onClick={() => void handleDelete(member.id)}
                     >
                       {deleteSavingId === member.id ? (
-                        <span className="text-[10px]">…</span>
+                        <Loader2 className="h-4 w-4 animate-spin" aria-label="削除中" />
                       ) : (
                         <Trash2 className="h-4 w-4" />
                       )}

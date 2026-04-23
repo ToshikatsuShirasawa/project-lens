@@ -38,17 +38,21 @@ interface AppSidebarProps {
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = 'projectlens:sidebar-collapsed'
 
-const getNavigation = (projectId: string) => [
-  { name: 'ダッシュボード', href: `/projects/${projectId}/dashboard`, icon: LayoutDashboard },
-  { name: 'カンバン', href: `/projects/${projectId}/kanban`, icon: Kanban },
-  { name: '作業報告', href: `/projects/${projectId}/reports`, icon: FileText },
-  { name: 'ミーティング', href: `/projects/${projectId}/meetings`, icon: Calendar },
-  { name: '設定', href: `/projects/${projectId}/settings`, icon: Settings },
-]
+const getNavigation = (projectId: string, organizationId: string | null) => {
+  const base = organizationId
+    ? `/o/${encodeURIComponent(organizationId)}/projects/${projectId}`
+    : `/projects/${projectId}`
+  return [
+    { name: 'ダッシュボード', href: `${base}/dashboard`, segment: 'dashboard', icon: LayoutDashboard },
+    { name: 'カンバン', href: `${base}/kanban`, segment: 'kanban', icon: Kanban },
+    { name: '作業報告', href: `${base}/reports`, segment: 'reports', icon: FileText },
+    { name: 'ミーティング', href: `${base}/meetings`, segment: 'meetings', icon: Calendar },
+    { name: '設定', href: `${base}/settings`, segment: 'settings', icon: Settings },
+  ]
+}
 
 export function AppSidebar({ projectId }: AppSidebarProps) {
   const pathname = usePathname()
-  const navigation = getNavigation(projectId)
 
   const [quickProjects, setQuickProjects] = useState<ProjectApiRecord[] | null>(null)
   const [quickListError, setQuickListError] = useState(false)
@@ -113,6 +117,9 @@ export function AppSidebar({ projectId }: AppSidebarProps) {
   const currentOrganizationId = currentMeta?.organizationId ?? null
   const workspaceProjects = quickProjects?.filter((project) => project.organizationId === currentOrganizationId) ?? []
   const triggerTitle = currentMeta?.name ?? (quickProjects === null ? '読み込み中…' : 'プロジェクト')
+  const navigation = getNavigation(projectId, currentOrganizationId)
+
+  const activeLastSegment = pathname.split('/').at(-1) ?? ''
 
   return (
     <aside
@@ -167,29 +174,7 @@ export function AppSidebar({ projectId }: AppSidebarProps) {
         </div>
       ) : null}
 
-      {!collapsed ? (
-        <div className="border-b border-border/80 px-3 py-2.5">
-          <div className="space-y-1">
-            <Link
-              href={currentOrganizationId ? `/o/${encodeURIComponent(currentOrganizationId)}/projects` : '/projects'}
-              className="flex items-center gap-2.5 rounded-md border border-transparent px-2.5 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
-            >
-              <List className="h-4 w-4 shrink-0" aria-hidden />
-              <span>プロジェクト一覧</span>
-            </Link>
-            <button
-              type="button"
-              onClick={() => setNewProjectOpen(true)}
-              className="flex w-full items-center gap-2.5 rounded-md border border-transparent px-2.5 py-2 text-left text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
-            >
-              <Plus className="h-4 w-4 shrink-0" aria-hidden />
-              <span>新規プロジェクト</span>
-            </button>
-          </div>
-        </div>
-      ) : null}
-
-      {/* Project: workspace より一段軽いトーン（セレクタ）— 幅・最低高さはワークスペースと揃える */}
+      {/* Project: workspace より一段軽いトーン（セレクタ）*/}
       <div className={cn('min-w-0 border-b border-border/80', collapsed ? 'px-2 py-2' : 'px-3 py-2.5')}>
         {!collapsed ? (
           <p className="mb-1.5 px-1 text-[10px] font-semibold tracking-wider text-muted-foreground">プロジェクト</p>
@@ -247,6 +232,9 @@ export function AppSidebar({ projectId }: AppSidebarProps) {
               <div className="max-h-60 overflow-y-auto">
                 {workspaceProjects.map((project) => {
                   const isCurrent = project.id === projectId
+                  const projectHref = currentOrganizationId
+                    ? `/o/${encodeURIComponent(currentOrganizationId)}/projects/${project.id}/dashboard`
+                    : `/projects/${project.id}/dashboard`
                   return (
                     <DropdownMenuItem
                       key={project.id}
@@ -254,7 +242,7 @@ export function AppSidebar({ projectId }: AppSidebarProps) {
                       className={cn('p-0', isCurrent && 'bg-primary/15 focus:bg-primary/20')}
                     >
                       <Link
-                        href={`/projects/${project.id}/dashboard`}
+                        href={projectHref}
                         className="flex w-full items-center gap-2 px-2 py-2.5"
                       >
                         {isCurrent ? (
@@ -276,6 +264,23 @@ export function AppSidebar({ projectId }: AppSidebarProps) {
                 })}
               </div>
             )}
+            <DropdownMenuSeparator />
+            <DropdownMenuItem asChild>
+              <Link
+                href={currentOrganizationId ? `/o/${encodeURIComponent(currentOrganizationId)}/projects` : '/projects'}
+                className="flex w-full items-center gap-2 px-2 py-2"
+              >
+                <List className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
+                <span className="text-sm text-foreground/90">プロジェクト一覧</span>
+              </Link>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onSelect={() => setNewProjectOpen(true)}
+              className="flex items-center gap-2 px-2 py-2 cursor-pointer"
+            >
+              <Plus className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
+              <span className="text-sm text-foreground/90">新規プロジェクト</span>
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
@@ -283,7 +288,7 @@ export function AppSidebar({ projectId }: AppSidebarProps) {
       <nav className={cn('flex-1 space-y-0.5', collapsed ? 'px-2 py-2' : 'px-3 py-2.5')} aria-label="プロジェクト内メニュー">
         {!collapsed ? <p className="px-1 mb-1.5 text-[10px] font-semibold tracking-wider text-muted-foreground">メニュー</p> : null}
         {navigation.map((item) => {
-          const isActive = pathname === item.href || pathname.startsWith(item.href)
+          const isActive = activeLastSegment === item.segment && pathname.includes(`/${projectId}/`)
           return (
             <Link
               key={item.href}

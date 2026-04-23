@@ -253,7 +253,7 @@ function OrgHomeContent() {
                         </CardDescription>
                       </div>
                       <Button asChild size="sm" className="shrink-0 gap-1">
-                        <Link href={`/projects/${recentProject.id}/kanban`}>
+                        <Link href={`/o/${encodeURIComponent(orgId)}/projects/${recentProject.id}/kanban`}>
                           <Kanban className="h-3.5 w-3.5" />
                           カンバンを開く
                         </Link>
@@ -291,12 +291,12 @@ function OrgHomeContent() {
                         tabIndex={0}
                         aria-label={`「${p.name}」のカンバンを開く`}
                         onClick={() => {
-                          router.push(`/projects/${p.id}/kanban`)
+                          router.push(`/o/${encodeURIComponent(orgId)}/projects/${p.id}/kanban`)
                         }}
                         onKeyDown={(event) => {
                           if (event.key === 'Enter' || event.key === ' ') {
                             event.preventDefault()
-                            router.push(`/projects/${p.id}/kanban`)
+                            router.push(`/o/${encodeURIComponent(orgId)}/projects/${p.id}/kanban`)
                           }
                         }}
                       >
@@ -308,19 +308,19 @@ function OrgHomeContent() {
                             </div>
                             <div className="flex flex-wrap gap-2 pt-1" onClick={(event) => event.stopPropagation()}>
                               <Button asChild variant="outline" size="sm" className="h-8 gap-1">
-                                <Link href={`/projects/${p.id}/dashboard`}>
+                                <Link href={`/o/${encodeURIComponent(orgId)}/projects/${p.id}/dashboard`}>
                                   <LayoutDashboard className="h-3.5 w-3.5" />
                                   ダッシュボード
                                 </Link>
                               </Button>
                               <Button asChild size="sm" className="h-8 gap-1">
-                                <Link href={`/projects/${p.id}/kanban`}>
+                                <Link href={`/o/${encodeURIComponent(orgId)}/projects/${p.id}/kanban`}>
                                   <Kanban className="h-3.5 w-3.5" />
                                   カンバンを開く
                                 </Link>
                               </Button>
                               <Button asChild variant="secondary" size="sm" className="h-8 gap-1">
-                                <Link href={`/projects/${p.id}/settings`}>
+                                <Link href={`/o/${encodeURIComponent(orgId)}/projects/${p.id}/settings`}>
                                   <Settings className="h-3.5 w-3.5" />
                                   設定
                                 </Link>

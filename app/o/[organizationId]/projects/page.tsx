@@ -17,8 +17,8 @@ import type {
   ProjectListResponse,
 } from '@/lib/types'
 
-function ProjectListCard({ project: p }: { project: ProjectApiRecord }) {
-  const href = `/projects/${p.id}/kanban`
+function ProjectListCard({ project: p, organizationId }: { project: ProjectApiRecord; organizationId: string }) {
+  const href = `/o/${encodeURIComponent(organizationId)}/projects/${p.id}/kanban`
   return (
     <Link
       href={href}
@@ -198,7 +198,7 @@ function OrgProjectsInner() {
               <ul className="space-y-3 list-none p-0 m-0">
                 {projects.map((p) => (
                   <li key={p.id}>
-                    <ProjectListCard project={p} />
+                    <ProjectListCard project={p} organizationId={organizationId} />
                   </li>
                 ))}
               </ul>

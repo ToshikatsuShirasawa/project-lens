@@ -55,6 +55,7 @@ export const ModelName = {
   Organization: 'Organization',
   OrganizationMember: 'OrganizationMember',
   Project: 'Project',
+  ProjectInvitation: 'ProjectInvitation',
   ProjectKanbanColumn: 'ProjectKanbanColumn',
   ProjectMember: 'ProjectMember',
   KanbanTask: 'KanbanTask'
@@ -119,6 +120,24 @@ export const ProjectScalarFieldEnum = {
 } as const
 
 export type ProjectScalarFieldEnum = (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum]
+
+
+export const ProjectInvitationScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  role: 'role',
+  token: 'token',
+  status: 'status',
+  expiresAt: 'expiresAt',
+  acceptedAt: 'acceptedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  projectId: 'projectId',
+  organizationId: 'organizationId',
+  invitedByUserId: 'invitedByUserId'
+} as const
+
+export type ProjectInvitationScalarFieldEnum = (typeof ProjectInvitationScalarFieldEnum)[keyof typeof ProjectInvitationScalarFieldEnum]
 
 
 export const ProjectKanbanColumnScalarFieldEnum = {

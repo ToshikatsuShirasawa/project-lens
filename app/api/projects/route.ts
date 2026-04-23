@@ -88,6 +88,7 @@ export async function POST(request: Request) {
     const appUser = auth.ctx.appUser
 
     const created = await prisma.$transaction(async (tx) => {
+      // 所属があればその org へ; 未所属は ensure 内で legacy 作成（`ensure-organization-for-user` 参照）
       const org = await ensureOrganizationForCurrentUser(
         { id: appUser.id, email: appUser.email, name: appUser.name },
         tx

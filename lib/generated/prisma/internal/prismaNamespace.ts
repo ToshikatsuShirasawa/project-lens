@@ -388,6 +388,7 @@ export const ModelName = {
   Organization: 'Organization',
   OrganizationMember: 'OrganizationMember',
   Project: 'Project',
+  ProjectInvitation: 'ProjectInvitation',
   ProjectKanbanColumn: 'ProjectKanbanColumn',
   ProjectMember: 'ProjectMember',
   KanbanTask: 'KanbanTask'
@@ -406,7 +407,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "organization" | "organizationMember" | "project" | "projectKanbanColumn" | "projectMember" | "kanbanTask"
+    modelProps: "user" | "organization" | "organizationMember" | "project" | "projectInvitation" | "projectKanbanColumn" | "projectMember" | "kanbanTask"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -703,6 +704,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         count: {
           args: Prisma.ProjectCountArgs<ExtArgs>
           result: runtime.Types.Utils.Optional<Prisma.ProjectCountAggregateOutputType> | number
+        }
+      }
+    }
+    ProjectInvitation: {
+      payload: Prisma.$ProjectInvitationPayload<ExtArgs>
+      fields: Prisma.ProjectInvitationFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ProjectInvitationFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectInvitationPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ProjectInvitationFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectInvitationPayload>
+        }
+        findFirst: {
+          args: Prisma.ProjectInvitationFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectInvitationPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ProjectInvitationFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectInvitationPayload>
+        }
+        findMany: {
+          args: Prisma.ProjectInvitationFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectInvitationPayload>[]
+        }
+        create: {
+          args: Prisma.ProjectInvitationCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectInvitationPayload>
+        }
+        createMany: {
+          args: Prisma.ProjectInvitationCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ProjectInvitationCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectInvitationPayload>[]
+        }
+        delete: {
+          args: Prisma.ProjectInvitationDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectInvitationPayload>
+        }
+        update: {
+          args: Prisma.ProjectInvitationUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectInvitationPayload>
+        }
+        deleteMany: {
+          args: Prisma.ProjectInvitationDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ProjectInvitationUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ProjectInvitationUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectInvitationPayload>[]
+        }
+        upsert: {
+          args: Prisma.ProjectInvitationUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectInvitationPayload>
+        }
+        aggregate: {
+          args: Prisma.ProjectInvitationAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateProjectInvitation>
+        }
+        groupBy: {
+          args: Prisma.ProjectInvitationGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ProjectInvitationGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ProjectInvitationCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ProjectInvitationCountAggregateOutputType> | number
         }
       }
     }
@@ -1012,6 +1087,24 @@ export const ProjectScalarFieldEnum = {
 export type ProjectScalarFieldEnum = (typeof ProjectScalarFieldEnum)[keyof typeof ProjectScalarFieldEnum]
 
 
+export const ProjectInvitationScalarFieldEnum = {
+  id: 'id',
+  email: 'email',
+  role: 'role',
+  token: 'token',
+  status: 'status',
+  expiresAt: 'expiresAt',
+  acceptedAt: 'acceptedAt',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+  projectId: 'projectId',
+  organizationId: 'organizationId',
+  invitedByUserId: 'invitedByUserId'
+} as const
+
+export type ProjectInvitationScalarFieldEnum = (typeof ProjectInvitationScalarFieldEnum)[keyof typeof ProjectInvitationScalarFieldEnum]
+
+
 export const ProjectKanbanColumnScalarFieldEnum = {
   id: 'id',
   projectId: 'projectId',
@@ -1129,6 +1222,34 @@ export type ListEnumOrganizationMemberRoleFieldRefInput<$PrismaModel> = FieldRef
 
 
 /**
+ * Reference to a field of type 'ProjectMemberRole'
+ */
+export type EnumProjectMemberRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProjectMemberRole'>
+    
+
+
+/**
+ * Reference to a field of type 'ProjectMemberRole[]'
+ */
+export type ListEnumProjectMemberRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProjectMemberRole[]'>
+    
+
+
+/**
+ * Reference to a field of type 'ProjectInvitationStatus'
+ */
+export type EnumProjectInvitationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProjectInvitationStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'ProjectInvitationStatus[]'
+ */
+export type ListEnumProjectInvitationStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProjectInvitationStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'Int'
  */
 export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
@@ -1146,20 +1267,6 @@ export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel,
  * Reference to a field of type 'Boolean'
  */
 export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
-    
-
-
-/**
- * Reference to a field of type 'ProjectMemberRole'
- */
-export type EnumProjectMemberRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProjectMemberRole'>
-    
-
-
-/**
- * Reference to a field of type 'ProjectMemberRole[]'
- */
-export type ListEnumProjectMemberRoleFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProjectMemberRole[]'>
     
 
 
@@ -1289,6 +1396,7 @@ export type GlobalOmitConfig = {
   organization?: Prisma.OrganizationOmit
   organizationMember?: Prisma.OrganizationMemberOmit
   project?: Prisma.ProjectOmit
+  projectInvitation?: Prisma.ProjectInvitationOmit
   projectKanbanColumn?: Prisma.ProjectKanbanColumnOmit
   projectMember?: Prisma.ProjectMemberOmit
   kanbanTask?: Prisma.KanbanTaskOmit

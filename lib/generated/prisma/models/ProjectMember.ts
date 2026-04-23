@@ -409,10 +409,6 @@ export type ProjectMemberUncheckedUpdateManyWithoutProjectNestedInput = {
   deleteMany?: Prisma.ProjectMemberScalarWhereInput | Prisma.ProjectMemberScalarWhereInput[]
 }
 
-export type EnumProjectMemberRoleFieldUpdateOperationsInput = {
-  set?: $Enums.ProjectMemberRole
-}
-
 export type ProjectMemberCreateWithoutUserInput = {
   id?: string
   role?: $Enums.ProjectMemberRole
@@ -622,6 +618,9 @@ export type $ProjectMemberPayload<ExtArgs extends runtime.Types.Extensions.Inter
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
+    /**
+     * 上記 `ProjectMemberRole`（API の `isProjectManagerRole` は ADMIN/OWNER）
+     */
     role: $Enums.ProjectMemberRole
     createdAt: Date
     projectId: string

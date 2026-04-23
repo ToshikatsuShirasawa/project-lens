@@ -34,7 +34,12 @@ export function UserAccountBar({ variant = 'default' }: UserAccountBarProps) {
       if (body && typeof body === 'object' && 'user' in body) {
         setMe(body as MeApiResponse)
       } else {
-        setMe({ user: null })
+        setMe({
+          user: null,
+          hasOrganization: false,
+          needsOnboarding: false,
+          canCreateOrganization: false,
+        })
       }
     } catch {
       setMe(null)

@@ -3,8 +3,22 @@
  * Route Handler や middleware で共有する。
  */
 
-/** ログイン完了後の既定遷移先 */
+/** ログイン完了後の既定遷移先（**所属あり**、または従来互換） */
 export const POST_LOGIN_DEFAULT = '/projects'
+
+/**
+ * organization 未所属（`organization_members` が0件）のときの導線。
+ * `getSafeNextPath` の fallback に `POST_LOGIN_DEFAULT` の代えて使う。
+ */
+export const GETTING_STARTED_DEFAULT = '/getting-started'
+
+/**
+ * `/api/auth/me` の `needsOnboarding` に従い、登録直後の既定遷移を選ぶ（`next` 無しのとき専用）。
+ */
+export function postLoginPathFromMe(needsOnboarding: boolean | undefined): string {
+  if (needsOnboarding === true) return GETTING_STARTED_DEFAULT
+  return POST_LOGIN_DEFAULT
+}
 
 const AUTH_FLOW_PREFIX = '/auth'
 
@@ -15,6 +29,7 @@ const AUTH_FLOW_PREFIX = '/auth'
 export function isGuestAllowedPathname(pathname: string): boolean {
   if (pathname === '/login' || pathname === '/signup') return true
   if (pathname === AUTH_FLOW_PREFIX || pathname.startsWith(`${AUTH_FLOW_PREFIX}/`)) return true
+  if (pathname === '/invite' || pathname.startsWith('/invite/')) return true
   return false
 }
 

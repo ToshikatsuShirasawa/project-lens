@@ -11,8 +11,9 @@ function workspaceNameFromUser(email: string | null, name: string | null): strin
 }
 
 /**
- * ログイン中ユーザーの利用先 organization を返す。
- * 所属 organization_members がなければ 1 件新規作成し、そのユーザーを OWNER で追加（Phase 1・案A）。
+ * `POST /api/projects` 内: 紐づく organization を 1 件得る（既存メンバーシップの先頭企業を利用）。
+ * 未所属のときの **自動作成**は後方互換用（プロジェクト API 直叩き等）。**推奨導線**は
+ * `/getting-started` → `POST /api/organizations` による明示作成。将来ここを廃止しやすいよう分離。
  */
 export async function ensureOrganizationForCurrentUser(
   appUser: { id: string; email: string; name: string | null },
@@ -26,6 +27,7 @@ export async function ensureOrganizationForCurrentUser(
   if (first) {
     return first.organization
   }
+  // Legacy: 未所属で最初の project を作ったときの自動スピン（GETTING_STARTED 未経由）
   return tx.organization.create({
     data: {
       name: workspaceNameFromUser(appUser.email, appUser.name),

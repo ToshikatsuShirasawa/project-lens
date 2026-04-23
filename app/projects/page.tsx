@@ -8,7 +8,8 @@ import { Button } from '@/components/ui/button'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { UserAccountBar } from '@/components/auth/user-account-bar'
 import { NewProjectDialog } from '@/components/projects/new-project-dialog'
-import type { ProjectApiRecord, ProjectListResponse } from '@/lib/types'
+import { GETTING_STARTED_DEFAULT } from '@/lib/auth/paths'
+import type { MeApiResponse, ProjectApiRecord, ProjectListResponse } from '@/lib/types'
 
 function ProjectsListInner() {
   const router = useRouter()
@@ -16,6 +17,25 @@ function ProjectsListInner() {
   const [projects, setProjects] = useState<ProjectApiRecord[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [newProjectOpen, setNewProjectOpen] = useState(false)
+
+  useEffect(() => {
+    let cancelled = false
+    void (async () => {
+      try {
+        const res = await fetch('/api/auth/me', { cache: 'no-store' })
+        if (cancelled || !res.ok) return
+        const me = (await res.json()) as MeApiResponse
+        if (me.user?.id && me.needsOnboarding) {
+          router.replace(GETTING_STARTED_DEFAULT)
+        }
+      } catch {
+        // 一覧はそのまま試行
+      }
+    })()
+    return () => {
+      cancelled = true
+    }
+  }, [router])
 
   useEffect(() => {
     if (searchParams.get('new') === '1') {

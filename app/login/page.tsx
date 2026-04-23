@@ -5,7 +5,8 @@ import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { Loader2, Sparkles } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
-import { getSafeNextPath, POST_LOGIN_DEFAULT } from '@/lib/auth/paths'
+import { getSafeNextPath, postLoginPathFromMe, POST_LOGIN_DEFAULT } from '@/lib/auth/paths'
+import type { MeApiResponse } from '@/lib/types'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
@@ -34,7 +35,17 @@ function LoginForm() {
         return
       }
       const next = searchParams.get('next')
-      router.push(getSafeNextPath(next, POST_LOGIN_DEFAULT))
+      let fallback = POST_LOGIN_DEFAULT
+      if (next == null) {
+        const meRes = await fetch('/api/auth/me', { cache: 'no-store' })
+        if (meRes.ok) {
+          const me = (await meRes.json()) as MeApiResponse
+          if (me.user) {
+            fallback = postLoginPathFromMe(me.needsOnboarding)
+          }
+        }
+      }
+      router.push(getSafeNextPath(next, fallback))
       router.refresh()
     } catch (err) {
       setMessage(err instanceof Error ? err.message : 'ログインに失敗しました')

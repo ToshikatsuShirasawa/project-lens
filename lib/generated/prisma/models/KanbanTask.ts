@@ -623,10 +623,6 @@ export type KanbanTaskUncheckedUpdateManyWithoutKanbanColumnNestedInput = {
   deleteMany?: Prisma.KanbanTaskScalarWhereInput | Prisma.KanbanTaskScalarWhereInput[]
 }
 
-export type NullableDateTimeFieldUpdateOperationsInput = {
-  set?: Date | string | null
-}
-
 export type NullableEnumTaskPriorityFieldUpdateOperationsInput = {
   set?: $Enums.TaskPriority | null
 }

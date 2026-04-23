@@ -38,6 +38,11 @@ export type OrganizationMember = Prisma.OrganizationMemberModel
  */
 export type Project = Prisma.ProjectModel
 /**
+ * Model ProjectInvitation
+ * プロジェクトへのメール招待（トークン URL で受け入れ）
+ */
+export type ProjectInvitation = Prisma.ProjectInvitationModel
+/**
  * Model ProjectKanbanColumn
  * プロジェクトごとのカンバン列（表示名・並びはプロジェクト単位で変更可能にする前提）
  */

@@ -77,6 +77,14 @@ export interface OrganizationApiRecord {
   updatedAt: string
 }
 
+/** POST /api/organizations */
+export interface OrganizationCreateRequest {
+  name: string
+}
+
+/** POST /api/organizations 成功 */
+export type OrganizationCreateResponse = OrganizationApiRecord
+
 export type OrganizationMemberRoleApi = 'OWNER' | 'ADMIN' | 'MEMBER'
 
 /** POST /api/projects 成功時。一覧用 `ProjectApiRecord` と互換の本体に、作成時メタのみ付与可能 */
@@ -107,6 +115,21 @@ export interface NewProjectFormState {
 /** GET /api/auth/me レスポンス */
 export interface MeApiResponse {
   user: { id: string; email: string; name: string | null } | null
+  /**
+   * 未ログイン時は all false。
+   * いずれかの organization への所属あり（他ワークスペースの招待 MEMBER 含む）
+   */
+  hasOrganization: boolean
+  /**
+   * 所属が0件。`/getting-started` などオンボーディング用。
+   * 将来: 他条件と組み合わせ可。
+   */
+  needsOnboarding: boolean
+  /**
+   * `POST /api/organizations` で**新たに**持てる枠（現状: まだ **OWNER 行がない** 場合のみ true）。
+   * プラン緩和時は此処を差し替えやすい想定。
+   */
+  canCreateOrganization: boolean
 }
 
 /** GET /api/users の1件 */
@@ -405,6 +428,72 @@ export interface ProjectMemberUpdateRequest {
 export interface ProjectMemberDeleteResponse {
   deleted: true
   id: string
+}
+
+// ============================================================
+// Project invitations — `project_invitations` / 招待 API
+// ============================================================
+
+export type ProjectInvitationStatusApi = 'PENDING' | 'ACCEPTED' | 'REVOKED' | 'EXPIRED'
+
+/** `GET|POST /api/projects/[projectId]/invitations` 相当の1件 */
+export interface ProjectInvitationApiRecord {
+  id: string
+  projectId: string
+  organizationId: string
+  email: string
+  role: ProjectMemberRoleApi
+  status: ProjectInvitationStatusApi
+  /** ISO 日時。プレビュー・一覧用 */
+  expiresAt: string
+  acceptedAt: string | null
+  createdAt: string
+  updatedAt: string
+  invitedByUserId: string
+}
+
+/** `POST /api/projects/[projectId]/invitations` リクエスト */
+export interface ProjectInvitationCreateRequest {
+  email: string
+  role: ProjectMemberRoleApi
+}
+
+/** `POST /api/projects/[projectId]/invitations` 成功（招待リンク同梱可） */
+export interface ProjectInvitationCreateResponse {
+  invitation: ProjectInvitationApiRecord
+  /** 相対パス。フル URL は `invitationUrl` でも返す */
+  invitePath: string
+  /** `origin` + `invitePath` 相当。API が組み立て */
+  invitationUrl: string
+}
+
+/** `GET /api/projects/[projectId]/invitations` */
+export interface ProjectInvitationsListResponse {
+  invitations: ProjectInvitationApiRecord[]
+}
+
+/** `GET /api/invitations/[token]` — トークン必須の公開プレビュー */
+export interface ProjectInvitationPreviewResponse {
+  projectId: string
+  projectName: string
+  email: string
+  role: ProjectMemberRoleApi
+  status: ProjectInvitationStatusApi
+  expiresAt: string
+  acceptedAt: string | null
+  /** 期限切れか（DB が EXPIRED でなくても採用時に可） */
+  isPastExpiry: boolean
+}
+
+/** `POST /api/invitations/accept` */
+export interface ProjectInvitationAcceptRequest {
+  token: string
+}
+
+export interface ProjectInvitationAcceptResponse {
+  projectId: string
+  projectName: string
+  invitation: Pick<ProjectInvitationApiRecord, 'id' | 'status' | 'acceptedAt'>
 }
 
 /** PATCH /api/kanban-tasks/[taskId] — 列移動は column* / sortOrder。本文は title / description / dueDate / priority / assigneeId */

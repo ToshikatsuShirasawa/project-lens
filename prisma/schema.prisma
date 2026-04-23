@@ -19,6 +19,14 @@ enum ProjectMemberRole {
   MEMBER
 }
 
+/// プロジェクト単位のメール招待（`project_invitations`）
+enum ProjectInvitationStatus {
+  PENDING
+  ACCEPTED
+  REVOKED
+  EXPIRED
+}
+
 /// 企業 / ワークスペースに対する所属（企業管理・課金の枠）
 enum OrganizationMemberRole {
   OWNER
@@ -43,7 +51,8 @@ model User {
 
   memberships         ProjectMember[]
   organizationMembers OrganizationMember[]
-  assignedTasks       KanbanTask[]
+  assignedTasks            KanbanTask[]
+  projectInvitationsSent   ProjectInvitation[] @relation("ProjectInvitationInvitedBy")
 
   @@map("users")
 }
@@ -55,8 +64,9 @@ model Organization {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  members  OrganizationMember[]
-  projects Project[]
+  members            OrganizationMember[]
+  projects           Project[]
+  projectInvitations ProjectInvitation[]
 
   @@map("organizations")
 }
@@ -91,9 +101,43 @@ model Project {
   members        ProjectMember[]
   tasks          KanbanTask[]
   kanbanColumns  ProjectKanbanColumn[]
+  invitations    ProjectInvitation[]
 
   @@index([organizationId])
   @@map("projects")
+}
+
+/// プロジェクトへのメール招待（トークン URL で受け入れ）
+model ProjectInvitation {
+  id     String @id @default(cuid())
+  /// 不変: 重複 PENDING 判定と将来の再送に利用
+  email  String
+  /// `project_members.role` と同じ想定
+  role   ProjectMemberRole
+
+  token  String                 @unique
+  status ProjectInvitationStatus  @default(PENDING)
+  /// 採用時にこの時刻を過ぎていれば受け入れ不可（バッチ無しの最小版）
+  expiresAt  DateTime
+  acceptedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+
+  invitedByUserId String
+  invitedByUser   User   @relation("ProjectInvitationInvitedBy", fields: [invitedByUserId], references: [id], onDelete: Restrict)
+
+  @@index([projectId, status])
+  @@index([projectId, email])
+  @@index([email])
+  @@index([organizationId])
+  @@map("project_invitations")
 }
 
 /// プロジェクトごとのカンバン列（表示名・並びはプロジェクト単位で変更可能にする前提）

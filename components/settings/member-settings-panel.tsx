@@ -12,7 +12,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select'
-import { Loader2, Trash2, UserPlus } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Copy, Loader2, Mail, Trash2, UserPlus } from 'lucide-react'
 import { toastError, toastSuccess } from '@/lib/operation-toast'
 import { cn } from '@/lib/utils'
 import {
@@ -22,6 +24,8 @@ import {
   type ProjectMemberRoleApi,
   type ProjectApiRecord,
   type UserApiRecord,
+  type ProjectInvitationApiRecord,
+  type ProjectInvitationStatusApi,
 } from '@/lib/types'
 
 const ADD_NONE = '__none__'
@@ -30,6 +34,13 @@ const ROLE_LABEL: Record<ProjectMemberRoleApi, string> = {
   OWNER: 'オーナー',
   ADMIN: '管理者',
   MEMBER: 'メンバー',
+}
+
+const INVITE_STATUS_LABEL: Record<ProjectInvitationStatusApi, string> = {
+  PENDING: '未対応',
+  ACCEPTED: '受諾済',
+  REVOKED: '取り消し',
+  EXPIRED: '期限切れ',
 }
 
 function displayName(m: Pick<ProjectMemberApiRecord, 'name' | 'email'>): string {
@@ -61,6 +72,12 @@ export function MemberSettingsPanel({ projectId }: MemberSettingsPanelProps) {
   const [deleteSavingId, setDeleteSavingId] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
   const [canManage, setCanManage] = useState(false)
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteRole, setInviteRole] = useState<ProjectMemberRoleApi>('MEMBER')
+  const [inviteBusy, setInviteBusy] = useState(false)
+  const [invitations, setInvitations] = useState<ProjectInvitationApiRecord[]>([])
+  const [lastInviteUrl, setLastInviteUrl] = useState<string | null>(null)
+  const [revokingId, setRevokingId] = useState<string | null>(null)
   /** 現在ユーザーが `project_members.role === OWNER` か（オーナー専用のメンバー操作） */
   const [myProjectRole, setMyProjectRole] = useState<ProjectMemberRoleApi | null>(null)
 
@@ -68,10 +85,11 @@ export function MemberSettingsPanel({ projectId }: MemberSettingsPanelProps) {
     setListError(null)
     setLoading(true)
     try {
-      const [mRes, uRes, pRes] = await Promise.all([
+      const [mRes, uRes, pRes, iRes] = await Promise.all([
         fetch(`/api/projects/${encodeURIComponent(projectId)}/members`),
         fetch('/api/users'),
         fetch(`/api/projects/${encodeURIComponent(projectId)}`),
+        fetch(`/api/projects/${encodeURIComponent(projectId)}/invitations`),
       ])
       const mBody: unknown = await mRes.json().catch(() => null)
       const uBody: unknown = await uRes.json().catch(() => null)
@@ -85,6 +103,13 @@ export function MemberSettingsPanel({ projectId }: MemberSettingsPanelProps) {
       } else {
         setMyProjectRole(null)
         setCanManage(false)
+      }
+
+      if (iRes.ok) {
+        const iParsed = (await iRes.json().catch(() => null)) as { invitations?: ProjectInvitationApiRecord[] } | null
+        setInvitations(Array.isArray(iParsed?.invitations) ? iParsed.invitations : [])
+      } else {
+        setInvitations([])
       }
 
       if (!mRes.ok) {
@@ -119,6 +144,7 @@ export function MemberSettingsPanel({ projectId }: MemberSettingsPanelProps) {
     } catch (e) {
       setMembers([])
       setUsers([])
+      setInvitations([])
       setListError(e instanceof Error ? e.message : '読み込みに失敗しました')
     } finally {
       setLoading(false)
@@ -134,7 +160,12 @@ export function MemberSettingsPanel({ projectId }: MemberSettingsPanelProps) {
     [users, members]
   )
 
-  const busy = adding || roleSavingId !== null || deleteSavingId !== null
+  const busy =
+    adding ||
+    roleSavingId !== null ||
+    deleteSavingId !== null ||
+    inviteBusy ||
+    revokingId !== null
   const managementLocked = !canManage
   const isCurrentUserProjectOwner = isProjectOwnerRoleApi(myProjectRole)
 
@@ -177,6 +208,97 @@ export function MemberSettingsPanel({ projectId }: MemberSettingsPanelProps) {
       toastError(msg)
     } finally {
       setAdding(false)
+    }
+  }
+
+  const handleInviteCreate = async () => {
+    const em = inviteEmail.trim()
+    if (!em || inviteBusy || managementLocked) return
+    setActionError(null)
+    setInviteBusy(true)
+    setLastInviteUrl(null)
+    try {
+      const res = await fetch(`/api/projects/${encodeURIComponent(projectId)}/invitations`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: em, role: inviteRole }),
+      })
+      const body: unknown = await res.json().catch(() => null)
+      if (!res.ok) {
+        const msg =
+          body &&
+          typeof body === 'object' &&
+          'message' in body &&
+          typeof (body as { message: unknown }).message === 'string'
+            ? (body as { message: string }).message
+            : `HTTP ${res.status}`
+        throw new Error(msg)
+      }
+      if (
+        body &&
+        typeof body === 'object' &&
+        'invitationUrl' in body &&
+        typeof (body as { invitationUrl: unknown }).invitationUrl === 'string'
+      ) {
+        setLastInviteUrl((body as { invitationUrl: string }).invitationUrl)
+      }
+      setInviteEmail('')
+      setInviteRole('MEMBER')
+      toastSuccess('招待リンクを作成しました')
+      await loadAll()
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '招待の作成に失敗しました'
+      console.error('[invitations] create', e)
+      setActionError(msg)
+      toastError(msg)
+    } finally {
+      setInviteBusy(false)
+    }
+  }
+
+  const copyInviteUrl = async (url: string) => {
+    try {
+      await navigator.clipboard.writeText(url)
+      toastSuccess('リンクをコピーしました')
+    } catch (e) {
+      console.error('[invitations] copy', e)
+      toastError('コピーに失敗しました')
+    }
+  }
+
+  const handleRevokeInvitation = async (invId: string) => {
+    if (busy || managementLocked) return
+    setActionError(null)
+    setRevokingId(invId)
+    try {
+      const res = await fetch(
+        `/api/projects/${encodeURIComponent(projectId)}/invitations/${encodeURIComponent(invId)}`,
+        {
+          method: 'PATCH',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ status: 'REVOKED' }),
+        }
+      )
+      const body: unknown = await res.json().catch(() => null)
+      if (!res.ok) {
+        const msg =
+          body &&
+          typeof body === 'object' &&
+          'message' in body &&
+          typeof (body as { message: unknown }).message === 'string'
+            ? (body as { message: string }).message
+            : `HTTP ${res.status}`
+        throw new Error(msg)
+      }
+      toastSuccess('招待を取り消しました')
+      await loadAll()
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : '取り消しに失敗しました'
+      console.error('[invitations] revoke', e)
+      setActionError(msg)
+      toastError(msg)
+    } finally {
+      setRevokingId(null)
     }
   }
 
@@ -343,6 +465,117 @@ export function MemberSettingsPanel({ projectId }: MemberSettingsPanelProps) {
             </p>
           )}
         </div>
+
+        <div
+          className={cn(
+            'rounded-lg border border-border bg-muted/20 p-4 space-y-3',
+            managementLocked && 'opacity-60 pointer-events-none'
+          )}
+        >
+          <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
+            <Mail className="h-4 w-4" />
+            メールで招待（未登録の人向け）
+          </h3>
+          <p className="text-xs text-muted-foreground">
+            招待リンクを共有すると、相手はメール登録・ログイン後にプロジェクトに参加できます（メール配信はまだ行いません）。
+          </p>
+          <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
+            <div className="space-y-2 flex-1 min-w-0">
+              <Label htmlFor="member-invite-email" className="text-xs text-muted-foreground">
+                メール
+              </Label>
+              <Input
+                id="member-invite-email"
+                type="email"
+                autoComplete="email"
+                value={inviteEmail}
+                onChange={(e) => setInviteEmail(e.target.value)}
+                placeholder="name@example.com"
+                disabled={loading || busy || managementLocked}
+              />
+            </div>
+            <div className="space-y-2 w-full sm:w-40">
+              <span className="text-xs text-muted-foreground">ロール</span>
+              <Select
+                value={inviteRole}
+                onValueChange={(v) => setInviteRole(v as ProjectMemberRoleApi)}
+                disabled={loading || busy || managementLocked}
+              >
+                <SelectTrigger className="w-full">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="MEMBER">{ROLE_LABEL.MEMBER}</SelectItem>
+                  <SelectItem value="ADMIN">{ROLE_LABEL.ADMIN}</SelectItem>
+                  {isCurrentUserProjectOwner ? (
+                    <SelectItem value="OWNER">{ROLE_LABEL.OWNER}</SelectItem>
+                  ) : null}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button
+              type="button"
+              onClick={() => void handleInviteCreate()}
+              disabled={!inviteEmail.trim() || loading || busy || managementLocked}
+              className="shrink-0"
+            >
+              {inviteBusy ? '作成中…' : '招待リンクを作成'}
+            </Button>
+          </div>
+          {lastInviteUrl ? (
+            <div className="rounded border border-dashed border-border p-2 space-y-2">
+              <p className="text-xs text-muted-foreground">次のURLを相手に送ってください</p>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                <code className="text-xs break-all text-foreground flex-1 bg-background/80 p-1 rounded">
+                  {lastInviteUrl}
+                </code>
+                <Button
+                  type="button"
+                  size="sm"
+                  variant="secondary"
+                  className="shrink-0"
+                  onClick={() => void copyInviteUrl(lastInviteUrl)}
+                >
+                  <Copy className="h-3.5 w-3.5 mr-1" />
+                  コピー
+                </Button>
+              </div>
+            </div>
+          ) : null}
+        </div>
+
+        {canManage && invitations.length > 0 && (
+          <div className="space-y-2">
+            <h3 className="text-sm font-medium text-foreground">招待一覧</h3>
+            <ul className="space-y-2">
+              {invitations.map((inv) => (
+                <li
+                  key={inv.id}
+                  className="flex flex-col gap-2 rounded-md border border-border bg-background/50 p-2 text-sm sm:flex-row sm:items-center sm:justify-between"
+                >
+                  <div className="min-w-0">
+                    <p className="font-medium break-all text-foreground">{inv.email}</p>
+                    <p className="text-xs text-muted-foreground">
+                      {ROLE_LABEL[inv.role]} ・ {INVITE_STATUS_LABEL[inv.status]} ・ 期限:{' '}
+                      {new Date(inv.expiresAt).toLocaleString('ja-JP')}
+                    </p>
+                  </div>
+                  {inv.status === 'PENDING' && canManage ? (
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      disabled={busy || revokingId === inv.id}
+                      onClick={() => void handleRevokeInvitation(inv.id)}
+                    >
+                      {revokingId === inv.id ? '取り消し中…' : '取り消す'}
+                    </Button>
+                  ) : null}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
 
         {loading ? (
           <p className="text-sm text-muted-foreground">読み込み中…</p>

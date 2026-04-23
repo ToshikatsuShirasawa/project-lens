@@ -18,6 +18,16 @@ export const ProjectMemberRole = {
 export type ProjectMemberRole = (typeof ProjectMemberRole)[keyof typeof ProjectMemberRole]
 
 
+export const ProjectInvitationStatus = {
+  PENDING: 'PENDING',
+  ACCEPTED: 'ACCEPTED',
+  REVOKED: 'REVOKED',
+  EXPIRED: 'EXPIRED'
+} as const
+
+export type ProjectInvitationStatus = (typeof ProjectInvitationStatus)[keyof typeof ProjectInvitationStatus]
+
+
 export const OrganizationMemberRole = {
   OWNER: 'OWNER',
   ADMIN: 'ADMIN',

@@ -396,6 +396,11 @@ export function MemberSettingsPanel({ projectId }: MemberSettingsPanelProps) {
             管理者として、オーナー役の付与・変更・オーナー行の削除は行えません（オーナーのみ）。その他のメンバー管理は行えます。
           </p>
         ) : null}
+        {!loading ? (
+          <p className="text-sm text-foreground/90 border-l-2 border-primary/50 pl-3 py-0.5">
+            すでにワークスペースに参加しているユーザーは上から、まだ参加していない相手は下の「メールで招待」をご利用ください。
+          </p>
+        ) : null}
         <div
           className={cn(
             'rounded-lg border border-border bg-muted/20 p-4 space-y-3',
@@ -407,7 +412,7 @@ export function MemberSettingsPanel({ projectId }: MemberSettingsPanelProps) {
             メンバーを追加
           </h3>
           <p className="text-xs text-muted-foreground leading-relaxed">
-            同じワークスペースに参加しているユーザーのみ選べます。まだ参加していない方は、下のメール招待を利用してください。
+            同じワークスペースに参加しているユーザーを、このプロジェクトのメンバーとして追加できます。
           </p>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
             <div className="space-y-2 flex-1 min-w-0">
@@ -477,10 +482,10 @@ export function MemberSettingsPanel({ projectId }: MemberSettingsPanelProps) {
         >
           <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
             <Mail className="h-4 w-4" />
-            メールで招待（未登録の人向け）
+            メールで招待
           </h3>
-          <p className="text-xs text-muted-foreground">
-            招待リンクを共有すると、相手はメール登録・ログイン後にプロジェクトに参加できます（メール配信はまだ行いません）。
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            まだこのワークスペースに参加していない相手のメール宛に、参加用の招待リンクを発行します（メールの自動送信は行いません）。相手に URL を渡してください。
           </p>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
             <div className="space-y-2 flex-1 min-w-0">
@@ -526,17 +531,23 @@ export function MemberSettingsPanel({ projectId }: MemberSettingsPanelProps) {
             </Button>
           </div>
           {lastInviteUrl ? (
-            <div className="rounded border border-dashed border-border p-2 space-y-2">
-              <p className="text-xs text-muted-foreground">次のURLを相手に送ってください</p>
-              <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
-                <code className="text-xs break-all text-foreground flex-1 bg-background/80 p-1 rounded">
+            <div className="rounded border border-dashed border-border p-3 space-y-2 bg-background/50">
+              <p className="text-sm text-foreground">
+                このリンクを共有すると、相手はログイン後にこのプロジェクトへ参加できます。
+              </p>
+              <p className="text-xs text-muted-foreground">URL をコピーして、チャットやメールで相手に送ってください。</p>
+              <div className="flex flex-col gap-2 sm:flex-row sm:items-stretch">
+                <code
+                  className="text-xs break-all text-foreground flex-1 bg-muted/50 border border-border px-2 py-2 rounded-md select-all cursor-text"
+                  tabIndex={0}
+                >
                   {lastInviteUrl}
                 </code>
                 <Button
                   type="button"
                   size="sm"
-                  variant="secondary"
-                  className="shrink-0"
+                  variant="default"
+                  className="shrink-0 sm:self-center"
                   onClick={() => void copyInviteUrl(lastInviteUrl)}
                 >
                   <Copy className="h-3.5 w-3.5 mr-1" />

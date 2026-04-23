@@ -121,7 +121,7 @@ function InviteContent() {
         throw new Error(msg)
       }
       const data = body as ProjectInvitationAcceptResponse
-      toastSuccess('プロジェクトに参加しました')
+      toastSuccess('プロジェクトに参加しました', `${data.projectName} のカンバンへ移動します`)
       router.push(getSafeNextPath(`/projects/${data.projectId}/kanban`, POST_LOGIN_DEFAULT))
       router.refresh()
     } catch (e) {
@@ -176,19 +176,18 @@ function InviteContent() {
   return (
     <div className="w-full max-w-md space-y-6 text-left">
       <div className="border border-border rounded-lg bg-card p-6 space-y-4 shadow-sm">
-        <h1 className="text-lg font-semibold">プロジェクト招待</h1>
-        <p className="text-sm text-muted-foreground">{statusNote}</p>
-        <dl className="space-y-2 text-sm">
-          <div>
-            <dt className="text-muted-foreground">プロジェクト</dt>
-            <dd className="font-medium text-foreground">{preview.projectName}</dd>
+        <div className="space-y-1">
+          <h1 className="text-lg font-semibold leading-tight">プロジェクトに招待されています</h1>
+          <p className="text-base font-medium text-foreground">{preview.projectName}</p>
+          <p className="text-sm text-muted-foreground">{statusNote}</p>
+        </div>
+        <dl className="space-y-2 text-sm border-t border-border pt-4">
+          <div className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5">
+            <dt className="text-muted-foreground shrink-0">付与ロール</dt>
+            <dd className="font-medium text-foreground">{ROLE_JA[preview.role]}</dd>
           </div>
           <div>
-            <dt className="text-muted-foreground">ロール</dt>
-            <dd>{ROLE_JA[preview.role]}</dd>
-          </div>
-          <div>
-            <dt className="text-muted-foreground">招待先メール</dt>
+            <dt className="text-muted-foreground">招待メール</dt>
             <dd className="break-all">{preview.email}</dd>
           </div>
         </dl>
@@ -203,13 +202,16 @@ function InviteContent() {
               認証状態を確認しています…
             </div>
           ) : !authed ? (
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <Button asChild className="w-full sm:flex-1">
-                <Link href={loginHref}>ログインして参加</Link>
-              </Button>
-              <Button asChild variant="secondary" className="w-full sm:flex-1">
-                <Link href={signupHref}>アカウント登録</Link>
-              </Button>
+            <div className="space-y-3">
+              <p className="text-sm text-muted-foreground">参加するにはログインが必要です。アカウントがない場合は登録してください。</p>
+              <div className="flex flex-col gap-2 sm:flex-row">
+                <Button asChild className="w-full sm:flex-1">
+                  <Link href={loginHref}>ログインして参加</Link>
+                </Button>
+                <Button asChild variant="secondary" className="w-full sm:flex-1">
+                  <Link href={signupHref}>アカウント登録</Link>
+                </Button>
+              </div>
             </div>
           ) : emailMatches ? (
             <Button

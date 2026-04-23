@@ -1,8 +1,9 @@
 import { toast } from '@/hooks/use-toast'
 
-/** 成功トースト（最小: title のみ） */
-export function toastSuccess(title: string) {
-  toast({ title })
+/** 成功トースト（title のみ、または補足の description 付き） */
+export function toastSuccess(title: string, description?: string) {
+  const d = description?.trim()
+  toast({ title, description: d || undefined })
 }
 
 /**

@@ -204,15 +204,15 @@ function ProjectsListInner() {
 
   const listDetail = useMemo(() => {
     if (organizations === null) return '読み込み中…'
-    if (organizations.length === 0) return 'プロジェクトの一覧です。'
+    if (organizations.length === 0) return '参加できるプロジェクトを選ぶ・作る画面です。'
     if (organizations.length === 1) {
-      return 'このワークスペース内のプロジェクトです。'
+      return 'このワークスペース内のプロジェクトに移動する画面です。'
     }
     if (!organizationIdFromUrl) {
-      return 'ワークスペース別にまとめています。1 つに絞るには上の切替を使います。'
+      return '参加中のワークスペースのプロジェクトを横断して見る画面です。特定の workspace の「まとまり（ホーム）」は /workspace?organizationId=… で、毎回の着地点はサイドバーのワークスペース切替でそこへ飛びます。ここ（/projects）は全件の俯瞰と絞り込み用です。'
     }
     if (activeOrgName) {
-      return `「${activeOrgName}」に絞り込み中`
+      return `「${activeOrgName}」内のプロジェクトに絞り込み中です。`
     }
     return '表示を読み込み中です。'
   }, [organizations, organizationIdFromUrl, activeOrgName])

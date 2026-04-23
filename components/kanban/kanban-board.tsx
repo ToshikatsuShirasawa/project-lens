@@ -432,8 +432,12 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
       dueDate: candidate.suggestedDueDate,
       aiOrigin: candidate.source,
     }
-    setCards({ ...cards, [backlogColumnKey]: [...(cards[backlogColumnKey] ?? []), task] })
-    setCandidates(candidates.filter((c) => c.id !== candidate.id))
+    setCards((prev) => ({
+      ...prev,
+      [backlogColumnKey]: [...(prev[backlogColumnKey] ?? []), task],
+    }))
+    setCandidates((prev) => prev.filter((c) => c.id !== candidate.id))
+    toastSuccess('AI候補をバックログに追加しました')
   }
 
   const totalTasks = Object.values(cards).flat().length
@@ -502,8 +506,25 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
       <TaskCandidateSidePanel
         candidates={candidates}
         onAddToKanban={handleAddToKanban}
-        onHold={(id) => {}}
-        onDismiss={(id) => setCandidates(candidates.filter((c) => c.id !== id))}
+        onHold={(id) =>
+          setCandidates((prev) => {
+            const idx = prev.findIndex((c) => c.id === id)
+            if (idx < 0) return prev
+            const target = prev[idx]
+            const others = prev.filter((c) => c.id !== id)
+            toastSuccess('候補をあとで確認に回しました')
+            return [...others, target]
+          })
+        }
+        onDismiss={(id) =>
+          setCandidates((prev) => {
+            const next = prev.filter((c) => c.id !== id)
+            if (next.length !== prev.length) {
+              toastSuccess('候補を却下しました')
+            }
+            return next
+          })
+        }
       />
 
       <Dialog

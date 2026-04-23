@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Sparkles, Plus, Pause, X, ChevronLeft, ChevronRight } from 'lucide-react'
+import { Sparkles, Plus, Pause, X, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { TaskCandidate } from '@/lib/types'
 
@@ -32,6 +32,7 @@ export function TaskCandidateSidePanel({
 }: TaskCandidateSidePanelProps) {
   const [open, setOpen] = useState(true)
   const [openStateLoaded, setOpenStateLoaded] = useState(false)
+  const [submittingId, setSubmittingId] = useState<string | null>(null)
 
   useEffect(() => {
     try {
@@ -95,7 +96,7 @@ export function TaskCandidateSidePanel({
       <div className="flex items-center gap-2 border-b border-border/80 px-3 py-2.5 pr-2 bg-primary/[0.04]">
         <span className="h-4 w-1 rounded-full bg-primary/50" aria-hidden />
         <Sparkles className="h-4 w-4 shrink-0 text-primary" />
-        <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">AIタスク候補</span>
+        <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">AI提案タスク</span>
         {candidates.length > 0 && (
           <Badge className="shrink-0 text-[10px] h-5 px-1.5 bg-primary/10 text-primary border-0">
             {candidates.length}件
@@ -115,7 +116,7 @@ export function TaskCandidateSidePanel({
         </Button>
       </div>
       <p className="px-4 py-2 text-xs text-muted-foreground border-b border-border/80 bg-primary/[0.02]">
-        承認するとカンバンに追加されます
+        AIが抽出した候補です。承認するとカンバンのバックログに追加されます。
       </p>
 
       <div className="flex-1 overflow-y-auto p-3 space-y-3 bg-primary/[0.01]">
@@ -125,22 +126,35 @@ export function TaskCandidateSidePanel({
             <p className="text-sm text-muted-foreground">候補はありません</p>
           </div>
         ) : (
-          candidates.map((c) => {
+          candidates.map((c, index) => {
             const src = sourceConfig[c.source]
+            const isTopCandidate = index === 0
+            const isSubmitting = submittingId === c.id
             return (
-              <Card key={c.id} className="bg-card shadow-sm border-border/80">
+              <Card
+                key={c.id}
+                className={cn(
+                  'bg-card shadow-sm border-border/80 transition-colors',
+                  isTopCandidate && 'border-primary/40 bg-primary/[0.035]'
+                )}
+              >
                 <CardContent className="p-3 space-y-3">
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-sm font-medium text-foreground leading-snug">{c.title}</p>
-                    <Badge className={cn('shrink-0 text-[10px] h-4 px-1.5 border-0', src.class)}>
-                      {src.label}
-                    </Badge>
+                    <div className="flex shrink-0 items-center gap-1">
+                      {isTopCandidate && (
+                        <Badge className="text-[10px] h-4 px-1.5 border-0 bg-primary text-primary-foreground">
+                          おすすめ
+                        </Badge>
+                      )}
+                      <Badge className={cn('text-[10px] h-4 px-1.5 border-0', src.class)}>{src.label}</Badge>
+                    </div>
                   </div>
                   <div className="space-y-1">
                     <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
                       抽出理由
                     </p>
-                    <p className="text-xs text-muted-foreground leading-relaxed">{c.reason}</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">{c.reason}</p>
                   </div>
                   {(c.suggestedAssignee || c.suggestedDueDate) && (
                     <div className="flex gap-3 text-[11px] text-muted-foreground">
@@ -151,29 +165,46 @@ export function TaskCandidateSidePanel({
                   <div className="flex gap-1.5 pt-1">
                     <Button
                       size="sm"
-                      className="flex-1 gap-1 text-xs h-7"
-                      onClick={() => onAddToKanban(c)}
+                      className={cn(
+                        'flex-1 gap-1 text-xs h-7 transition-all active:scale-[0.99]',
+                        'hover:shadow-sm hover:translate-y-[-1px]'
+                      )}
+                      onClick={() => {
+                        setSubmittingId(c.id)
+                        onAddToKanban(c)
+                      }}
+                      disabled={isSubmitting}
                     >
-                      <Plus className="h-3 w-3" />
-                      追加
+                      {isSubmitting ? (
+                        <>
+                          <CheckCircle2 className="h-3 w-3" />
+                          追加中...
+                        </>
+                      ) : (
+                        <>
+                          <Plus className="h-3 w-3" />+ 追加
+                        </>
+                      )}
                     </Button>
                     <Button
                       size="sm"
                       variant="outline"
                       className="gap-1 text-xs h-7 px-2"
                       onClick={() => onHold(c.id)}
-                      title="保留"
+                      title="あとで"
                     >
                       <Pause className="h-3 w-3" />
+                      あとで
                     </Button>
                     <Button
                       size="sm"
                       variant="ghost"
                       className="gap-1 text-xs h-7 px-2 text-muted-foreground"
                       onClick={() => onDismiss(c.id)}
-                      title="不要"
+                      title="却下"
                     >
                       <X className="h-3 w-3" />
+                      却下
                     </Button>
                   </div>
                 </CardContent>

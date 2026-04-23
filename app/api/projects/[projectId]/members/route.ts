@@ -1,4 +1,4 @@
-import { ProjectMemberRole } from '@/lib/generated/prisma/client'
+import { OrganizationMemberRole, ProjectMemberRole } from '@/lib/generated/prisma/client'
 import { projectMemberToApiRecord } from '@/lib/project-members/serialize-project-member'
 import { NextResponse } from 'next/server'
 import {
@@ -63,6 +63,7 @@ export async function POST(request: Request, context: RouteContext) {
     const access = await requireProjectManagerJson(projectId)
     if (!access.ok) return access.response
     const id = access.ctx.project.id
+    const organizationId = access.ctx.project.organizationId
 
     let body: unknown
     try {
@@ -111,17 +112,37 @@ export async function POST(request: Request, context: RouteContext) {
       return NextResponse.json({ message: 'このユーザーは既にプロジェクトメンバーです' }, { status: 400 })
     }
 
-    const created = await prisma.projectMember.create({
-      data: {
-        projectId: id,
-        userId,
-        role,
-      },
-      select: {
-        id: true,
-        role: true,
-        user: { select: { id: true, name: true, email: true } },
-      },
+    /**
+     * 招待受諾（`POST /api/invitations/accept`）と同様に、先に当該 workspace の
+     * `organization_members` を補完してから `project_members` へ。欠けたままだと
+     * 認可案 A（`projectListWhereForUser` 等）で一覧に出ない。
+     */
+    const created = await prisma.$transaction(async (tx) => {
+      const orgMember = await tx.organizationMember.findFirst({
+        where: { organizationId, userId },
+        select: { id: true },
+      })
+      if (!orgMember) {
+        await tx.organizationMember.create({
+          data: {
+            organizationId,
+            userId,
+            role: OrganizationMemberRole.MEMBER,
+          },
+        })
+      }
+      return tx.projectMember.create({
+        data: {
+          projectId: id,
+          userId,
+          role,
+        },
+        select: {
+          id: true,
+          role: true,
+          user: { select: { id: true, name: true, email: true } },
+        },
+      })
     })
 
     return NextResponse.json(

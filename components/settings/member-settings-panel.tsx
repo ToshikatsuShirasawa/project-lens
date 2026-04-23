@@ -87,7 +87,7 @@ export function MemberSettingsPanel({ projectId }: MemberSettingsPanelProps) {
     try {
       const [mRes, uRes, pRes, iRes] = await Promise.all([
         fetch(`/api/projects/${encodeURIComponent(projectId)}/members`),
-        fetch('/api/users'),
+        fetch(`/api/projects/${encodeURIComponent(projectId)}/member-candidates`),
         fetch(`/api/projects/${encodeURIComponent(projectId)}`),
         fetch(`/api/projects/${encodeURIComponent(projectId)}/invitations`),
       ])
@@ -155,6 +155,7 @@ export function MemberSettingsPanel({ projectId }: MemberSettingsPanelProps) {
     void loadAll()
   }, [loadAll])
 
+  /** API が「同じ workspace かつ未参加」に絞った候補。念のため一覧と重複しないよう重ね合わせ */
   const addableUsers = useMemo(
     () => users.filter((u) => !members.some((m) => m.userId === u.id)),
     [users, members]
@@ -405,6 +406,9 @@ export function MemberSettingsPanel({ projectId }: MemberSettingsPanelProps) {
             <UserPlus className="h-4 w-4" />
             メンバーを追加
           </h3>
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            同じワークスペースに参加しているユーザーのみ選べます。まだ参加していない方は、下のメール招待を利用してください。
+          </p>
           <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
             <div className="space-y-2 flex-1 min-w-0">
               <span className="text-xs text-muted-foreground">ユーザー</span>
@@ -456,12 +460,11 @@ export function MemberSettingsPanel({ projectId }: MemberSettingsPanelProps) {
             </Button>
           </div>
           {!loading && addableUsers.length === 0 && users.length > 0 && (
-            <p className="text-xs text-muted-foreground">追加できるユーザーはいません（全員が既にメンバーです）。</p>
+            <p className="text-xs text-muted-foreground">追加できるユーザーはいません（全員が既にこのプロジェクトのメンバーです）。</p>
           )}
           {!loading && users.length === 0 && (
             <p className="text-xs text-muted-foreground">
-              ユーザーが未登録です。Prisma Studio 等で <code className="rounded bg-muted px-1">users</code>{' '}
-              にユーザーを追加してください。
+              このワークスペースに、まだ追加できる他のユーザーがいません（他メンバーが未参加、または全員がこのプロジェクトに参加済みです）。新しく参加してもらう場合はメール招待を使ってください。
             </p>
           )}
         </div>

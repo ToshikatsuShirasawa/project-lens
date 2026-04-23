@@ -15,16 +15,25 @@ import {
 } from '@/lib/organization/project-limit'
 import { prisma } from '@/lib/prisma'
 import type { KanbanTemplateKey } from '@/lib/types'
+import type { Prisma } from '@/lib/generated/prisma/client'
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     const auth = await requireAppUserJson()
     if (!auth.ok) return auth.response
     const uid = auth.ctx.appUser.id
+    const orgQ = new URL(request.url).searchParams.get('organizationId')?.trim() ?? ''
+    const base: Prisma.ProjectWhereInput = projectListWhereForUser(uid)
+    const where: Prisma.ProjectWhereInput =
+      orgQ.length > 0
+        ? {
+            AND: [base, { organizationId: orgQ }],
+          }
+        : base
     /** 案A: `project_members` 参加 かつ `organization_members` 所属の両方（authorization-policy） */
     const rows = await prisma.project.findMany({
-      where: projectListWhereForUser(uid),
-      orderBy: { updatedAt: 'desc' },
+      where,
+      orderBy: [{ organization: { name: 'asc' } }, { updatedAt: 'desc' }],
       select: {
         id: true,
         name: true,
@@ -32,12 +41,14 @@ export async function GET() {
         createdAt: true,
         updatedAt: true,
         organizationId: true,
+        organization: { select: { name: true } },
       },
     })
 
     const projects = rows.map((r) => ({
       id: r.id,
       organizationId: r.organizationId,
+      organizationName: r.organization.name,
       name: r.name,
       description: r.description,
       createdAt: r.createdAt.toISOString(),
@@ -64,7 +75,10 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'リクエストボディが不正です' }, { status: 400 })
     }
 
-    const { name, description, templateKey: templateKeyRaw } = body as Record<string, unknown>
+    const { name, description, templateKey: templateKeyRaw, organizationId: orgIdInput } = body as Record<
+      string,
+      unknown
+    >
     const nameStr = typeof name === 'string' ? name.trim() : ''
     if (!nameStr) {
       return NextResponse.json({ message: 'name が必要です' }, { status: 400 })
@@ -92,12 +106,35 @@ export async function POST(request: Request) {
 
     const appUser = auth.ctx.appUser
 
-    const created = await prisma.$transaction(async (tx) => {
-      // 所属があればその org へ; 未所属は ensure 内で legacy 作成（`ensure-organization-for-user` 参照）
-      const org = await ensureOrganizationForCurrentUser(
-        { id: appUser.id, email: appUser.email, name: appUser.name },
-        tx
+    let orgIdFromBody: string | null = null
+    if (orgIdInput !== undefined && orgIdInput !== null) {
+      if (typeof orgIdInput !== 'string' || !orgIdInput.trim()) {
+        return NextResponse.json({ message: 'organizationId の形式が不正です' }, { status: 400 })
+      }
+      orgIdFromBody = orgIdInput.trim()
+    }
+
+    const resolvedOrg = orgIdFromBody
+      ? await prisma.organizationMember.findFirst({
+          where: { userId: appUser.id, organizationId: orgIdFromBody },
+          include: { organization: true },
+        })
+      : null
+    if (orgIdFromBody && !resolvedOrg) {
+      return NextResponse.json(
+        { message: 'このワークスペースに参加していないか、存在しません' },
+        { status: 403 }
       )
+    }
+
+    const created = await prisma.$transaction(async (tx) => {
+      // 明示 `organizationId` 時は当該 workspace へ。未指定は従来どおり先頭 org / legacy ensure
+      const org = resolvedOrg
+        ? resolvedOrg.organization
+        : await ensureOrganizationForCurrentUser(
+            { id: appUser.id, email: appUser.email, name: appUser.name },
+            tx
+          )
 
       await assertProjectCreationAllowed(org.id, tx)
 

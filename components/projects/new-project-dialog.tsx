@@ -20,12 +20,18 @@ import {
   userFacingRejectionForProjectCreate,
 } from '@/lib/api/user-facing-rejection'
 import { DEFAULT_KANBAN_TEMPLATE_KEY } from '@/lib/kanban/kanban-column-templates'
+import { MSG_PROJECT_COUNT_LIMIT_TITLE } from '@/lib/organization/project-limit'
+import { dispatchProjectUpdated } from '@/lib/project-events'
 import { toastError, toastResourceConstraint, toastSuccess } from '@/lib/operation-toast'
 import type { NewProjectFormState, ProjectApiRecord, ProjectCreateRequest } from '@/lib/types'
 
 export interface NewProjectDialogProps {
   open: boolean
   onOpenChange: (open: boolean) => void
+  /**
+   * 指定時は `POST /api/projects` に `organizationId` を付与（プロジェクト一覧で選んだワークスペースに作成）
+   */
+  contextOrganizationId?: string | null
 }
 
 const emptyForm: NewProjectFormState = {
@@ -35,7 +41,7 @@ const emptyForm: NewProjectFormState = {
 }
 
 /** 名前・説明・カンバンテンプレート。オーナーはセッションユーザー（なければレガシーと同様メンバーなしで作成） */
-export function NewProjectDialog({ open, onOpenChange }: NewProjectDialogProps) {
+export function NewProjectDialog({ open, onOpenChange, contextOrganizationId = null }: NewProjectDialogProps) {
   const router = useRouter()
   const baseId = useId()
   const [form, setForm] = useState<NewProjectFormState>(emptyForm)
@@ -58,14 +64,18 @@ export function NewProjectDialog({ open, onOpenChange }: NewProjectDialogProps) 
     setRejection(null)
     setSubmitting(true)
     try {
+      const payload: ProjectCreateRequest = {
+        name: nameTrim,
+        description: form.description.trim() || undefined,
+        templateKey: form.templateKey,
+      }
+      if (contextOrganizationId?.trim()) {
+        payload.organizationId = contextOrganizationId.trim()
+      }
       const res = await fetch('/api/projects', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          name: nameTrim,
-          description: form.description.trim() || undefined,
-          templateKey: form.templateKey,
-        } satisfies ProjectCreateRequest),
+        body: JSON.stringify(payload),
       })
       // `res.json()` だけだと例外時に catch へ落ち、制限分岐より先に toastError になる。必ず text で受けてから parse する
       const rawText = await res.text()
@@ -107,6 +117,7 @@ export function NewProjectDialog({ open, onOpenChange }: NewProjectDialogProps) 
       toastSuccess('プロジェクトを作成しました')
       onOpenChange(false)
       setRejection(null)
+      dispatchProjectUpdated(created.id)
       router.push(`/projects/${created.id}/kanban`)
     } catch (err) {
       // fetch 失敗など、HTTP 応答を解釈する前のエラーのみ
@@ -214,7 +225,7 @@ export function NewProjectDialog({ open, onOpenChange }: NewProjectDialogProps) 
               role="status"
               data-onboarding="resource-limit"
             >
-              <p className="font-medium text-amber-950 dark:text-amber-50">プロジェクト数の上限に達しています</p>
+              <p className="font-medium text-amber-950 dark:text-amber-50">{MSG_PROJECT_COUNT_LIMIT_TITLE}</p>
               <p className="mt-1.5 text-amber-900/95 dark:text-amber-100/95 leading-relaxed">
                 {rejection.inlineMessage}
               </p>

@@ -1,4 +1,9 @@
-import { isProjectCountLimitResponse, MSG_PROJECT_COUNT_LIMIT_REACHED } from '@/lib/organization/project-limit'
+import {
+  isProjectCountLimitResponse,
+  MSG_PROJECT_COUNT_LIMIT_REACHED,
+  MSG_PROJECT_COUNT_LIMIT_TITLE,
+  MSG_PROJECT_COUNT_LIMIT_TOAST_DESC,
+} from '@/lib/organization/project-limit'
 
 /**
  * フロントが「制限到達（正常な拒否）」と「障害」を分けて見せるための入口。
@@ -6,8 +11,8 @@ import { isProjectCountLimitResponse, MSG_PROJECT_COUNT_LIMIT_REACHED } from '@/
  */
 
 const PROJECT_CREATE_LIMIT_TOAST = {
-  title: 'プロジェクトの上限に達しています',
-  description: 'このワークスペースではこれ以上プロジェクトを作成できません',
+  title: MSG_PROJECT_COUNT_LIMIT_TITLE,
+  description: MSG_PROJECT_COUNT_LIMIT_TOAST_DESC,
 } as const
 
 export type ProjectCreateRejectionResult =

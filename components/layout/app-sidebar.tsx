@@ -25,6 +25,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { UserAccountBar } from '@/components/auth/user-account-bar'
+import { WorkspaceSwitcher } from '@/components/layout/workspace-switcher'
 import { NewProjectDialog } from '@/components/projects/new-project-dialog'
 import { PROJECT_UPDATED_EVENT } from '@/lib/project-events'
 import type { ProjectApiRecord, ProjectListResponse } from '@/lib/types'
@@ -85,7 +86,11 @@ export function AppSidebar({ projectId }: AppSidebarProps) {
 
   return (
     <aside className="flex h-screen w-64 shrink-0 flex-col border-r border-border bg-card">
-      <NewProjectDialog open={newProjectOpen} onOpenChange={setNewProjectOpen} />
+      <NewProjectDialog
+        open={newProjectOpen}
+        onOpenChange={setNewProjectOpen}
+        contextOrganizationId={currentMeta?.organizationId}
+      />
 
       {/* Logo */}
       <div className="flex h-14 items-center gap-2.5 border-b border-border px-4">
@@ -93,6 +98,10 @@ export function AppSidebar({ projectId }: AppSidebarProps) {
           <Sparkles className="h-4 w-4 text-primary-foreground" />
         </div>
         <span className="font-semibold text-foreground">ProjectLens</span>
+      </div>
+
+      <div className="border-b border-border p-3">
+        <WorkspaceSwitcher activeOrganizationId={currentMeta?.organizationId ?? null} />
       </div>
 
       {/* Project Switcher */}
@@ -116,9 +125,12 @@ export function AppSidebar({ projectId }: AppSidebarProps) {
               <span>新規プロジェクト</span>
             </DropdownMenuItem>
             <DropdownMenuItem asChild className="text-xs text-muted-foreground focus:text-foreground">
-              <Link href="/projects" className="flex cursor-pointer items-center gap-2">
+              <Link
+                href={currentMeta?.organizationId ? `/projects?organizationId=${currentMeta.organizationId}` : '/projects'}
+                className="flex cursor-pointer items-center gap-2"
+              >
                 <List className="h-3.5 w-3.5 opacity-80" />
-                <span>全件を表示（補助）</span>
+                <span>プロジェクト一覧へ</span>
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />

@@ -51,12 +51,21 @@ export interface ProjectCreateRequest {
   description?: string | null
   /** 未指定時は API 側で `simple` を適用 */
   templateKey?: KanbanTemplateKey
+  /**
+   * 指定時は当該 organization に紐づくプロジェクトとして作成（所属メンバーのみ）。
+   * 未指定は従来どおり `ensureOrganizationForCurrentUser`。
+   */
+  organizationId?: string
 }
 
 export interface ProjectApiRecord {
   id: string
   /** 属する organization（Phase 1 以降は必須扱い） */
   organizationId: string
+  /**
+   * `GET /api/projects` の一覧で付与。混在表示で区別するほか、将来グルーピングのキーとして使える。
+   */
+  organizationName?: string
   name: string
   description: string | null
   createdAt: string
@@ -88,6 +97,31 @@ export interface OrganizationCreateRequest {
 export type OrganizationCreateResponse = OrganizationApiRecord
 
 export type OrganizationMemberRoleApi = 'OWNER' | 'ADMIN' | 'MEMBER'
+
+/**
+ * `GET /api/organizations` の1件。所属メンバーシップ＋最小の org フィールド。
+ * `projectCount` / `remainingProjectCount` は org 全体の `projects` 行数（閲覧権限付きの一覧件数と一致しない場合あり。把握用）
+ */
+export interface OrganizationMembershipApiRecord {
+  id: string
+  name: string
+  slug: string | null
+  role: OrganizationMemberRoleApi
+  /** ワークスポークス単位の上限。`null` は無制限 */
+  projectLimit: number | null
+  /** 当該 org に紐づく `projects` の行数 */
+  projectCount: number
+  /**
+   * あと何件作れるか。`projectLimit === null` のときは `null`（無制限扱い）。
+   * 上限0や満杯のときは `0`
+   */
+  remainingProjectCount: number | null
+}
+
+/** `GET /api/organizations` */
+export interface OrganizationListResponse {
+  organizations: OrganizationMembershipApiRecord[]
+}
 
 /** POST /api/projects 成功時。一覧用 `ProjectApiRecord` と互換の本体に、作成時メタのみ付与可能 */
 export interface ProjectCreateResponse extends ProjectApiRecord {
@@ -145,6 +179,9 @@ export interface UserApiRecord {
 export interface UserListResponse {
   users: UserApiRecord[]
 }
+
+/** `GET /api/projects/[projectId]/member-candidates` — 応答形は上と同じ */
+export type ProjectMemberUserCandidatesResponse = UserListResponse
 
 export interface ProjectMember {
   id: string

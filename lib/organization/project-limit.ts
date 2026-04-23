@@ -6,7 +6,14 @@ export type PrismaOrTx = PrismaClient | Prisma.TransactionClient
  * `POST /api/projects` 等のレスポンス用（ユーザー向け）。定数化して将来 i18n 化しやすくする
  */
 export const MSG_PROJECT_COUNT_LIMIT_REACHED =
-  'このワークスペースでは作成できるプロジェクト数の上限に達しています。'
+  'このワークスペースで作成できるプロジェクトの上限に達しています。'
+
+/** モーダル内見出し・トーストタイトル（制限到達。エラー扱いにしない） */
+export const MSG_PROJECT_COUNT_LIMIT_TITLE = 'プロジェクトの上限に達しています'
+
+/** トースト本文など。API 1行目と重複しすぎないように短く */
+export const MSG_PROJECT_COUNT_LIMIT_TOAST_DESC =
+  'このワークスペースでは、これ以上プロジェクトを作成できません。'
 
 /**
  * `POST /api/projects` の 409 本文と照合。将来 API に `code` を足したらそちらを優先してもよい。
@@ -85,6 +92,17 @@ export function evaluateProjectLimit(
     return { allowed: true }
   }
   return { allowed: false, message: MSG_PROJECT_COUNT_LIMIT_REACHED }
+}
+
+/**
+ * 上限までの余裕（件数表示用）。`projectLimit === null` は `null`（＝UI で無制限扱い）
+ */
+export function remainingProjectSlots(projectLimit: number | null, projectCount: number): number | null {
+  if (projectLimit === null) {
+    return null
+  }
+  const cap = projectLimit < 0 ? 0 : projectLimit
+  return Math.max(0, cap - projectCount)
 }
 
 const ORG_NOT_FOUND_FOR_LIMIT = 'ワークスペースが見つかりません'

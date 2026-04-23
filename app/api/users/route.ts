@@ -4,7 +4,8 @@ import { prisma } from '@/lib/prisma'
 
 /**
  * GET /api/users
- * メンバー追加の候補用ユーザー一覧。認可は今後厳格化予定（暫定：全件）。
+ * アプリ内の全ユーザー（デバッグ等）。メンバー追加候補は
+ * `GET /api/projects/[projectId]/member-candidates` を使う（workspace 境界あり）。
  */
 export async function GET() {
   try {

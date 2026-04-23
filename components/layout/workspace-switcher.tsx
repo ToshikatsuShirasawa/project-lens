@@ -166,9 +166,9 @@ export function WorkspaceSwitcher({
             className
           )}
           role="region"
-          aria-label="ワークスペース切替"
+          aria-label="現在のワークスペース"
         >
-          <p className="text-[10px] font-medium tracking-wide text-muted-foreground">ワークスペース切替</p>
+          <p className="text-[10px] font-medium tracking-wide text-muted-foreground">現在のワークスペース</p>
           <div className="mt-1.5 flex items-center gap-2">
             <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded border border-border/50 bg-background/60">
               <Building2 className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
@@ -223,7 +223,7 @@ export function WorkspaceSwitcher({
   if (variant === 'headerControl') {
     return (
       <div className={cn('w-full max-w-full', className)}>
-        <p className="mb-1.5 text-[10px] font-medium tracking-wide text-muted-foreground">ワークスペース切替</p>
+        <p className="mb-1.5 text-[10px] font-medium tracking-wide text-muted-foreground">現在のワークスペース</p>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button

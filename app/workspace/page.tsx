@@ -3,7 +3,7 @@
 import { Suspense, useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { useRouter, useSearchParams } from 'next/navigation'
-import { Building2, ExternalLink, Kanban, LayoutDashboard, List, Plus, Settings, Sparkles } from 'lucide-react'
+import { Building2, Kanban, LayoutDashboard, List, Plus, Settings, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { UserAccountBar } from '@/components/auth/user-account-bar'
@@ -260,7 +260,7 @@ function WorkspaceHomeContent() {
                     <Building2 className="h-6 w-6 text-primary" aria-hidden />
                   </div>
                   <div className="min-w-0 flex-1 space-y-2">
-                    <p className="text-xs font-medium text-muted-foreground">このワークスペース</p>
+                    <p className="text-xs font-medium text-muted-foreground">ワークスペース概要</p>
                     <h1 className="text-2xl font-semibold leading-tight tracking-tight text-foreground">{orgName}</h1>
                     <div className="space-y-1.5 text-sm text-muted-foreground">
                       <p>
@@ -271,9 +271,6 @@ function WorkspaceHomeContent() {
                     </div>
                   </div>
                 </div>
-                <p className="mt-4 border-t border-border/70 pt-4 text-sm text-muted-foreground leading-relaxed">
-                  下のカードから各プロジェクトに入れます。内容の確認・枠数の目安はここを主にご利用ください。
-                </p>
               </div>
 
               <div className="flex flex-wrap gap-2">
@@ -281,17 +278,16 @@ function WorkspaceHomeContent() {
                   <Plus className="h-4 w-4" />
                   新規プロジェクト
                 </Button>
-                <Button asChild variant="secondary">
+                <Button asChild variant="outline">
                   <Link href={listUrl} className="gap-1.5">
                     <List className="h-4 w-4" />
                     このワークスペースのプロジェクト一覧
                   </Link>
                 </Button>
-                <Button asChild variant="outline" size="default">
-                  <Link href={allProjectsUrl} className="inline-flex items-center gap-1.5">
-                    <ExternalLink className="h-3.5 w-3.5" />
-                    全ワークスペースの一覧
-                  </Link>
+              </div>
+              <div className="mt-2">
+                <Button asChild variant="ghost" size="sm">
+                  <Link href={allProjectsUrl}>全ワークスペースの一覧</Link>
                 </Button>
               </div>
             </div>
@@ -317,14 +313,28 @@ function WorkspaceHomeContent() {
                 <ul className="m-0 list-none space-y-3 p-0">
                   {projects.map((p) => (
                     <li key={p.id}>
-                      <Card className="border-border shadow-sm">
+                      <Card
+                        className="cursor-pointer border-border shadow-sm transition-transform duration-150 hover:-translate-y-0.5 hover:shadow-md focus-within:ring-2 focus-within:ring-primary/30"
+                        role="link"
+                        tabIndex={0}
+                        aria-label={`「${p.name}」のカンバンを開く`}
+                        onClick={() => {
+                          router.push(`/projects/${p.id}/kanban`)
+                        }}
+                        onKeyDown={(event) => {
+                          if (event.key === 'Enter' || event.key === ' ') {
+                            event.preventDefault()
+                            router.push(`/projects/${p.id}/kanban`)
+                          }
+                        }}
+                      >
                         <CardHeader className="py-4">
                           <div className="space-y-2">
                             <div>
                               <CardTitle className="text-base font-medium text-foreground">{p.name}</CardTitle>
                               {p.description ? <CardDescription className="line-clamp-2 mt-1">{p.description}</CardDescription> : null}
                             </div>
-                            <div className="flex flex-wrap gap-2 pt-1">
+                            <div className="flex flex-wrap gap-2 pt-1" onClick={(event) => event.stopPropagation()}>
                               <Button asChild variant="outline" size="sm" className="h-8 gap-1">
                                 <Link href={`/projects/${p.id}/dashboard`}>
                                   <LayoutDashboard className="h-3.5 w-3.5" />
@@ -334,7 +344,7 @@ function WorkspaceHomeContent() {
                               <Button asChild size="sm" className="h-8 gap-1">
                                 <Link href={`/projects/${p.id}/kanban`}>
                                   <Kanban className="h-3.5 w-3.5" />
-                                  カンバン
+                                  カンバンを開く
                                 </Link>
                               </Button>
                               <Button asChild variant="secondary" size="sm" className="h-8 gap-1">

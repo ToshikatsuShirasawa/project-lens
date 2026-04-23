@@ -10,6 +10,7 @@ import { UserAccountBar } from '@/components/auth/user-account-bar'
 import { WorkspaceSwitcher } from '@/components/layout/workspace-switcher'
 import { NewProjectDialog } from '@/components/projects/new-project-dialog'
 import { GETTING_STARTED_DEFAULT } from '@/lib/auth/paths'
+import { getLastVisitedProjectId } from '@/lib/organization/last-visited-project'
 import { workspaceProjectUsageLabel } from '@/lib/organization/workspace-usage-label'
 import type {
   MeApiResponse,
@@ -36,6 +37,7 @@ function WorkspaceHomeContent() {
   const [projects, setProjects] = useState<ProjectApiRecord[] | null>(null)
   const [projectsError, setProjectsError] = useState<string | null>(null)
   const [newProjectOpen, setNewProjectOpen] = useState(false)
+  const [lastVisitedProjectId, setLastVisitedProjectId] = useState<string | null>(null)
 
   const loadOrganizations = useCallback(async () => {
     setOrgsError(null)
@@ -131,6 +133,14 @@ function WorkspaceHomeContent() {
     void loadProjects(orgIdFromUrl)
   }, [orgIdFromUrl, organizations, currentOrg, loadProjects])
 
+  useEffect(() => {
+    if (!orgIdFromUrl) {
+      setLastVisitedProjectId(null)
+      return
+    }
+    setLastVisitedProjectId(getLastVisitedProjectId(orgIdFromUrl))
+  }, [orgIdFromUrl])
+
   if (organizations === null) {
     return (
       <p className="text-sm text-muted-foreground" role="status">
@@ -215,6 +225,7 @@ function WorkspaceHomeContent() {
   const { id: orgId, name: orgName } = currentOrg
   const listUrl = `/projects?organizationId=${encodeURIComponent(orgId)}`
   const allProjectsUrl = '/projects'
+  const recentProject = projects?.find((project) => project.id === lastVisitedProjectId) ?? null
 
   return (
     <>
@@ -291,6 +302,30 @@ function WorkspaceHomeContent() {
                 </Button>
               </div>
             </div>
+
+            {recentProject ? (
+              <section className="space-y-2" aria-label="最近開いたプロジェクト">
+                <h2 className="text-sm font-semibold text-foreground">最近開いたプロジェクト</h2>
+                <Card className="border-border/80 shadow-sm">
+                  <CardHeader className="py-4">
+                    <div className="flex items-center justify-between gap-3">
+                      <div className="min-w-0">
+                        <CardTitle className="truncate text-base font-medium">{recentProject.name}</CardTitle>
+                        <CardDescription className="mt-1">
+                          前回このワークスペースで開いていたプロジェクトです
+                        </CardDescription>
+                      </div>
+                      <Button asChild size="sm" className="shrink-0 gap-1">
+                        <Link href={`/projects/${recentProject.id}/kanban`}>
+                          <Kanban className="h-3.5 w-3.5" />
+                          カンバンを開く
+                        </Link>
+                      </Button>
+                    </div>
+                  </CardHeader>
+                </Card>
+              </section>
+            ) : null}
 
             <div className="space-y-2">
               <h2 className="text-sm font-semibold text-foreground">このワークスペースのプロジェクト</h2>

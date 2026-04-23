@@ -425,15 +425,26 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
 
   const handleAddToKanban = (candidate: TaskCandidate, overrides?: CandidateApprovalOverrides) => {
     const title = overrides?.title?.trim() || candidate.title
+    const selectedAssigneeUserId = overrides?.suggestedAssigneeUserId?.trim()
+    const selectedMember = selectedAssigneeUserId
+      ? projectMembers.find((member) => member.userId === selectedAssigneeUserId)
+      : undefined
     const suggestedAssignee = overrides?.suggestedAssignee?.trim() || candidate.suggestedAssignee
     const suggestedDueDate = overrides?.suggestedDueDate?.trim() || candidate.suggestedDueDate
 
     const task: KanbanTask = {
       id: `from-ai-${candidate.id}`,
       title,
-      assignee: suggestedAssignee
-        ? { name: suggestedAssignee }
-        : undefined,
+      assigneeUserId: selectedMember?.userId,
+      assignee: selectedMember
+        ? {
+            id: selectedMember.userId,
+            name: memberOptionLabel(selectedMember),
+            email: selectedMember.email,
+          }
+        : suggestedAssignee
+          ? { name: suggestedAssignee }
+          : undefined,
       dueDate: suggestedDueDate,
       aiOrigin: candidate.source,
     }
@@ -510,6 +521,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
 
       <TaskCandidateSidePanel
         candidates={candidates}
+        projectMembers={projectMembers}
         onAddToKanban={handleAddToKanban}
         onHold={(id) =>
           setCandidates((prev) => {

@@ -6,25 +6,29 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { Sparkles, Plus, Pause, X, ChevronLeft, ChevronRight, CheckCircle2, PencilLine } from 'lucide-react'
 import { cn } from '@/lib/utils'
-import type { TaskCandidate } from '@/lib/types'
+import type { ProjectMemberApiRecord, TaskCandidate } from '@/lib/types'
 import { summarizeCandidateReasons } from '@/lib/ai/candidate-reason-summary'
 
 export interface CandidateApprovalOverrides {
   title?: string
   suggestedDueDate?: string
   suggestedAssignee?: string
+  suggestedAssigneeUserId?: string
 }
 
 interface TaskCandidateSidePanelProps {
   candidates: TaskCandidate[]
+  projectMembers: ProjectMemberApiRecord[]
   onAddToKanban: (candidate: TaskCandidate, overrides?: CandidateApprovalOverrides) => void
   onHold: (id: string) => void
   onDismiss: (id: string) => void
 }
 
 const KANBAN_AI_PANEL_OPEN_STORAGE_KEY = 'projectlens:kanban-ai-panel-open'
+const ASSIGNEE_NONE_VALUE = '__none__'
 
 const sourceConfig = {
   slack: { label: 'Slack', class: 'bg-emerald-100 text-emerald-700' },
@@ -42,7 +46,21 @@ const confidenceLabelConfig = {
 interface CandidateDraft {
   title: string
   dueDate: string
-  assignee: string
+  assigneeUserId: string
+}
+
+function memberOptionLabel(m: ProjectMemberApiRecord): string {
+  const n = m.name?.trim()
+  if (n) return n
+  return m.email.split('@')[0] ?? m.email
+}
+
+function resolveInitialAssigneeUserId(candidate: TaskCandidate, members: ProjectMemberApiRecord[]): string {
+  const suggested = candidate.suggestedAssignee?.trim()
+  if (!suggested) return ''
+  const normalized = suggested.toLowerCase()
+  const matched = members.find((member) => memberOptionLabel(member).trim().toLowerCase() === normalized)
+  return matched?.userId ?? ''
 }
 
 function toDateInputValue(s: string | undefined): string {
@@ -53,6 +71,7 @@ function toDateInputValue(s: string | undefined): string {
 
 export function TaskCandidateSidePanel({
   candidates,
+  projectMembers,
   onAddToKanban,
   onHold,
   onDismiss,
@@ -108,7 +127,7 @@ export function TaskCandidateSidePanel({
         [candidate.id]: {
           title: candidate.title,
           dueDate: toDateInputValue(candidate.suggestedDueDate),
-          assignee: candidate.suggestedAssignee ?? '',
+          assigneeUserId: resolveInitialAssigneeUserId(candidate, projectMembers),
         },
       }
     })
@@ -119,7 +138,7 @@ export function TaskCandidateSidePanel({
       drafts[candidate.id] ?? {
         title: candidate.title,
         dueDate: toDateInputValue(candidate.suggestedDueDate),
-        assignee: candidate.suggestedAssignee ?? '',
+        assigneeUserId: resolveInitialAssigneeUserId(candidate, projectMembers),
       }
     )
   }
@@ -143,15 +162,21 @@ export function TaskCandidateSidePanel({
 
     const title = draft.title.trim()
     const dueDate = draft.dueDate.trim()
-    const assignee = draft.assignee.trim()
+    const assigneeUserId = draft.assigneeUserId.trim()
+    const selectedMember = assigneeUserId
+      ? projectMembers.find((member) => member.userId === assigneeUserId)
+      : undefined
+    const assignee = selectedMember ? memberOptionLabel(selectedMember) : ''
     const baseTitle = candidate.title.trim()
     const baseDueDate = toDateInputValue(candidate.suggestedDueDate)
     const baseAssignee = (candidate.suggestedAssignee ?? '').trim()
+    const baseAssigneeUserId = resolveInitialAssigneeUserId(candidate, projectMembers)
 
     const overrides: CandidateApprovalOverrides = {}
     if (title && title !== baseTitle) overrides.title = title
     if (dueDate !== baseDueDate) overrides.suggestedDueDate = dueDate || undefined
     if (assignee !== baseAssignee) overrides.suggestedAssignee = assignee || undefined
+    if (assigneeUserId !== baseAssigneeUserId) overrides.suggestedAssigneeUserId = assigneeUserId || undefined
 
     return Object.keys(overrides).length > 0 ? overrides : undefined
   }
@@ -159,10 +184,10 @@ export function TaskCandidateSidePanel({
   if (!open) {
     return (
       <aside
-        className="w-11 shrink-0 flex flex-col border-l border-border bg-ai-panel h-full"
+        className="w-11 shrink-0 flex flex-col border-l border-border bg-background h-full"
         aria-label="AIタスク候補パネル（閉じています）"
       >
-        <div className="flex flex-1 flex-col items-center gap-2 border-b border-border/80 py-2 bg-primary/[0.03]">
+        <div className="flex flex-1 flex-col items-center gap-2 border-b border-border/80 py-2 bg-background">
           <Button
             type="button"
             variant="ghost"
@@ -188,11 +213,11 @@ export function TaskCandidateSidePanel({
 
   return (
     <aside
-      className="w-80 shrink-0 flex flex-col border-l border-border bg-ai-panel h-full"
+      className="w-80 shrink-0 flex flex-col border-l border-border bg-background h-full"
       aria-label="AIタスク候補"
     >
-      <div className="flex items-center gap-2 border-b border-border/80 px-3 py-2.5 pr-2 bg-primary/[0.04]">
-        <span className="h-4 w-1 rounded-full bg-primary/50" aria-hidden />
+      <div className="flex items-center gap-2 border-b border-border/80 px-3 py-2.5 pr-2 bg-background">
+        <span className="h-4 w-0.5 rounded-full bg-primary/40" aria-hidden />
         <Sparkles className="h-4 w-4 shrink-0 text-primary" />
         <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">AI提案タスク</span>
         {candidates.length > 0 && (
@@ -213,11 +238,11 @@ export function TaskCandidateSidePanel({
           <span className="sr-only">候補パネルを閉じる</span>
         </Button>
       </div>
-      <p className="px-4 py-2 text-xs text-muted-foreground border-b border-border/80 bg-primary/[0.02]">
+      <p className="px-4 py-2 text-xs text-muted-foreground border-b border-border/80 bg-background">
         AIが抽出した候補です。承認するとカンバンのバックログに追加されます。
       </p>
 
-      <div className="flex-1 overflow-y-auto p-3 space-y-3 bg-primary/[0.01]">
+      <div className="flex-1 overflow-y-auto p-3 space-y-3 bg-background">
         {candidates.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center gap-2">
             <Sparkles className="h-8 w-8 text-muted-foreground/40" />
@@ -234,8 +259,8 @@ export function TaskCandidateSidePanel({
               <Card
                 key={c.id}
                 className={cn(
-                  'bg-card shadow-sm border-border/80 transition-colors',
-                  isTopCandidate && 'border-primary/40 bg-primary/[0.035]'
+                  'bg-card border-border/70 transition-colors hover:bg-muted/40',
+                  isTopCandidate && 'border-border'
                 )}
               >
                 <CardContent className="p-3 space-y-3">
@@ -287,27 +312,36 @@ export function TaskCandidateSidePanel({
                       {c.suggestedDueDate && <span>期限候補: {c.suggestedDueDate}</span>}
                     </div>
                   )}
-                  <div className="flex justify-start">
-                    <Button
-                      type="button"
-                      size="sm"
-                      variant="ghost"
-                      className="h-6 px-2 text-[11px] text-muted-foreground"
-                      onClick={() => {
-                        if (editingId === c.id) {
-                          setEditingId(null)
-                          return
-                        }
-                        ensureDraft(c)
-                        setEditingId(c.id)
-                      }}
-                    >
-                      <PencilLine className="h-3 w-3" />
-                      {editingId === c.id ? '閉じる' : '編集'}
-                    </Button>
-                  </div>
+                  {editingId !== c.id && (
+                    <div className="flex justify-start">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 px-2 text-[11px] text-muted-foreground"
+                        onClick={() => {
+                          ensureDraft(c)
+                          setEditingId(c.id)
+                        }}
+                      >
+                        <PencilLine className="h-3 w-3" />
+                        編集
+                      </Button>
+                    </div>
+                  )}
                   {editingId === c.id && (
-                    <div className="space-y-2 rounded-md border border-border/80 bg-muted/40 p-2.5">
+                    <div className="relative space-y-2 rounded-md border border-border/80 bg-muted/40 p-2.5">
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        className="absolute right-1.5 top-1.5 h-6 w-6 text-muted-foreground"
+                        onClick={() => setEditingId(null)}
+                        title="編集を閉じる"
+                      >
+                        <X className="h-3.5 w-3.5" />
+                        <span className="sr-only">編集を閉じる</span>
+                      </Button>
                       <p className="text-[11px] text-muted-foreground">編集してから追加できます</p>
                       <div className="space-y-1">
                         <Label htmlFor={`candidate-title-${c.id}`} className="text-[11px]">
@@ -338,13 +372,24 @@ export function TaskCandidateSidePanel({
                           <Label htmlFor={`candidate-assignee-${c.id}`} className="text-[11px]">
                             担当
                           </Label>
-                          <Input
-                            id={`candidate-assignee-${c.id}`}
-                            value={getDraft(c).assignee}
-                            onChange={(e) => updateDraft(c.id, { assignee: e.target.value })}
-                            placeholder="名前"
-                            className="h-8 text-xs"
-                          />
+                          <Select
+                            value={getDraft(c).assigneeUserId.trim() ? getDraft(c).assigneeUserId : ASSIGNEE_NONE_VALUE}
+                            onValueChange={(value) =>
+                              updateDraft(c.id, { assigneeUserId: value === ASSIGNEE_NONE_VALUE ? '' : value })
+                            }
+                          >
+                            <SelectTrigger id={`candidate-assignee-${c.id}`} className="h-8 text-xs">
+                              <SelectValue placeholder="未設定" />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value={ASSIGNEE_NONE_VALUE}>未設定</SelectItem>
+                              {projectMembers.map((member) => (
+                                <SelectItem key={member.userId} value={member.userId}>
+                                  {memberOptionLabel(member)}
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
                         </div>
                       </div>
                     </div>

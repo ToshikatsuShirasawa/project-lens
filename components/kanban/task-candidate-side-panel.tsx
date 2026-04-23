@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Sparkles, Plus, Pause, X, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { TaskCandidate } from '@/lib/types'
+import { summarizeCandidateReasons } from '@/lib/ai/candidate-reason-summary'
 
 interface TaskCandidateSidePanelProps {
   candidates: TaskCandidate[]
@@ -23,6 +24,12 @@ const sourceConfig = {
   meeting: { label: '議事録', class: 'bg-purple-100 text-purple-700' },
   ai: { label: 'AI検出', class: 'bg-primary/10 text-primary' },
 }
+
+const confidenceLabelConfig = {
+  high: { label: '強い候補', class: 'bg-primary/15 text-primary' },
+  medium: { label: '有望', class: 'bg-amber-100 text-amber-700' },
+  review: { label: '要確認', class: 'bg-muted text-muted-foreground' },
+} as const
 
 export function TaskCandidateSidePanel({
   candidates,
@@ -130,6 +137,8 @@ export function TaskCandidateSidePanel({
             const src = sourceConfig[c.source]
             const isTopCandidate = index === 0
             const isSubmitting = submittingId === c.id
+            const reasonSummary = summarizeCandidateReasons(c, { isTopCandidate, maxChips: 4 })
+            const confidence = confidenceLabelConfig[reasonSummary.confidenceLevel]
             return (
               <Card
                 key={c.id}
@@ -148,13 +157,38 @@ export function TaskCandidateSidePanel({
                         </Badge>
                       )}
                       <Badge className={cn('text-[10px] h-4 px-1.5 border-0', src.class)}>{src.label}</Badge>
+                      <Badge className={cn('text-[10px] h-4 px-1.5 border-0', confidence.class)}>
+                        {confidence.label}
+                      </Badge>
+                    </div>
+                  </div>
+                  <div className="space-y-1.5">
+                    {isTopCandidate && reasonSummary.recommendationReason ? (
+                      <p className="text-[11px] font-medium text-primary">{reasonSummary.recommendationReason}</p>
+                    ) : null}
+                    <div className="flex flex-wrap gap-1">
+                      {reasonSummary.chips.map((chip, chipIndex) => (
+                        <Badge
+                          key={`${c.id}-${chip.label}`}
+                          className={cn(
+                            'h-5 border-0 px-2 text-[10px]',
+                            chipIndex === 0 || chip.strength === 'strong'
+                              ? 'bg-primary/15 text-primary'
+                              : 'bg-muted text-muted-foreground'
+                          )}
+                        >
+                          {chip.label}
+                        </Badge>
+                      ))}
                     </div>
                   </div>
                   <div className="space-y-1">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
-                      抽出理由
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/90">
+                      補足
                     </p>
-                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-3">{c.reason}</p>
+                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+                      {reasonSummary.supportText}
+                    </p>
                   </div>
                   {(c.suggestedAssignee || c.suggestedDueDate) && (
                     <div className="flex gap-3 text-[11px] text-muted-foreground">

@@ -32,7 +32,7 @@ export function ProjectHeader({ projectName, status, lastUpdated, channels, memb
     <header className="flex h-14 shrink-0 items-center justify-between border-b border-border bg-card px-6 gap-4">
       {/* Left: project name + status + channels */}
       <div className="flex items-center gap-3 min-w-0">
-        <h1 className="text-base font-semibold text-foreground truncate">{projectName}</h1>
+        <h1 className="text-[18px] font-semibold text-foreground truncate tracking-tight">{projectName}</h1>
         <Badge className={cn('shrink-0 text-xs', cfg.className)}>{cfg.label}</Badge>
         <span className="hidden text-xs text-muted-foreground sm:block shrink-0">
           最終更新: {lastUpdated}

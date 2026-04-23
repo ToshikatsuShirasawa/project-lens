@@ -45,7 +45,7 @@ function UsageLine({ org, className }: { org: OrganizationMembershipApiRecord; c
 
 /** デフォルト: サイドバー等で、長い名前でも枠の幅・最低高さが揺れない */
 const contextBlock = 'w-full min-h-[6.25rem] max-w-full'
-const contextBlockControl = 'w-full min-h-[4.25rem] max-w-full'
+const contextBlockControl = 'w-full min-h-[2rem] max-w-full'
 
 export function WorkspaceSwitcher({
   activeOrganizationId,
@@ -159,24 +159,18 @@ export function WorkspaceSwitcher({
       return (
         <div
           className={cn(
-            'rounded-lg border border-border/60 bg-muted/20 px-3 py-2.5',
+            'bg-transparent px-1 py-1',
             contextBlockControl,
             className
           )}
           role="region"
-          aria-label="現在のワークスペース"
+          aria-label="ワークスペースの文脈"
         >
-          <p className="text-[10px] font-medium tracking-wide text-muted-foreground">現在のワークスペース</p>
-          <div className="mt-1.5 flex items-center gap-2">
-            <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded border border-border/50 bg-background/60">
-              <Building2 className="h-3.5 w-3.5 text-muted-foreground" aria-hidden />
-            </div>
-            <div className="min-w-0 flex-1">
-              <p className="line-clamp-2 break-words text-sm font-medium leading-snug text-foreground/90" title={o.name}>
-                {o.name}
-              </p>
-              <p className="text-[11px] text-muted-foreground leading-snug">参加中の workspace は1件のため、切替はありません。</p>
-            </div>
+          <div className="flex items-center gap-1.5 text-muted-foreground">
+            <Building2 className="h-3.5 w-3.5 shrink-0" aria-hidden />
+            <p className="truncate text-sm font-medium leading-snug" title={o.name}>
+              {o.name}
+            </p>
           </div>
         </div>
       )
@@ -217,17 +211,15 @@ export function WorkspaceSwitcher({
   const triggerSub = active
     ? [ROLE_LABEL[active.role], '表示中'].join(' · ')
     : '一覧（絞り込みなし）'
-
   if (variant === 'headerControl') {
     return (
       <div className={cn('w-full max-w-full', className)}>
-        <p className="mb-1.5 text-[10px] font-medium tracking-wide text-muted-foreground">現在のワークスペース</p>
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <button
               type="button"
               className={cn(
-                'flex w-full min-w-0 max-w-full items-stretch justify-between gap-2 rounded-lg border border-border/70 bg-muted/20 px-2.5 py-2 text-left text-sm transition-colors hover:bg-muted/40',
+                'flex w-full min-w-0 max-w-full items-center justify-between gap-1.5 rounded-none border-none bg-transparent px-1 py-1 text-left text-sm font-medium text-muted-foreground shadow-none transition-colors hover:bg-muted/50',
                 contextBlockControl,
                 navigating && 'pointer-events-none opacity-70'
               )}
@@ -235,25 +227,24 @@ export function WorkspaceSwitcher({
               aria-haspopup="menu"
               disabled={navigating}
             >
-              <div className="flex min-h-0 min-w-0 flex-1 items-start gap-2 pr-0.5">
-                <div className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center rounded border border-border/50 bg-background/70">
+              <div className="flex min-h-0 min-w-0 flex-1 items-center gap-1.5 pr-0.5">
+                <div className="flex h-4 w-4 shrink-0 items-center justify-center">
                   {navigating ? (
-                    <Loader2 className="h-3.5 w-3.5 shrink-0 animate-spin text-muted-foreground" aria-hidden />
+                    <Loader2 className="h-3 w-3 shrink-0 animate-spin text-muted-foreground" aria-hidden />
                   ) : (
                     <Building2 className="h-3.5 w-3.5 shrink-0 text-muted-foreground" aria-hidden />
                   )}
                 </div>
-                <div className="min-w-0 flex-1 space-y-0.5">
+                <div className="min-w-0 flex-1">
                   <p
-                    className="line-clamp-2 break-words text-sm font-medium text-foreground/95 leading-snug"
+                    className="truncate text-sm font-medium leading-snug text-muted-foreground"
                     title={navigating ? undefined : triggerTitle}
                   >
                     {navigating ? '切り替え中…' : triggerTitle}
                   </p>
-                  <p className="text-[11px] text-muted-foreground line-clamp-1 break-words">{triggerSub}</p>
                 </div>
               </div>
-              <ChevronDown className="mt-0.5 h-4 w-4 shrink-0 self-start text-muted-foreground/80" />
+              <ChevronDown className="h-3.5 w-3.5 shrink-0 text-muted-foreground/80" />
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent
@@ -261,7 +252,6 @@ export function WorkspaceSwitcher({
             className={cn('min-w-52', fullWidth ? 'max-w-[min(100vw-2rem,36rem)]' : 'w-52')}
             style={fullWidth ? { width: 'var(--radix-popper-anchor-width)' } : undefined}
           >
-            <DropdownMenuLabel className="text-[11px] font-normal text-muted-foreground">ワークスペース</DropdownMenuLabel>
             {organizations.map((o) => {
               const isCurrent = o.id === activeOrganizationId
               return (

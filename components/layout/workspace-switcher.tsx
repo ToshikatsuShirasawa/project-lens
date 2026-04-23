@@ -263,16 +263,13 @@ export function WorkspaceSwitcher({
             className={cn('min-w-52', fullWidth ? 'max-w-[min(100vw-2rem,36rem)]' : 'w-52')}
             style={fullWidth ? { width: 'var(--radix-popper-anchor-width)' } : undefined}
           >
-            <DropdownMenuLabel className="text-[11px] font-normal text-muted-foreground">
-              全ワークスペースの俯瞰 / 個別のワークスペースに移動
-            </DropdownMenuLabel>
+            <DropdownMenuLabel className="text-[11px] font-normal text-muted-foreground">ワークスペース</DropdownMenuLabel>
             <DropdownMenuItem asChild className="p-0" disabled={navigating}>
               <Link
                 href="/projects"
                 className="w-full cursor-pointer rounded-sm px-2 py-2.5 text-sm text-foreground block leading-snug"
               >
-                すべてのプロジェクト（一覧）
-                <span className="mt-0.5 block text-[11px] font-normal text-muted-foreground">ワークスペース横断で見る</span>
+                すべてのプロジェクト一覧
               </Link>
             </DropdownMenuItem>
             <DropdownMenuSeparator />
@@ -287,19 +284,14 @@ export function WorkspaceSwitcher({
                     void switchToWorkspace(o.id)
                   }}
                 >
-                  <div className="flex w-full flex-col items-stretch gap-0.5 px-2 py-2.5">
-                    <span className="flex min-w-0 items-center gap-2">
-                      {isCurrent ? (
-                        <Check className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
-                      ) : (
-                        <span className="inline-block w-3.5 shrink-0" aria-hidden />
-                      )}
-                      <span className={cn('truncate text-sm', isCurrent ? 'font-medium text-foreground' : 'font-medium text-foreground/90')}>
-                        {o.name}
-                      </span>
-                    </span>
-                    <span className="pl-[1.375rem] text-[11px] text-muted-foreground leading-tight">
-                      {ROLE_LABEL[o.role]}
+                  <div className="flex w-full items-center gap-2 px-2 py-2.5">
+                    {isCurrent ? (
+                      <Check className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+                    ) : (
+                      <span className="inline-block w-3.5 shrink-0" aria-hidden />
+                    )}
+                    <span className={cn('truncate text-sm', isCurrent ? 'font-semibold text-foreground' : 'font-medium text-foreground/90')}>
+                      {o.name}
                     </span>
                   </div>
                 </DropdownMenuItem>
@@ -354,18 +346,13 @@ export function WorkspaceSwitcher({
           className={cn('min-w-52', fullWidth ? 'max-w-[min(100vw-2rem,36rem)]' : 'w-52')}
           style={fullWidth ? { width: 'var(--radix-popper-anchor-width)' } : undefined}
         >
-          <DropdownMenuLabel className="text-[11px] font-normal text-muted-foreground">
-            全ワークスペースの俯瞰 / 個別のワークスペースに移動
-          </DropdownMenuLabel>
+          <DropdownMenuLabel className="text-[11px] font-normal text-muted-foreground">ワークスペース</DropdownMenuLabel>
           <DropdownMenuItem asChild className="p-0" disabled={navigating}>
             <Link
               href="/projects"
               className="w-full cursor-pointer rounded-sm px-2 py-2.5 text-sm text-foreground block leading-snug"
             >
-              すべてのプロジェクト（一覧）
-              <span className="mt-0.5 block text-[11px] font-normal text-muted-foreground">
-                ワークスペース横断で見る
-              </span>
+              すべてのプロジェクト一覧
             </Link>
           </DropdownMenuItem>
           <DropdownMenuSeparator />
@@ -380,19 +367,14 @@ export function WorkspaceSwitcher({
                   void switchToWorkspace(o.id)
                 }}
               >
-                <div className="flex flex-col items-stretch gap-0.5 px-2 py-2.5 w-full">
-                  <span className="flex min-w-0 items-center gap-2">
-                    {isCurrent ? (
-                      <Check className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
-                    ) : (
-                      <span className="inline-block w-3.5 shrink-0" aria-hidden />
-                    )}
-                    <span className={cn('truncate text-sm', isCurrent ? 'font-medium text-foreground' : 'font-medium text-foreground/90')}>
-                      {o.name}
-                    </span>
-                  </span>
-                  <span className="pl-[1.375rem] text-[11px] text-muted-foreground leading-tight">
-                    {ROLE_LABEL[o.role]}
+                <div className="flex w-full items-center gap-2 px-2 py-2.5">
+                  {isCurrent ? (
+                    <Check className="h-3.5 w-3.5 shrink-0 text-primary" aria-hidden />
+                  ) : (
+                    <span className="inline-block w-3.5 shrink-0" aria-hidden />
+                  )}
+                  <span className={cn('truncate text-sm', isCurrent ? 'font-semibold text-foreground' : 'font-medium text-foreground/90')}>
+                    {o.name}
                   </span>
                 </div>
               </DropdownMenuItem>

@@ -4,14 +4,22 @@ import { useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Sparkles, Plus, Pause, X, ChevronLeft, ChevronRight, CheckCircle2 } from 'lucide-react'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { Sparkles, Plus, Pause, X, ChevronLeft, ChevronRight, CheckCircle2, PencilLine } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { TaskCandidate } from '@/lib/types'
 import { summarizeCandidateReasons } from '@/lib/ai/candidate-reason-summary'
 
+export interface CandidateApprovalOverrides {
+  title?: string
+  suggestedDueDate?: string
+  suggestedAssignee?: string
+}
+
 interface TaskCandidateSidePanelProps {
   candidates: TaskCandidate[]
-  onAddToKanban: (candidate: TaskCandidate) => void
+  onAddToKanban: (candidate: TaskCandidate, overrides?: CandidateApprovalOverrides) => void
   onHold: (id: string) => void
   onDismiss: (id: string) => void
 }
@@ -31,6 +39,18 @@ const confidenceLabelConfig = {
   review: { label: '要確認', class: 'bg-muted text-muted-foreground' },
 } as const
 
+interface CandidateDraft {
+  title: string
+  dueDate: string
+  assignee: string
+}
+
+function toDateInputValue(s: string | undefined): string {
+  if (!s) return ''
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.slice(0, 10)
+  return ''
+}
+
 export function TaskCandidateSidePanel({
   candidates,
   onAddToKanban,
@@ -40,6 +60,8 @@ export function TaskCandidateSidePanel({
   const [open, setOpen] = useState(true)
   const [openStateLoaded, setOpenStateLoaded] = useState(false)
   const [submittingId, setSubmittingId] = useState<string | null>(null)
+  const [editingId, setEditingId] = useState<string | null>(null)
+  const [drafts, setDrafts] = useState<Record<string, CandidateDraft>>({})
 
   useEffect(() => {
     try {
@@ -64,6 +86,75 @@ export function TaskCandidateSidePanel({
       // Ignore persistence failures and keep panel usable.
     }
   }, [open, openStateLoaded])
+
+  useEffect(() => {
+    const candidateIds = new Set(candidates.map((candidate) => candidate.id))
+    if (editingId && !candidateIds.has(editingId)) {
+      setEditingId(null)
+    }
+    setDrafts((prev) => {
+      const next = Object.fromEntries(
+        Object.entries(prev).filter(([candidateId]) => candidateIds.has(candidateId))
+      ) as Record<string, CandidateDraft>
+      return Object.keys(next).length === Object.keys(prev).length ? prev : next
+    })
+  }, [candidates, editingId])
+
+  const ensureDraft = (candidate: TaskCandidate) => {
+    setDrafts((prev) => {
+      if (prev[candidate.id]) return prev
+      return {
+        ...prev,
+        [candidate.id]: {
+          title: candidate.title,
+          dueDate: toDateInputValue(candidate.suggestedDueDate),
+          assignee: candidate.suggestedAssignee ?? '',
+        },
+      }
+    })
+  }
+
+  const getDraft = (candidate: TaskCandidate): CandidateDraft => {
+    return (
+      drafts[candidate.id] ?? {
+        title: candidate.title,
+        dueDate: toDateInputValue(candidate.suggestedDueDate),
+        assignee: candidate.suggestedAssignee ?? '',
+      }
+    )
+  }
+
+  const updateDraft = (candidateId: string, patch: Partial<CandidateDraft>) => {
+    setDrafts((prev) => {
+      if (!prev[candidateId]) return prev
+      return {
+        ...prev,
+        [candidateId]: {
+          ...prev[candidateId],
+          ...patch,
+        },
+      }
+    })
+  }
+
+  const getApprovalOverrides = (candidate: TaskCandidate): CandidateApprovalOverrides | undefined => {
+    const draft = drafts[candidate.id]
+    if (!draft) return undefined
+
+    const title = draft.title.trim()
+    const dueDate = draft.dueDate.trim()
+    const assignee = draft.assignee.trim()
+    const baseTitle = candidate.title.trim()
+    const baseDueDate = toDateInputValue(candidate.suggestedDueDate)
+    const baseAssignee = (candidate.suggestedAssignee ?? '').trim()
+
+    const overrides: CandidateApprovalOverrides = {}
+    if (title && title !== baseTitle) overrides.title = title
+    if (dueDate !== baseDueDate) overrides.suggestedDueDate = dueDate || undefined
+    if (assignee !== baseAssignee) overrides.suggestedAssignee = assignee || undefined
+
+    return Object.keys(overrides).length > 0 ? overrides : undefined
+  }
 
   if (!open) {
     return (
@@ -196,6 +287,68 @@ export function TaskCandidateSidePanel({
                       {c.suggestedDueDate && <span>期限候補: {c.suggestedDueDate}</span>}
                     </div>
                   )}
+                  <div className="flex justify-start">
+                    <Button
+                      type="button"
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 px-2 text-[11px] text-muted-foreground"
+                      onClick={() => {
+                        if (editingId === c.id) {
+                          setEditingId(null)
+                          return
+                        }
+                        ensureDraft(c)
+                        setEditingId(c.id)
+                      }}
+                    >
+                      <PencilLine className="h-3 w-3" />
+                      {editingId === c.id ? '閉じる' : '編集'}
+                    </Button>
+                  </div>
+                  {editingId === c.id && (
+                    <div className="space-y-2 rounded-md border border-border/80 bg-muted/40 p-2.5">
+                      <p className="text-[11px] text-muted-foreground">編集してから追加できます</p>
+                      <div className="space-y-1">
+                        <Label htmlFor={`candidate-title-${c.id}`} className="text-[11px]">
+                          タイトル
+                        </Label>
+                        <Input
+                          id={`candidate-title-${c.id}`}
+                          value={getDraft(c).title}
+                          onChange={(e) => updateDraft(c.id, { title: e.target.value })}
+                          placeholder="タスクタイトル"
+                          className="h-8 text-xs"
+                        />
+                      </div>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div className="space-y-1">
+                          <Label htmlFor={`candidate-due-${c.id}`} className="text-[11px]">
+                            期限
+                          </Label>
+                          <Input
+                            id={`candidate-due-${c.id}`}
+                            type="date"
+                            value={getDraft(c).dueDate}
+                            onChange={(e) => updateDraft(c.id, { dueDate: e.target.value })}
+                            className="h-8 text-xs"
+                          />
+                        </div>
+                        <div className="space-y-1">
+                          <Label htmlFor={`candidate-assignee-${c.id}`} className="text-[11px]">
+                            担当
+                          </Label>
+                          <Input
+                            id={`candidate-assignee-${c.id}`}
+                            value={getDraft(c).assignee}
+                            onChange={(e) => updateDraft(c.id, { assignee: e.target.value })}
+                            placeholder="名前"
+                            className="h-8 text-xs"
+                          />
+                        </div>
+                      </div>
+                    </div>
+                  )}
                   <div className="flex gap-1.5 pt-1">
                     <Button
                       size="sm"
@@ -205,7 +358,7 @@ export function TaskCandidateSidePanel({
                       )}
                       onClick={() => {
                         setSubmittingId(c.id)
-                        onAddToKanban(c)
+                        onAddToKanban(c, getApprovalOverrides(c))
                       }}
                       disabled={isSubmitting}
                     >

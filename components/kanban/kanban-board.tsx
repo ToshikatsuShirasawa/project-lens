@@ -3,6 +3,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { KanbanColumn } from './kanban-column'
 import { TaskCandidateSidePanel } from './task-candidate-side-panel'
+import type { CandidateApprovalOverrides } from './task-candidate-side-panel'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -422,14 +423,18 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   const backlogColumnKey =
     boardColumns.find((c) => c.key === 'backlog')?.key ?? boardColumns[0]?.key ?? 'backlog'
 
-  const handleAddToKanban = (candidate: TaskCandidate) => {
+  const handleAddToKanban = (candidate: TaskCandidate, overrides?: CandidateApprovalOverrides) => {
+    const title = overrides?.title?.trim() || candidate.title
+    const suggestedAssignee = overrides?.suggestedAssignee?.trim() || candidate.suggestedAssignee
+    const suggestedDueDate = overrides?.suggestedDueDate?.trim() || candidate.suggestedDueDate
+
     const task: KanbanTask = {
       id: `from-ai-${candidate.id}`,
-      title: candidate.title,
-      assignee: candidate.suggestedAssignee
-        ? { name: candidate.suggestedAssignee }
+      title,
+      assignee: suggestedAssignee
+        ? { name: suggestedAssignee }
         : undefined,
-      dueDate: candidate.suggestedDueDate,
+      dueDate: suggestedDueDate,
       aiOrigin: candidate.source,
     }
     setCards((prev) => ({

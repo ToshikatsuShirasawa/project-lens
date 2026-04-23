@@ -1,16 +1,24 @@
 import { ProjectMemberRole } from '@/lib/generated/prisma/client'
 import { NextResponse } from 'next/server'
+import { projectListWhereForUser } from '@/lib/auth/authorization-policy'
+import { requireAppUserJson } from '@/lib/auth/require-app-user'
 import {
   DEFAULT_KANBAN_TEMPLATE_KEY,
   getKanbanColumnSeedsForTemplate,
   isKanbanTemplateKey,
 } from '@/lib/kanban/kanban-column-templates'
+import { ensureOrganizationForCurrentUser } from '@/lib/organization/ensure-organization-for-user'
 import { prisma } from '@/lib/prisma'
 import type { KanbanTemplateKey } from '@/lib/types'
 
 export async function GET() {
   try {
+    const auth = await requireAppUserJson()
+    if (!auth.ok) return auth.response
+    const uid = auth.ctx.appUser.id
+    /** 案A: `project_members` 参加 かつ `organization_members` 所属の両方（authorization-policy） */
     const rows = await prisma.project.findMany({
+      where: projectListWhereForUser(uid),
       orderBy: { updatedAt: 'desc' },
       select: {
         id: true,
@@ -18,11 +26,13 @@ export async function GET() {
         description: true,
         createdAt: true,
         updatedAt: true,
+        organizationId: true,
       },
     })
 
     const projects = rows.map((r) => ({
       id: r.id,
+      organizationId: r.organizationId,
       name: r.name,
       description: r.description,
       createdAt: r.createdAt.toISOString(),
@@ -49,45 +59,15 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'リクエストボディが不正です' }, { status: 400 })
     }
 
-    const { name, description, templateKey: templateKeyRaw, ownerUserId: ownerUserIdRaw } = body as Record<
-      string,
-      unknown
-    >
+    const { name, description, templateKey: templateKeyRaw } = body as Record<string, unknown>
     const nameStr = typeof name === 'string' ? name.trim() : ''
     if (!nameStr) {
       return NextResponse.json({ message: 'name が必要です' }, { status: 400 })
     }
 
-    let ownerUserId: string | null = null
-    if ('ownerUserId' in body) {
-      if (ownerUserIdRaw === null || ownerUserIdRaw === undefined) {
-        ownerUserId = null
-      } else if (typeof ownerUserIdRaw === 'string') {
-        const trimmed = ownerUserIdRaw.trim()
-        if (!trimmed) {
-          return NextResponse.json(
-            { message: 'ownerUserId を指定する場合は空にできません' },
-            { status: 400 }
-          )
-        }
-        ownerUserId = trimmed
-      } else {
-        return NextResponse.json({ message: 'ownerUserId は文字列または null としてください' }, { status: 400 })
-      }
-    }
-
-    if (ownerUserId) {
-      const userExists = await prisma.user.findUnique({
-        where: { id: ownerUserId },
-        select: { id: true },
-      })
-      if (!userExists) {
-        return NextResponse.json(
-          { message: 'ownerUserId に一致するユーザーが存在しません' },
-          { status: 400 }
-        )
-      }
-    }
+    const auth = await requireAppUserJson()
+    if (!auth.ok) return auth.response
+    const ownerUserId: string = auth.ctx.appUser.id
 
     const trimmedTemplate =
       typeof templateKeyRaw === 'string' ? templateKeyRaw.trim() : ''
@@ -105,11 +85,19 @@ export async function POST(request: Request) {
       descriptionValue = d.length > 0 ? d : null
     }
 
+    const appUser = auth.ctx.appUser
+
     const created = await prisma.$transaction(async (tx) => {
+      const org = await ensureOrganizationForCurrentUser(
+        { id: appUser.id, email: appUser.email, name: appUser.name },
+        tx
+      )
+
       const project = await tx.project.create({
         data: {
           name: nameStr,
           description: descriptionValue,
+          organizationId: org.id,
         },
       })
       const columnSeeds = getKanbanColumnSeedsForTemplate(templateKey)
@@ -148,6 +136,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         id: created.project.id,
+        organizationId: created.project.organizationId,
         name: created.project.name,
         description: created.project.description,
         createdAt: created.project.createdAt.toISOString(),

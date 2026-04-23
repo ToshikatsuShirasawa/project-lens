@@ -15,10 +15,13 @@ import {
 import { Loader2, Trash2, UserPlus } from 'lucide-react'
 import { toastError, toastSuccess } from '@/lib/operation-toast'
 import { cn } from '@/lib/utils'
-import type {
-  ProjectMemberApiRecord,
-  ProjectMemberRoleApi,
-  UserApiRecord,
+import {
+  isProjectManagerRoleApi,
+  isProjectOwnerRoleApi,
+  type ProjectMemberApiRecord,
+  type ProjectMemberRoleApi,
+  type ProjectApiRecord,
+  type UserApiRecord,
 } from '@/lib/types'
 
 const ADD_NONE = '__none__'
@@ -57,17 +60,32 @@ export function MemberSettingsPanel({ projectId }: MemberSettingsPanelProps) {
   const [roleSavingId, setRoleSavingId] = useState<string | null>(null)
   const [deleteSavingId, setDeleteSavingId] = useState<string | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
+  const [canManage, setCanManage] = useState(false)
+  /** 現在ユーザーが `project_members.role === OWNER` か（オーナー専用のメンバー操作） */
+  const [myProjectRole, setMyProjectRole] = useState<ProjectMemberRoleApi | null>(null)
 
   const loadAll = useCallback(async () => {
     setListError(null)
     setLoading(true)
     try {
-      const [mRes, uRes] = await Promise.all([
+      const [mRes, uRes, pRes] = await Promise.all([
         fetch(`/api/projects/${encodeURIComponent(projectId)}/members`),
         fetch('/api/users'),
+        fetch(`/api/projects/${encodeURIComponent(projectId)}`),
       ])
       const mBody: unknown = await mRes.json().catch(() => null)
       const uBody: unknown = await uRes.json().catch(() => null)
+      const pBody: unknown = await pRes.json().catch(() => null)
+
+      if (pRes.ok && pBody && typeof pBody === 'object' && pBody) {
+        const pr = pBody as ProjectApiRecord
+        const role = pr.myProjectRole ?? null
+        setMyProjectRole(role)
+        setCanManage(isProjectManagerRoleApi(role))
+      } else {
+        setMyProjectRole(null)
+        setCanManage(false)
+      }
 
       if (!mRes.ok) {
         const msg =
@@ -117,10 +135,18 @@ export function MemberSettingsPanel({ projectId }: MemberSettingsPanelProps) {
   )
 
   const busy = adding || roleSavingId !== null || deleteSavingId !== null
+  const managementLocked = !canManage
+  const isCurrentUserProjectOwner = isProjectOwnerRoleApi(myProjectRole)
+
+  useEffect(() => {
+    if (canManage && !isCurrentUserProjectOwner && addRole === 'OWNER') {
+      setAddRole('MEMBER')
+    }
+  }, [canManage, isCurrentUserProjectOwner, addRole])
 
   const handleAdd = async () => {
     const uid = addUserId.trim()
-    if (!uid || adding || busy) return
+    if (!uid || adding || busy || managementLocked) return
     setActionError(null)
     setAdding(true)
     try {
@@ -159,7 +185,7 @@ export function MemberSettingsPanel({ projectId }: MemberSettingsPanelProps) {
     role: ProjectMemberRoleApi,
     previousRole: ProjectMemberRoleApi
   ) => {
-    if (role === previousRole || busy) return
+    if (role === previousRole || busy || managementLocked) return
     setActionError(null)
     setRoleSavingId(memberId)
     try {
@@ -195,7 +221,7 @@ export function MemberSettingsPanel({ projectId }: MemberSettingsPanelProps) {
   }
 
   const handleDelete = async (memberId: string) => {
-    if (busy) return
+    if (busy || managementLocked) return
     setActionError(null)
     setDeleteSavingId(memberId)
     try {
@@ -232,10 +258,27 @@ export function MemberSettingsPanel({ projectId }: MemberSettingsPanelProps) {
         <CardTitle>メンバー管理</CardTitle>
         <CardDescription>
           プロジェクトメンバーの一覧・追加・ロール変更・削除ができます。カンバンの担当者候補はこの一覧に連動します。
+          オーナー役の付与・解除やオーナー行の削除は、プロジェクトのオーナーのみが行えます。
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        <div className="rounded-lg border border-border bg-muted/20 p-4 space-y-3">
+        {managementLocked ? (
+          <p className="text-sm text-muted-foreground border border-border rounded-md p-3 bg-muted/30">
+            メンバーの追加・ロール変更・削除は、プロジェクトの<strong className="text-foreground">管理者</strong>または
+            <strong className="text-foreground">オーナー</strong>のみが行えます。一覧の閲覧は可能です。
+          </p>
+        ) : null}
+        {canManage && !isCurrentUserProjectOwner ? (
+          <p className="text-sm text-muted-foreground border border-border rounded-md p-3 bg-muted/30">
+            管理者として、オーナー役の付与・変更・オーナー行の削除は行えません（オーナーのみ）。その他のメンバー管理は行えます。
+          </p>
+        ) : null}
+        <div
+          className={cn(
+            'rounded-lg border border-border bg-muted/20 p-4 space-y-3',
+            managementLocked && 'opacity-60 pointer-events-none'
+          )}
+        >
           <h3 className="text-sm font-medium text-foreground flex items-center gap-2">
             <UserPlus className="h-4 w-4" />
             メンバーを追加
@@ -246,7 +289,7 @@ export function MemberSettingsPanel({ projectId }: MemberSettingsPanelProps) {
               <Select
                 value={addUserId || ADD_NONE}
                 onValueChange={(v) => setAddUserId(v === ADD_NONE ? '' : v)}
-                disabled={loading || busy || addableUsers.length === 0}
+                disabled={loading || busy || addableUsers.length === 0 || managementLocked}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue placeholder={loading ? '読み込み中…' : 'ユーザーを選択'} />
@@ -266,22 +309,25 @@ export function MemberSettingsPanel({ projectId }: MemberSettingsPanelProps) {
               <Select
                 value={addRole}
                 onValueChange={(v) => setAddRole(v as ProjectMemberRoleApi)}
-                disabled={loading || busy}
+                disabled={loading || busy || managementLocked}
               >
                 <SelectTrigger className="w-full">
                   <SelectValue />
                 </SelectTrigger>
+                {/* オーナー役の付与は POST /members でも OWNER のみ — 非オーナーには選択肢を出さない */}
                 <SelectContent>
                   <SelectItem value="MEMBER">{ROLE_LABEL.MEMBER}</SelectItem>
                   <SelectItem value="ADMIN">{ROLE_LABEL.ADMIN}</SelectItem>
-                  <SelectItem value="OWNER">{ROLE_LABEL.OWNER}</SelectItem>
+                  {isCurrentUserProjectOwner ? (
+                    <SelectItem value="OWNER">{ROLE_LABEL.OWNER}</SelectItem>
+                  ) : null}
                 </SelectContent>
               </Select>
             </div>
             <Button
               type="button"
               onClick={() => void handleAdd()}
-              disabled={!addUserId.trim() || loading || busy || addableUsers.length === 0}
+              disabled={!addUserId.trim() || loading || busy || addableUsers.length === 0 || managementLocked}
               className="shrink-0"
             >
               {adding ? '追加中…' : '追加'}
@@ -310,6 +356,8 @@ export function MemberSettingsPanel({ projectId }: MemberSettingsPanelProps) {
           <ul className="space-y-3">
             {members.map((member) => {
               const savingThis = roleSavingId === member.id || deleteSavingId === member.id
+              const rowIsOwner = member.role === 'OWNER'
+              const ownerRowLockedForAdmin = canManage && !isCurrentUserProjectOwner && rowIsOwner
               return (
                 <li
                   key={member.id}
@@ -328,37 +376,47 @@ export function MemberSettingsPanel({ projectId }: MemberSettingsPanelProps) {
                     <p className="text-sm text-muted-foreground truncate">{member.email}</p>
                   </div>
                   <div className="flex flex-wrap items-center gap-2 sm:justify-end">
-                    <Select
-                      value={member.role}
-                      onValueChange={(v) =>
-                        void handleRoleChange(member.id, v as ProjectMemberRoleApi, member.role)
-                      }
-                      disabled={busy}
-                    >
-                      <SelectTrigger className="w-[9.5rem]" aria-label="ロールを変更">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="OWNER">{ROLE_LABEL.OWNER}</SelectItem>
-                        <SelectItem value="ADMIN">{ROLE_LABEL.ADMIN}</SelectItem>
-                        <SelectItem value="MEMBER">{ROLE_LABEL.MEMBER}</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="icon"
-                      className="text-muted-foreground hover:text-destructive"
-                      disabled={busy}
-                      aria-label="メンバーを削除"
-                      onClick={() => void handleDelete(member.id)}
-                    >
-                      {deleteSavingId === member.id ? (
-                        <Loader2 className="h-4 w-4 animate-spin" aria-label="削除中" />
+                    {canManage ? (
+                      ownerRowLockedForAdmin ? (
+                        <span className="text-xs text-muted-foreground">ロール・削除はオーナーのみ</span>
                       ) : (
-                        <Trash2 className="h-4 w-4" />
-                      )}
-                    </Button>
+                        <>
+                          <Select
+                            value={member.role}
+                            onValueChange={(v) =>
+                              void handleRoleChange(member.id, v as ProjectMemberRoleApi, member.role)
+                            }
+                            disabled={busy}
+                          >
+                            <SelectTrigger className="w-[9.5rem]" aria-label="ロールを変更">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {isCurrentUserProjectOwner ? (
+                                <SelectItem value="OWNER">{ROLE_LABEL.OWNER}</SelectItem>
+                              ) : null}
+                              <SelectItem value="ADMIN">{ROLE_LABEL.ADMIN}</SelectItem>
+                              <SelectItem value="MEMBER">{ROLE_LABEL.MEMBER}</SelectItem>
+                            </SelectContent>
+                          </Select>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="icon"
+                            className="text-muted-foreground hover:text-destructive"
+                            disabled={busy}
+                            aria-label="メンバーを削除"
+                            onClick={() => void handleDelete(member.id)}
+                          >
+                            {deleteSavingId === member.id ? (
+                              <Loader2 className="h-4 w-4 animate-spin" aria-label="削除中" />
+                            ) : (
+                              <Trash2 className="h-4 w-4" />
+                            )}
+                          </Button>
+                        </>
+                      )
+                    ) : null}
                   </div>
                   {savingThis && roleSavingId === member.id && (
                     <span className="text-xs text-muted-foreground sm:w-full sm:order-last">更新中…</span>

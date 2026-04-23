@@ -1,51 +1,43 @@
 import { NextResponse } from 'next/server'
+import { requireProjectAccessJson, requireProjectManagerJson } from '@/lib/auth/require-project-access'
 import { prisma } from '@/lib/prisma'
-import type { ProjectUpdateRequest } from '@/lib/types'
+import type { ProjectMemberRoleApi, ProjectUpdateRequest } from '@/lib/types'
 
 interface RouteContext {
   params: Promise<{ projectId: string }>
 }
 
-function serializeProject(row: {
-  id: string
-  name: string
-  description: string | null
-  createdAt: Date
-  updatedAt: Date
-}) {
+function serializeProject(
+  row: {
+    id: string
+    organizationId: string
+    name: string
+    description: string | null
+    createdAt: Date
+    updatedAt: Date
+  },
+  myProjectRole: ProjectMemberRoleApi
+) {
   return {
     id: row.id,
+    organizationId: row.organizationId,
     name: row.name,
     description: row.description,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
+    myProjectRole,
   }
 }
 
 export async function GET(_request: Request, context: RouteContext) {
   try {
     const { projectId } = await context.params
-    const id = projectId?.trim()
-    if (!id) {
-      return NextResponse.json({ message: 'projectId が不正です' }, { status: 400 })
-    }
+    const access = await requireProjectAccessJson(projectId)
+    if (!access.ok) return access.response
 
-    const row = await prisma.project.findUnique({
-      where: { id },
-      select: {
-        id: true,
-        name: true,
-        description: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    })
-
-    if (!row) {
-      return NextResponse.json({ message: 'プロジェクトが見つかりません' }, { status: 404 })
-    }
-
-    return NextResponse.json(serializeProject(row))
+    return NextResponse.json(
+      serializeProject(access.ctx.project, access.ctx.projectMember.role as ProjectMemberRoleApi)
+    )
   } catch (e) {
     console.error('[GET /api/projects/[projectId]]', e)
     return NextResponse.json({ message: 'プロジェクトの取得に失敗しました' }, { status: 500 })
@@ -55,10 +47,9 @@ export async function GET(_request: Request, context: RouteContext) {
 export async function PATCH(request: Request, context: RouteContext) {
   try {
     const { projectId } = await context.params
-    const id = projectId?.trim()
-    if (!id) {
-      return NextResponse.json({ message: 'projectId が不正です' }, { status: 400 })
-    }
+    const access = await requireProjectManagerJson(projectId)
+    if (!access.ok) return access.response
+    const id = access.ctx.project.id
 
     let body: unknown
     try {
@@ -102,6 +93,7 @@ export async function PATCH(request: Request, context: RouteContext) {
       data,
       select: {
         id: true,
+        organizationId: true,
         name: true,
         description: true,
         createdAt: true,
@@ -109,7 +101,9 @@ export async function PATCH(request: Request, context: RouteContext) {
       },
     })
 
-    return NextResponse.json(serializeProject(updated))
+    return NextResponse.json(
+      serializeProject(updated, access.ctx.projectMember.role as ProjectMemberRoleApi)
+    )
   } catch (e: unknown) {
     console.error('[PATCH /api/projects/[projectId]]', e)
     const code = e && typeof e === 'object' && 'code' in e ? (e as { code: string }).code : ''

@@ -24,6 +24,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { UserAccountBar } from '@/components/auth/user-account-bar'
 import { NewProjectDialog } from '@/components/projects/new-project-dialog'
 import { PROJECT_UPDATED_EVENT } from '@/lib/project-events'
 import type { ProjectApiRecord, ProjectListResponse } from '@/lib/types'
@@ -202,6 +203,10 @@ export function AppSidebar({ projectId }: AppSidebarProps) {
           )
         })}
       </nav>
+
+      <div className="border-t border-border p-3">
+        <UserAccountBar />
+      </div>
 
       {/* AI Status */}
       <div className="border-t border-border p-3">

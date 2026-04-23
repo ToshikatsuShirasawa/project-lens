@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation'
 import { Kanban, Plus, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
+import { UserAccountBar } from '@/components/auth/user-account-bar'
 import { NewProjectDialog } from '@/components/projects/new-project-dialog'
 import type { ProjectApiRecord, ProjectListResponse } from '@/lib/types'
 
@@ -66,26 +67,30 @@ function ProjectsListInner() {
 
       <div className="min-h-screen bg-muted/20 flex flex-col">
         <header className="border-b border-border bg-card px-6 py-4 shrink-0">
-          <div className="mx-auto max-w-2xl flex items-center justify-between gap-4">
+            <div className="mx-auto max-w-2xl flex items-center justify-between gap-4 flex-wrap">
             <div className="flex items-center gap-3 min-w-0">
               <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg bg-primary">
                 <Sparkles className="h-4 w-4 text-primary-foreground" />
               </div>
               <span className="font-semibold text-foreground truncate">ProjectLens</span>
             </div>
-            <Button size="sm" type="button" className="gap-1.5" onClick={() => setNewProjectOpen(true)}>
-              <Plus className="h-4 w-4" />
-              新規プロジェクト作成
-            </Button>
+            <div className="flex items-center gap-3 shrink-0">
+              <UserAccountBar variant="inline" />
+              <Button size="sm" type="button" className="gap-1.5" onClick={() => setNewProjectOpen(true)}>
+                <Plus className="h-4 w-4" />
+                新規
+              </Button>
+            </div>
           </div>
         </header>
 
         <main className="flex-1 p-6">
           <div className="mx-auto max-w-2xl space-y-6">
             <div>
-              <h1 className="text-lg font-semibold text-foreground">全プロジェクト</h1>
+              <h1 className="text-lg font-semibold text-foreground">プロジェクト一覧</h1>
               <p className="text-sm text-muted-foreground mt-1">
-                普段の切り替えはサイドバー上部のメニューから行えます。ここは全件の確認・ブックマーク用の補助画面です。
+                あなたがメンバーとして参加しているプロジェクトです。未ログインではこの画面には入れません。
+                普段の切り替えはプロジェクト内サイドバー上のメニューから行えます。
               </p>
             </div>
 

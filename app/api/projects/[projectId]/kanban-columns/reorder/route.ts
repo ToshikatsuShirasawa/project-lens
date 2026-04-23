@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { requireProjectManagerJson } from '@/lib/auth/require-project-access'
 import { serializeProjectKanbanColumn } from '@/lib/kanban/serialize-kanban-column'
 import { prisma } from '@/lib/prisma'
 
@@ -9,10 +10,9 @@ interface RouteContext {
 export async function PATCH(request: Request, context: RouteContext) {
   try {
     const { projectId } = await context.params
-    const projectIdStr = projectId?.trim()
-    if (!projectIdStr) {
-      return NextResponse.json({ message: 'projectId が不正です' }, { status: 400 })
-    }
+    const access = await requireProjectManagerJson(projectId)
+    if (!access.ok) return access.response
+    const projectIdStr = access.ctx.project.id
 
     let body: unknown
     try {
@@ -36,14 +36,6 @@ export async function PATCH(request: Request, context: RouteContext) {
     }
     if (new Set(columnIds).size !== columnIds.length) {
       return NextResponse.json({ message: 'columnIds に重複があります' }, { status: 400 })
-    }
-
-    const projectExists = await prisma.project.findUnique({
-      where: { id: projectIdStr },
-      select: { id: true },
-    })
-    if (!projectExists) {
-      return NextResponse.json({ message: 'プロジェクトが見つかりません' }, { status: 404 })
     }
 
     const existing = await prisma.projectKanbanColumn.findMany({

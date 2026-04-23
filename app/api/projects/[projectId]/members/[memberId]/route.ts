@@ -1,6 +1,12 @@
 import { ProjectMemberRole } from '@/lib/generated/prisma/client'
 import { projectMemberToApiRecord } from '@/lib/project-members/serialize-project-member'
 import { NextResponse } from 'next/server'
+import {
+  isMemberRoleChangeTouchingOwner,
+  isProjectOwnerRole,
+  MSG_PROJECT_OWNER_ONLY,
+  requireProjectManagerJson,
+} from '@/lib/auth/require-project-access'
 import { prisma } from '@/lib/prisma'
 import type { ProjectMemberRoleApi } from '@/lib/types'
 
@@ -13,10 +19,12 @@ const ROLE_SET = new Set<string>(Object.values(ProjectMemberRole))
 export async function PATCH(request: Request, context: RouteContext) {
   try {
     const { projectId, memberId } = await context.params
-    const pid = projectId?.trim()
+    const access = await requireProjectManagerJson(projectId)
+    if (!access.ok) return access.response
+    const pid = access.ctx.project.id
     const mid = memberId?.trim()
-    if (!pid || !mid) {
-      return NextResponse.json({ message: 'projectId または memberId が不正です' }, { status: 400 })
+    if (!mid) {
+      return NextResponse.json({ message: 'memberId が不正です' }, { status: 400 })
     }
 
     let body: unknown
@@ -58,6 +66,12 @@ export async function PATCH(request: Request, context: RouteContext) {
       }
     }
 
+    if (isMemberRoleChangeTouchingOwner(existing.role, role)) {
+      if (!isProjectOwnerRole(access.ctx.projectMember.role)) {
+        return NextResponse.json({ message: MSG_PROJECT_OWNER_ONLY }, { status: 403 })
+      }
+    }
+
     const updated = await prisma.projectMember.update({
       where: { id: mid },
       data: { role },
@@ -88,10 +102,12 @@ export async function PATCH(request: Request, context: RouteContext) {
 export async function DELETE(_request: Request, context: RouteContext) {
   try {
     const { projectId, memberId } = await context.params
-    const pid = projectId?.trim()
+    const access = await requireProjectManagerJson(projectId)
+    if (!access.ok) return access.response
+    const pid = access.ctx.project.id
     const mid = memberId?.trim()
-    if (!pid || !mid) {
-      return NextResponse.json({ message: 'projectId または memberId が不正です' }, { status: 400 })
+    if (!mid) {
+      return NextResponse.json({ message: 'memberId が不正です' }, { status: 400 })
     }
 
     const existing = await prisma.projectMember.findFirst({
@@ -111,6 +127,9 @@ export async function DELETE(_request: Request, context: RouteContext) {
           { message: '最後のオーナーは削除できません' },
           { status: 400 }
         )
+      }
+      if (!isProjectOwnerRole(access.ctx.projectMember.role)) {
+        return NextResponse.json({ message: MSG_PROJECT_OWNER_ONLY }, { status: 403 })
       }
     }
 

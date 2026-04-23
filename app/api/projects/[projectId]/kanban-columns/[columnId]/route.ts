@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { requireProjectManagerJson } from '@/lib/auth/require-project-access'
 import { serializeProjectKanbanColumn } from '@/lib/kanban/serialize-kanban-column'
 import { prisma } from '@/lib/prisma'
 
@@ -11,10 +12,12 @@ const NAME_MAX = 120
 export async function PATCH(request: Request, context: RouteContext) {
   try {
     const { projectId, columnId } = await context.params
-    const projectIdStr = projectId?.trim()
+    const access = await requireProjectManagerJson(projectId)
+    if (!access.ok) return access.response
+    const projectIdStr = access.ctx.project.id
     const columnIdStr = columnId?.trim()
-    if (!projectIdStr || !columnIdStr) {
-      return NextResponse.json({ message: 'projectId または columnId が不正です' }, { status: 400 })
+    if (!columnIdStr) {
+      return NextResponse.json({ message: 'columnId が不正です' }, { status: 400 })
     }
 
     let body: unknown
@@ -112,10 +115,12 @@ export async function PATCH(request: Request, context: RouteContext) {
 export async function DELETE(_request: Request, context: RouteContext) {
   try {
     const { projectId, columnId } = await context.params
-    const projectIdStr = projectId?.trim()
+    const access = await requireProjectManagerJson(projectId)
+    if (!access.ok) return access.response
+    const projectIdStr = access.ctx.project.id
     const columnIdStr = columnId?.trim()
-    if (!projectIdStr || !columnIdStr) {
-      return NextResponse.json({ message: 'projectId または columnId が不正です' }, { status: 400 })
+    if (!columnIdStr) {
+      return NextResponse.json({ message: 'columnId が不正です' }, { status: 400 })
     }
 
     const existing = await prisma.projectKanbanColumn.findFirst({

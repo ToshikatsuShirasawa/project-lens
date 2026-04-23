@@ -47,6 +47,16 @@ export { Prisma }
  */
 export type User = Prisma.UserModel
 /**
+ * Model Organization
+ * 
+ */
+export type Organization = Prisma.OrganizationModel
+/**
+ * Model OrganizationMember
+ * 企業内所属。`project_members` とは別スコープ
+ */
+export type OrganizationMember = Prisma.OrganizationMemberModel
+/**
  * Model Project
  * 
  */

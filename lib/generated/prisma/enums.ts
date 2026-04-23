@@ -18,6 +18,15 @@ export const ProjectMemberRole = {
 export type ProjectMemberRole = (typeof ProjectMemberRole)[keyof typeof ProjectMemberRole]
 
 
+export const OrganizationMemberRole = {
+  OWNER: 'OWNER',
+  ADMIN: 'ADMIN',
+  MEMBER: 'MEMBER'
+} as const
+
+export type OrganizationMemberRole = (typeof OrganizationMemberRole)[keyof typeof OrganizationMemberRole]
+
+
 export const TaskPriority = {
   LOW: 'LOW',
   MEDIUM: 'MEDIUM',

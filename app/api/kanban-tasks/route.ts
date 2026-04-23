@@ -1,5 +1,6 @@
 import { TaskPriority } from '@/lib/generated/prisma/client'
 import { NextResponse } from 'next/server'
+import { requireProjectAccessJson } from '@/lib/auth/require-project-access'
 import { resolveProjectKanbanColumn } from '@/lib/kanban/resolve-kanban-column'
 import { serializeProjectKanbanColumn } from '@/lib/kanban/serialize-kanban-column'
 import { serializeKanbanTask } from '@/lib/kanban/serialize-kanban-task'
@@ -14,6 +15,8 @@ export async function GET(request: Request) {
     if (!projectId) {
       return NextResponse.json({ message: 'projectId が必要です' }, { status: 400 })
     }
+    const access = await requireProjectAccessJson(projectId)
+    if (!access.ok) return access.response
 
     const columnRows = await prisma.projectKanbanColumn.findMany({
       where: { projectId, isArchived: false },
@@ -81,19 +84,8 @@ export async function POST(request: Request) {
       return NextResponse.json({ message: 'title が必要です' }, { status: 400 })
     }
 
-    const projectExists = await prisma.project.findUnique({
-      where: { id: projectIdStr },
-      select: { id: true },
-    })
-    if (!projectExists) {
-      return NextResponse.json(
-        {
-          message:
-            'projectId に一致するプロジェクトがありません。Prisma Studio 等で projects テーブルに行を追加するか、URL の projectId を実在する id に合わせてください。',
-        },
-        { status: 400 }
-      )
-    }
+    const access = await requireProjectAccessJson(projectIdStr)
+    if (!access.ok) return access.response
 
     const resolved = await resolveProjectKanbanColumn(prisma, projectIdStr, {
       columnId: typeof columnId === 'string' ? columnId : undefined,

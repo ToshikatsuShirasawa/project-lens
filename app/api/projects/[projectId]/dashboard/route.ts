@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { requireProjectAccessJson } from '@/lib/auth/require-project-access'
 import { prisma } from '@/lib/prisma'
 import type { ProjectDashboardResponse } from '@/lib/types'
 
@@ -26,18 +27,9 @@ const activeDoneColumnWhere = {
 export async function GET(_request: Request, context: RouteContext) {
   try {
     const { projectId } = await context.params
-    const id = projectId?.trim()
-    if (!id) {
-      return NextResponse.json({ message: 'projectId が不正です' }, { status: 400 })
-    }
-
-    const project = await prisma.project.findUnique({
-      where: { id },
-      select: { id: true },
-    })
-    if (!project) {
-      return NextResponse.json({ message: 'プロジェクトが見つかりません' }, { status: 404 })
-    }
+    const access = await requireProjectAccessJson(projectId)
+    if (!access.ok) return access.response
+    const id = access.ctx.project.id
 
     const todayStart = utcDayStartFromDate(new Date())
     const upcomingEndInclusive = addUtcDays(todayStart, 6)

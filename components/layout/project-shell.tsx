@@ -45,15 +45,32 @@ function mapApiToDisplay(row: ProjectApiRecord): ShellDisplay {
 export function ProjectShell({ projectId, children }: ProjectShellProps) {
   const [loading, setLoading] = useState(true)
   const [display, setDisplay] = useState<ShellDisplay | null>(null)
+  const [loadNote, setLoadNote] = useState<string | null>(null)
 
   const refetch = useCallback(async (opts?: { silent?: boolean }) => {
     const silent = opts?.silent ?? false
     if (!silent) setLoading(true)
+    setLoadNote(null)
     try {
       const res = await fetch(`/api/projects/${encodeURIComponent(projectId)}`)
       if (res.ok) {
         const row = (await res.json()) as ProjectApiRecord
         setDisplay(mapApiToDisplay(row))
+        return
+      }
+      if (res.status === 401 || res.status === 403) {
+        setDisplay(null)
+        const j: unknown = await res.json().catch(() => null)
+        const msg =
+          j && typeof j === 'object' && 'message' in j && typeof (j as { message: unknown }).message === 'string'
+            ? (j as { message: string }).message
+            : 'このプロジェクトにアクセスできません'
+        setLoadNote(msg)
+        return
+      }
+      if (res.status === 404) {
+        setDisplay(null)
+        setLoadNote(null)
         return
       }
       const mock = getProject(projectId)
@@ -91,8 +108,15 @@ export function ProjectShell({ projectId, children }: ProjectShellProps) {
 
   if (!display) {
     return (
-      <div className="flex h-screen items-center justify-center bg-background">
-        <p className="text-muted-foreground">プロジェクトが見つかりません</p>
+      <div className="flex h-screen flex-col items-center justify-center gap-2 bg-background px-4 text-center">
+        <p className="text-muted-foreground">
+          {loadNote ?? 'プロジェクトが見つかりません'}
+        </p>
+        {loadNote ? (
+          <p className="text-xs text-muted-foreground/90 max-w-sm">
+            組織に所属し、かつこのプロジェクトのメンバーのみアクセスできます。
+          </p>
+        ) : null}
       </div>
     )
   }

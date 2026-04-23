@@ -11,6 +11,19 @@ export type EffortLevel = 'low' | 'medium' | 'high'
 // Project
 // ============================================================
 
+/** Prisma `ProjectMemberRole` と同じ3値（API の role 文字列） */
+export type ProjectMemberRoleApi = 'OWNER' | 'ADMIN' | 'MEMBER'
+
+/** API 上のロール文字列で「プロジェクトを管理できる」か（`myProjectRole` 等の判定用） */
+export function isProjectManagerRoleApi(role: ProjectMemberRoleApi | undefined | null): boolean {
+  return role === 'ADMIN' || role === 'OWNER'
+}
+
+/** 当該ユーザーの API 上のロールが **プロジェクトのオーナー** か（OWNER 専用 UI / メンバー操作の補助） */
+export function isProjectOwnerRoleApi(role: ProjectMemberRoleApi | undefined | null): boolean {
+  return role === 'OWNER'
+}
+
 export interface Project {
   id: string
   name: string
@@ -38,24 +51,37 @@ export interface ProjectCreateRequest {
   description?: string | null
   /** 未指定時は API 側で `simple` を適用 */
   templateKey?: KanbanTemplateKey
-  /**
-   * 指定時のみ、作成したプロジェクトに `project_members`（role: OWNER）を1件追加する。
-   * Auth 連携後はログインユーザー id を渡す想定。
-   */
-  ownerUserId?: string | null
 }
 
 export interface ProjectApiRecord {
   id: string
+  /** 属する organization（Phase 1 以降は必須扱い） */
+  organizationId: string
   name: string
   description: string | null
   createdAt: string
   updatedAt: string
+  /**
+   * GET / PATCH 応答の `GET|PATCH /api/projects/[projectId]` のみ。当該ユーザーの `project_members.role`。
+   * 一覧 `GET /api/projects` には含めない。
+   */
+  myProjectRole?: ProjectMemberRoleApi
 }
+
+/** API で organization を返すとき用（管理 UI 未実装段階の将来互換） */
+export interface OrganizationApiRecord {
+  id: string
+  name: string
+  slug: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export type OrganizationMemberRoleApi = 'OWNER' | 'ADMIN' | 'MEMBER'
 
 /** POST /api/projects 成功時。一覧用 `ProjectApiRecord` と互換の本体に、作成時メタのみ付与可能 */
 export interface ProjectCreateResponse extends ProjectApiRecord {
-  /** `ownerUserId` が有効に指定され、`project_members` に OWNER を作成したとき true */
+  /** 作成と同時に `project_members`（OWNER）を作ったとき true */
   ownerMemberCreated?: boolean
 }
 
@@ -76,8 +102,11 @@ export interface NewProjectFormState {
   description: string
   /** カンバン初期列テンプレート（未指定時は API 側でも `simple`） */
   templateKey: KanbanTemplateKey
-  /** 空文字は未選択。`POST /api/projects` の `ownerUserId` に対応 */
-  ownerUserId: string
+}
+
+/** GET /api/auth/me レスポンス */
+export interface MeApiResponse {
+  user: { id: string; email: string; name: string | null } | null
 }
 
 /** GET /api/users の1件 */
@@ -346,9 +375,6 @@ export interface KanbanTaskApiRecord {
   assigneeId: string | null
   assignee: { id: string; name: string | null; email: string } | null
 }
-
-/** Prisma `ProjectMemberRole` と同じ3値（API の role 文字列） */
-export type ProjectMemberRoleApi = 'OWNER' | 'ADMIN' | 'MEMBER'
 
 /** GET /api/projects/[projectId]/members の1件（`id` は project_members の行 id） */
 export interface ProjectMemberApiRecord {

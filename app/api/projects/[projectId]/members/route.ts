@@ -1,6 +1,12 @@
 import { ProjectMemberRole } from '@/lib/generated/prisma/client'
 import { projectMemberToApiRecord } from '@/lib/project-members/serialize-project-member'
 import { NextResponse } from 'next/server'
+import {
+  isProjectOwnerRole,
+  MSG_PROJECT_OWNER_ONLY,
+  requireProjectAccessJson,
+  requireProjectManagerJson,
+} from '@/lib/auth/require-project-access'
 import { prisma } from '@/lib/prisma'
 import type { ProjectMemberRoleApi } from '@/lib/types'
 
@@ -12,23 +18,14 @@ const ROLE_SET = new Set<string>(Object.values(ProjectMemberRole))
 
 /**
  * GET /api/projects/[projectId]/members
- * project_members と users を結合して、担当者候補一覧を返す。
+ * project_members（プロジェクト内ロール）と users。アクセスは `requireProjectAccessJson`（org + PJ 二層）。
  */
 export async function GET(_request: Request, context: RouteContext) {
   try {
     const { projectId } = await context.params
-    const id = projectId?.trim()
-    if (!id) {
-      return NextResponse.json({ message: 'projectId が不正です' }, { status: 400 })
-    }
-
-    const project = await prisma.project.findUnique({
-      where: { id },
-      select: { id: true },
-    })
-    if (!project) {
-      return NextResponse.json({ message: 'プロジェクトが見つかりません' }, { status: 404 })
-    }
+    const access = await requireProjectAccessJson(projectId)
+    if (!access.ok) return access.response
+    const id = access.ctx.project.id
 
     const rows = await prisma.projectMember.findMany({
       where: { projectId: id },
@@ -58,14 +55,14 @@ export async function GET(_request: Request, context: RouteContext) {
 /**
  * POST /api/projects/[projectId]/members
  * userId + role でメンバーを追加する。
+ * `role: OWNER` の新規付与は、実行者がプロジェクト OWNER のみ（ADMIN は 403 / `MSG_PROJECT_OWNER_ONLY`）。
  */
 export async function POST(request: Request, context: RouteContext) {
   try {
     const { projectId } = await context.params
-    const id = projectId?.trim()
-    if (!id) {
-      return NextResponse.json({ message: 'projectId が不正です' }, { status: 400 })
-    }
+    const access = await requireProjectManagerJson(projectId)
+    if (!access.ok) return access.response
+    const id = access.ctx.project.id
 
     let body: unknown
     try {
@@ -94,12 +91,8 @@ export async function POST(request: Request, context: RouteContext) {
     }
     const role = roleRaw as ProjectMemberRole
 
-    const project = await prisma.project.findUnique({
-      where: { id },
-      select: { id: true },
-    })
-    if (!project) {
-      return NextResponse.json({ message: 'プロジェクトが見つかりません' }, { status: 404 })
+    if (role === ProjectMemberRole.OWNER && !isProjectOwnerRole(access.ctx.projectMember.role)) {
+      return NextResponse.json({ message: MSG_PROJECT_OWNER_ONLY }, { status: 403 })
     }
 
     const user = await prisma.user.findUnique({

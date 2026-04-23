@@ -33,13 +33,15 @@ function normalizeColumnsList(cols: ProjectKanbanColumnApi[]): ProjectKanbanColu
 
 interface KanbanColumnsSettingsProps {
   projectId: string
+  /** 管理者 / オーナーのみ列の編集・並び替え等が可能。API が最終防御。 */
+  canManage: boolean
 }
 
 function orderSignature(cols: ProjectKanbanColumnApi[]): string {
   return JSON.stringify(cols.map((c) => c.id))
 }
 
-export function KanbanColumnsSettings({ projectId }: KanbanColumnsSettingsProps) {
+export function KanbanColumnsSettings({ projectId, canManage }: KanbanColumnsSettingsProps) {
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState<string | null>(null)
   const [columns, setColumns] = useState<ProjectKanbanColumnApi[]>([])
@@ -74,6 +76,8 @@ export function KanbanColumnsSettings({ projectId }: KanbanColumnsSettingsProps)
     togglingArchiveId !== null ||
     moveArchiveSubmitting ||
     deleteSubmitting
+
+  const editLocked = !canManage
 
   const deleteTargetColumn = deleteTargetColumnId
     ? columns.find((c) => c.id === deleteTargetColumnId)
@@ -467,6 +471,12 @@ export function KanbanColumnsSettings({ projectId }: KanbanColumnsSettingsProps)
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
+        {editLocked ? (
+          <p className="text-sm text-muted-foreground border border-border rounded-md p-3 bg-muted/30">
+            列の表示名・並び・有効/無効の変更は、プロジェクトの<strong className="text-foreground">管理者</strong>または
+            <strong className="text-foreground">オーナー</strong>のみが行えます。一覧は閲覧できます。
+          </p>
+        ) : null}
         <Dialog
           open={deleteTargetColumnId !== null}
           onOpenChange={(open) => {
@@ -594,7 +604,7 @@ export function KanbanColumnsSettings({ projectId }: KanbanColumnsSettingsProps)
                     size="icon"
                     className="h-8 w-8"
                     onClick={() => moveUp(index)}
-                    disabled={index === 0 || busy || index >= activeCount}
+                    disabled={index === 0 || busy || index >= activeCount || editLocked}
                     title="上へ"
                     aria-label={`「${col.key}」を上へ`}
                   >
@@ -606,7 +616,7 @@ export function KanbanColumnsSettings({ projectId }: KanbanColumnsSettingsProps)
                     size="icon"
                     className="h-8 w-8"
                     onClick={() => moveDown(index)}
-                    disabled={busy || index >= columns.length - 1 || index >= activeCount - 1}
+                    disabled={busy || index >= columns.length - 1 || index >= activeCount - 1 || editLocked}
                     title="下へ"
                     aria-label={`「${col.key}」を下へ`}
                   >
@@ -630,7 +640,7 @@ export function KanbanColumnsSettings({ projectId }: KanbanColumnsSettingsProps)
                       id={`kanban-col-name-${col.id}`}
                       value={names[col.id] ?? ''}
                       onChange={(e) => setNames((prev) => ({ ...prev, [col.id]: e.target.value }))}
-                      disabled={saving}
+                      disabled={saving || editLocked}
                     />
                   </div>
                   {cannotArchive ? (
@@ -652,7 +662,7 @@ export function KanbanColumnsSettings({ projectId }: KanbanColumnsSettingsProps)
                         type="button"
                         variant="default"
                         size="sm"
-                        disabled={busy}
+                        disabled={busy || editLocked}
                         onClick={() => void handleToggleArchive(col.id, false)}
                       >
                         {toggling ? '処理中…' : '有効に戻す'}
@@ -661,7 +671,7 @@ export function KanbanColumnsSettings({ projectId }: KanbanColumnsSettingsProps)
                         type="button"
                         variant="destructive"
                         size="sm"
-                        disabled={busy}
+                        disabled={busy || editLocked}
                         onClick={() => openDeleteColumnDialog(col.id)}
                       >
                         列を削除
@@ -674,7 +684,7 @@ export function KanbanColumnsSettings({ projectId }: KanbanColumnsSettingsProps)
                           type="button"
                           variant="secondary"
                           size="sm"
-                          disabled={busy || moveTargetsCount === 0}
+                          disabled={busy || moveTargetsCount === 0 || editLocked}
                           title={
                             moveTargetsCount === 0
                               ? '移動できる他の有効列がありません'
@@ -689,7 +699,7 @@ export function KanbanColumnsSettings({ projectId }: KanbanColumnsSettingsProps)
                         type="button"
                         variant="outline"
                         size="sm"
-                        disabled={busy || cannotArchive}
+                        disabled={busy || cannotArchive || editLocked}
                         onClick={() => void handleToggleArchive(col.id, true)}
                       >
                         {toggling ? '処理中…' : '無効化'}
@@ -700,7 +710,7 @@ export function KanbanColumnsSettings({ projectId }: KanbanColumnsSettingsProps)
                     type="button"
                     variant="secondary"
                     size="sm"
-                    disabled={!dirty || !(names[col.id] ?? '').trim() || busy}
+                    disabled={!dirty || !(names[col.id] ?? '').trim() || busy || editLocked}
                     onClick={() => void handleSaveRow(col.id)}
                   >
                     {saving ? '保存中…' : 'この列を保存'}
@@ -718,7 +728,7 @@ export function KanbanColumnsSettings({ projectId }: KanbanColumnsSettingsProps)
               <Button
                 type="button"
                 onClick={() => void handleSaveOrder()}
-                disabled={busy}
+                disabled={busy || editLocked}
               >
                 {reordering ? '保存中…' : '並び順を保存'}
               </Button>

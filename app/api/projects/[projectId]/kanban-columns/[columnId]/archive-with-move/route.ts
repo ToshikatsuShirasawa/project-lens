@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { requireProjectManagerJson } from '@/lib/auth/require-project-access'
 import { serializeProjectKanbanColumn } from '@/lib/kanban/serialize-kanban-column'
 import { prisma } from '@/lib/prisma'
 
@@ -9,10 +10,12 @@ interface RouteContext {
 export async function POST(request: Request, context: RouteContext) {
   try {
     const { projectId, columnId } = await context.params
-    const projectIdStr = projectId?.trim()
+    const access = await requireProjectManagerJson(projectId)
+    if (!access.ok) return access.response
+    const projectIdStr = access.ctx.project.id
     const sourceColumnIdStr = columnId?.trim()
-    if (!projectIdStr || !sourceColumnIdStr) {
-      return NextResponse.json({ message: 'projectId または columnId が不正です' }, { status: 400 })
+    if (!sourceColumnIdStr) {
+      return NextResponse.json({ message: 'columnId が不正です' }, { status: 400 })
     }
 
     let body: unknown

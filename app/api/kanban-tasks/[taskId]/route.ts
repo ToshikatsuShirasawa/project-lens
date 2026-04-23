@@ -1,5 +1,6 @@
 import { TaskPriority } from '@/lib/generated/prisma/client'
 import { NextResponse } from 'next/server'
+import { requireProjectAccessForTaskJson } from '@/lib/auth/require-project-access'
 import { resolveProjectKanbanColumn } from '@/lib/kanban/resolve-kanban-column'
 import { serializeKanbanTask } from '@/lib/kanban/serialize-kanban-task'
 import { prisma } from '@/lib/prisma'
@@ -122,11 +123,11 @@ function parseTaskContentPatch(raw: Record<string, unknown>): FieldPatchResult {
 
 export async function PATCH(request: Request, context: RouteContext) {
   try {
-    const { taskId } = await context.params
-    const id = taskId?.trim()
-    if (!id) {
-      return NextResponse.json({ message: 'taskId が不正です' }, { status: 400 })
-    }
+    const { taskId: taskIdParam } = await context.params
+    const access = await requireProjectAccessForTaskJson(taskIdParam)
+    if (!access.ok) return access.response
+    const id = taskIdParam?.trim() as string
+    const canonicalProjectId = access.ctx.project.id
 
     let body: unknown
     try {
@@ -145,6 +146,9 @@ export async function PATCH(request: Request, context: RouteContext) {
 
     if (!projectIdStr) {
       return NextResponse.json({ message: 'projectId が必要です' }, { status: 400 })
+    }
+    if (projectIdStr !== canonicalProjectId) {
+      return NextResponse.json({ message: 'projectId が一致しません' }, { status: 400 })
     }
 
     const assigneePatch = parseAssigneeIdPatch(raw)
@@ -184,19 +188,6 @@ export async function PATCH(request: Request, context: RouteContext) {
         },
         { status: 400 }
       )
-    }
-
-    const existing = await prisma.kanbanTask.findUnique({
-      where: { id },
-      select: { projectId: true },
-    })
-
-    if (!existing) {
-      return NextResponse.json({ message: 'タスクが見つかりません' }, { status: 404 })
-    }
-
-    if (existing.projectId !== projectIdStr) {
-      return NextResponse.json({ message: 'projectId が一致しません' }, { status: 400 })
     }
 
     const data: {

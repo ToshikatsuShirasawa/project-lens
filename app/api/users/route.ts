@@ -1,12 +1,16 @@
 import { NextResponse } from 'next/server'
+import { requireAppUserJson } from '@/lib/auth/require-app-user'
 import { prisma } from '@/lib/prisma'
 
 /**
  * GET /api/users
- * 開発・オーナー指定用のユーザー一覧（認可なしの暫定）。
+ * メンバー追加の候補用ユーザー一覧。認可は今後厳格化予定（暫定：全件）。
  */
 export async function GET() {
   try {
+    const r = await requireAppUserJson()
+    if (!r.ok) return r.response
+
     const rows = await prisma.user.findMany({
       orderBy: [{ name: 'asc' }, { email: 'asc' }],
       select: {

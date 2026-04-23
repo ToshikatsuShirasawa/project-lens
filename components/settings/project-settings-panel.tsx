@@ -9,7 +9,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Trash2 } from 'lucide-react'
 import { KanbanColumnsSettings } from '@/components/settings/kanban-columns-settings'
 import { dispatchProjectUpdated } from '@/lib/project-events'
-import type { ProjectApiRecord } from '@/lib/types'
+import { isProjectManagerRoleApi, type ProjectApiRecord, type ProjectMemberRoleApi } from '@/lib/types'
 
 interface ProjectSettingsPanelProps {
   projectId: string
@@ -23,6 +23,7 @@ export function ProjectSettingsPanel({ projectId }: ProjectSettingsPanelProps) {
   const [saving, setSaving] = useState(false)
   const [saveError, setSaveError] = useState<string | null>(null)
   const [saveOk, setSaveOk] = useState(false)
+  const [myProjectRole, setMyProjectRole] = useState<ProjectMemberRoleApi | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -43,6 +44,7 @@ export function ProjectSettingsPanel({ projectId }: ProjectSettingsPanelProps) {
       const row = body as ProjectApiRecord
       setName(row.name)
       setDescription(row.description ?? '')
+      setMyProjectRole(row.myProjectRole ?? 'MEMBER')
     } catch (e) {
       setLoadError(e instanceof Error ? e.message : '読み込みに失敗しました')
     } finally {
@@ -84,6 +86,7 @@ export function ProjectSettingsPanel({ projectId }: ProjectSettingsPanelProps) {
       const row = body as ProjectApiRecord
       setName(row.name)
       setDescription(row.description ?? '')
+      setMyProjectRole(row.myProjectRole ?? 'MEMBER')
       dispatchProjectUpdated(projectId)
       setSaveOk(true)
       setTimeout(() => setSaveOk(false), 2500)
@@ -106,6 +109,8 @@ export function ProjectSettingsPanel({ projectId }: ProjectSettingsPanelProps) {
     )
   }
 
+  const canManage = isProjectManagerRoleApi(myProjectRole)
+
   return (
     <div className="space-y-6">
       <Card className="bg-card">
@@ -114,13 +119,19 @@ export function ProjectSettingsPanel({ projectId }: ProjectSettingsPanelProps) {
           <CardDescription>名前と説明は DB に保存されます（詳細なステータス等は今後拡張予定です）。</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {!canManage ? (
+            <p className="text-sm text-muted-foreground border border-border rounded-md p-3 bg-muted/30">
+              基本設定の変更は、プロジェクトの<strong className="text-foreground">管理者</strong>または
+              <strong className="text-foreground">オーナー</strong>のみが行えます。閲覧は可能です。
+            </p>
+          ) : null}
           <div className="space-y-2">
             <Label htmlFor="settings-project-name">プロジェクト名</Label>
             <Input
               id="settings-project-name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              disabled={saving}
+              disabled={saving || !canManage}
             />
           </div>
           <div className="space-y-2">
@@ -130,7 +141,7 @@ export function ProjectSettingsPanel({ projectId }: ProjectSettingsPanelProps) {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               rows={3}
-              disabled={saving}
+              disabled={saving || !canManage}
             />
           </div>
           {saveError && (
@@ -139,13 +150,18 @@ export function ProjectSettingsPanel({ projectId }: ProjectSettingsPanelProps) {
             </p>
           )}
           {saveOk && <p className="text-sm text-muted-foreground">保存しました。</p>}
-          <Button className="mt-2" type="button" onClick={() => void handleSave()} disabled={!name.trim() || saving}>
+          <Button
+            className="mt-2"
+            type="button"
+            onClick={() => void handleSave()}
+            disabled={!name.trim() || saving || !canManage}
+          >
             {saving ? '保存中…' : '変更を保存'}
           </Button>
         </CardContent>
       </Card>
 
-      <KanbanColumnsSettings projectId={projectId} />
+      <KanbanColumnsSettings projectId={projectId} canManage={canManage} />
 
       <Card className="bg-card border-destructive/50">
         <CardHeader>

@@ -1,4 +1,5 @@
 import { NextResponse } from 'next/server'
+import { requireProjectAccessJson } from '@/lib/auth/require-project-access'
 import { serializeProjectKanbanColumn } from '@/lib/kanban/serialize-kanban-column'
 import { prisma } from '@/lib/prisma'
 
@@ -9,18 +10,9 @@ interface RouteContext {
 export async function GET(request: Request, context: RouteContext) {
   try {
     const { projectId } = await context.params
-    const id = projectId?.trim()
-    if (!id) {
-      return NextResponse.json({ message: 'projectId が不正です' }, { status: 400 })
-    }
-
-    const projectExists = await prisma.project.findUnique({
-      where: { id },
-      select: { id: true },
-    })
-    if (!projectExists) {
-      return NextResponse.json({ message: 'プロジェクトが見つかりません' }, { status: 404 })
-    }
+    const access = await requireProjectAccessJson(projectId)
+    if (!access.ok) return access.response
+    const id = access.ctx.project.id
 
     const { searchParams } = new URL(request.url)
     const includeArchived = searchParams.get('includeArchived') === 'true'

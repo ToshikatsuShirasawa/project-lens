@@ -12,7 +12,15 @@ datasource db {
   provider = "postgresql"
 }
 
+/// プロジェクト内の権限。MEMBER=閲覧・タスク。ADMIN/OWNER=メンバー・列・基本設定の管理
 enum ProjectMemberRole {
+  OWNER
+  ADMIN
+  MEMBER
+}
+
+/// 企業 / ワークスペースに対する所属（企業管理・課金の枠）
+enum OrganizationMemberRole {
   OWNER
   ADMIN
   MEMBER
@@ -26,16 +34,48 @@ enum TaskPriority {
 }
 
 model User {
-  id        String   @id @default(cuid())
+  /// Supabase Auth `auth.users.id`（UUID）と1対1
+  id        String   @id
   email     String   @unique
   name      String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  memberships   ProjectMember[]
-  assignedTasks KanbanTask[]
+  memberships         ProjectMember[]
+  organizationMembers OrganizationMember[]
+  assignedTasks       KanbanTask[]
 
   @@map("users")
+}
+
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  members  OrganizationMember[]
+  projects Project[]
+
+  @@map("organizations")
+}
+
+/// 企業内所属。`project_members` とは別スコープ
+model OrganizationMember {
+  id        String                 @id @default(cuid())
+  role      OrganizationMemberRole @default(MEMBER)
+  createdAt DateTime               @default(now())
+
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([organizationId, userId])
+  @@index([userId])
+  @@map("organization_members")
 }
 
 model Project {
@@ -45,10 +85,14 @@ model Project {
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
+  organizationId String
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
+
   members        ProjectMember[]
   tasks          KanbanTask[]
   kanbanColumns  ProjectKanbanColumn[]
 
+  @@index([organizationId])
   @@map("projects")
 }
 
@@ -79,6 +123,7 @@ model ProjectKanbanColumn {
 
 model ProjectMember {
   id        String            @id @default(cuid())
+  /// 上記 `ProjectMemberRole`（API の `isProjectManagerRole` は ADMIN/OWNER）
   role      ProjectMemberRole @default(MEMBER)
   createdAt DateTime          @default(now())
 

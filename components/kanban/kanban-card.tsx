@@ -16,7 +16,10 @@ interface KanbanCardProps {
   task: KanbanTask
   onEdit: (task: KanbanTask) => void
   onDragStart: (taskId: string, columnId: string) => void
+  onDragEnd: () => void
   columnId: string
+  isDragging?: boolean
+  justDropped?: boolean
 }
 
 const aiOriginLabel = {
@@ -24,6 +27,26 @@ const aiOriginLabel = {
   report: '報告由来',
   meeting: '議事録由来',
   ai: 'AI抽出',
+}
+
+function parseDateOnly(raw: string): Date | null {
+  const matched = raw.match(/^(\d{4})-(\d{2})-(\d{2})/)
+  if (!matched) return null
+  const [, y, m, d] = matched
+  const dt = new Date(Number(y), Number(m) - 1, Number(d))
+  if (Number.isNaN(dt.getTime())) return null
+  return dt
+}
+
+function dueStatusOf(raw: string | undefined): 'overdue' | 'today' | 'normal' | null {
+  if (!raw) return null
+  const due = parseDateOnly(raw)
+  if (!due) return null
+  const now = new Date()
+  const today = new Date(now.getFullYear(), now.getMonth(), now.getDate())
+  if (due.getTime() < today.getTime()) return 'overdue'
+  if (due.getTime() === today.getTime()) return 'today'
+  return 'normal'
 }
 
 function cardAssigneeParts(task: KanbanTask): { initials: string; short: string; full: string } | null {
@@ -46,35 +69,72 @@ function cardAssigneeParts(task: KanbanTask): { initials: string; short: string;
   return null
 }
 
-export function KanbanCard({ task, onEdit, onDragStart, columnId }: KanbanCardProps) {
+export function KanbanCard({
+  task,
+  onEdit,
+  onDragStart,
+  onDragEnd,
+  columnId,
+  isDragging = false,
+  justDropped = false,
+}: KanbanCardProps) {
+  const dueStatus = dueStatusOf(task.dueDate)
+  const isHighPriority = task.priority === 'HIGH'
+  const leftAccentClass =
+    isHighPriority
+      ? 'border-l-red-500'
+      : task.priority === 'MEDIUM'
+      ? 'border-l-amber-400'
+      : task.priority === 'LOW'
+      ? 'border-l-slate-300'
+      : dueStatus === 'overdue'
+      ? 'border-l-red-300'
+      : dueStatus === 'today'
+      ? 'border-l-amber-300'
+      : 'border-l-transparent'
+
   return (
     <div
+      data-kanban-card="true"
       draggable
       onDragStart={() => onDragStart(task.id, columnId)}
+      onDragEnd={onDragEnd}
       onClick={() => onEdit(task)}
-      className="rounded-lg border border-border bg-card p-3 shadow-sm cursor-pointer hover:shadow-md hover:border-primary/30 transition-all space-y-2 group"
+      className={cn(
+        'group cursor-pointer rounded-lg border border-border border-l-2 bg-card p-2.5 shadow-sm transition-all duration-200 ease-out active:scale-[0.99] space-y-1.5',
+        'hover:-translate-y-px hover:shadow-md hover:border-primary/35 hover:bg-primary/[0.02]',
+        isHighPriority && 'border-l-4 shadow-lg',
+        leftAccentClass,
+        justDropped && 'ring-2 ring-primary/25 bg-primary/[0.04]',
+        isDragging && 'opacity-60 scale-[1.02] shadow-lg border-primary/30'
+      )}
     >
-      <p className="text-sm font-medium text-foreground leading-snug group-hover:text-primary transition-colors">
+      <p
+        className={cn(
+          'text-[13px] font-medium text-foreground leading-snug group-hover:text-primary transition-colors',
+          isHighPriority && 'font-bold'
+        )}
+      >
         {task.title}
       </p>
       {task.description && (
-        <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
+        <p className="text-[11px] text-muted-foreground leading-relaxed line-clamp-2">
           {task.description}
         </p>
       )}
       <div className="flex items-center justify-between gap-2">
-        <div className="flex flex-wrap items-center gap-1.5 min-w-0">
+        <div className="flex flex-wrap items-center gap-1 min-w-0">
           {task.priority ? (
             <Badge
               variant="secondary"
               className={cn(
                 'h-4 px-1.5 text-[9px] font-medium border-0 shrink-0',
-                task.priority === 'HIGH' && 'bg-destructive/10 text-destructive',
+                task.priority === 'HIGH' && 'bg-red-100 text-red-800',
                 task.priority === 'MEDIUM' && 'bg-amber-500/10 text-amber-800 dark:text-amber-200',
-                task.priority === 'LOW' && 'text-muted-foreground'
+                task.priority === 'LOW' && 'bg-slate-100 text-slate-600'
               )}
             >
-              {priorityLabel[task.priority]}
+              優先:{priorityLabel[task.priority]}
             </Badge>
           ) : null}
           {(() => {
@@ -85,19 +145,41 @@ export function KanbanCard({ task, onEdit, onDragStart, columnId }: KanbanCardPr
                 className="flex items-center gap-1 min-w-0 shrink-0 max-w-[42%]"
                 title={`担当: ${ap.full}`}
               >
-                <Avatar className="h-5 w-5 shrink-0">
+                <Avatar className="h-4.5 w-4.5 shrink-0">
                   <AvatarFallback className="text-[9px] bg-secondary">{ap.initials}</AvatarFallback>
                 </Avatar>
-                <span className="text-[9px] text-muted-foreground truncate max-w-[3.5rem] sm:max-w-[5rem]">
+                <span className="text-[10px] text-muted-foreground truncate max-w-[3.5rem] sm:max-w-[5rem]">
                   担当:{ap.short}
                 </span>
               </span>
             )
           })()}
           {task.dueDate && (
-            <span className="flex items-center gap-0.5 text-[11px] text-muted-foreground truncate">
-              <Calendar className="h-3 w-3 shrink-0" />
-              {task.dueDate.length >= 10 ? task.dueDate.slice(0, 10) : task.dueDate}
+            <span className="flex items-center gap-1 text-[10px] truncate">
+              <span
+                className={cn(
+                  'flex items-center gap-0.5 truncate',
+                  dueStatus === 'overdue' && 'text-red-600',
+                  dueStatus === 'today' && 'text-amber-700',
+                  dueStatus === 'normal' && 'text-muted-foreground'
+                )}
+                title={
+                  dueStatus === 'overdue'
+                    ? '期限切れ'
+                    : dueStatus === 'today'
+                    ? '期限は今日です'
+                    : undefined
+                }
+              >
+                <Calendar className="h-2.5 w-2.5 shrink-0" />
+                {task.dueDate.length >= 10 ? task.dueDate.slice(0, 10) : task.dueDate}
+              </span>
+              {dueStatus === 'overdue' && (
+                <Badge className="h-4 px-1 text-[9px] border-0 bg-red-100 text-red-700">期限切れ</Badge>
+              )}
+              {dueStatus === 'today' && (
+                <Badge className="h-4 px-1 text-[9px] border-0 bg-amber-100 text-amber-700">今日</Badge>
+              )}
             </span>
           )}
         </div>

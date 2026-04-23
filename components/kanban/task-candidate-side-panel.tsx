@@ -63,7 +63,7 @@ export function TaskCandidateSidePanel({
         className="w-11 shrink-0 flex flex-col border-l border-border bg-ai-panel h-full"
         aria-label="AIタスク候補パネル（閉じています）"
       >
-        <div className="flex flex-1 flex-col items-center gap-2 border-b border-border py-2">
+        <div className="flex flex-1 flex-col items-center gap-2 border-b border-border/80 py-2 bg-primary/[0.03]">
           <Button
             type="button"
             variant="ghost"
@@ -92,7 +92,8 @@ export function TaskCandidateSidePanel({
       className="w-80 shrink-0 flex flex-col border-l border-border bg-ai-panel h-full"
       aria-label="AIタスク候補"
     >
-      <div className="flex items-center gap-2 border-b border-border px-3 py-2.5 pr-2">
+      <div className="flex items-center gap-2 border-b border-border/80 px-3 py-2.5 pr-2 bg-primary/[0.04]">
+        <span className="h-4 w-1 rounded-full bg-primary/50" aria-hidden />
         <Sparkles className="h-4 w-4 shrink-0 text-primary" />
         <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">AIタスク候補</span>
         {candidates.length > 0 && (
@@ -113,11 +114,11 @@ export function TaskCandidateSidePanel({
           <span className="sr-only">候補パネルを閉じる</span>
         </Button>
       </div>
-      <p className="px-4 py-2 text-xs text-muted-foreground border-b border-border">
+      <p className="px-4 py-2 text-xs text-muted-foreground border-b border-border/80 bg-primary/[0.02]">
         承認するとカンバンに追加されます
       </p>
 
-      <div className="flex-1 overflow-y-auto p-3 space-y-3">
+      <div className="flex-1 overflow-y-auto p-3 space-y-3 bg-primary/[0.01]">
         {candidates.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center gap-2">
             <Sparkles className="h-8 w-8 text-muted-foreground/40" />
@@ -127,7 +128,7 @@ export function TaskCandidateSidePanel({
           candidates.map((c) => {
             const src = sourceConfig[c.source]
             return (
-              <Card key={c.id} className="bg-card shadow-sm">
+              <Card key={c.id} className="bg-card shadow-sm border-border/80">
                 <CardContent className="p-3 space-y-3">
                   <div className="flex items-start justify-between gap-2">
                     <p className="text-sm font-medium text-foreground leading-snug">{c.title}</p>

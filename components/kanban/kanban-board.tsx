@@ -205,6 +205,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
 
   const [draggedCard, setDraggedCard] = useState<{ taskId: string; sourceColumn: string } | null>(null)
   const [dropTargetColumn, setDropTargetColumn] = useState<string | null>(null)
+  const [recentDrop, setRecentDrop] = useState<{ columnKey: string; taskId: string } | null>(null)
   const [filterAssignee, setFilterAssignee] = useState('all')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<KanbanTask | null>(null)
@@ -217,11 +218,22 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
     setDraggedCard({ taskId, sourceColumn: columnKey })
   }
 
-  const handleDragOver = (columnKey: string) => {
+  const handleDragEnd = () => {
+    setDraggedCard(null)
+    setDropTargetColumn(null)
+  }
+
+  const handleDragOver = (columnKey: string, _insertIndex: number) => {
     setDropTargetColumn(columnKey)
   }
 
-  const handleDrop = async (targetColumnKey: string) => {
+  useEffect(() => {
+    if (!recentDrop) return
+    const t = window.setTimeout(() => setRecentDrop(null), 280)
+    return () => window.clearTimeout(t)
+  }, [recentDrop])
+
+  const handleDrop = async (targetColumnKey: string, insertIndex?: number) => {
     if (!draggedCard) return
     const { taskId, sourceColumn } = draggedCard
     if (sourceColumn === targetColumnKey) {
@@ -232,11 +244,19 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
     const sourceCards = cards[sourceColumn]
     const task = sourceCards.find((c) => c.id === taskId)
     if (!task) return
+    const nextTargetCards = [...(cards[targetColumnKey] ?? [])]
+    const safeInsertIndex =
+      typeof insertIndex === 'number' && Number.isFinite(insertIndex)
+        ? Math.max(0, Math.min(insertIndex, nextTargetCards.length))
+        : nextTargetCards.length
+    nextTargetCards.splice(safeInsertIndex, 0, task)
+
     setCards({
       ...cards,
       [sourceColumn]: sourceCards.filter((c) => c.id !== taskId),
-      [targetColumnKey]: [...(cards[targetColumnKey] ?? []), task],
+      [targetColumnKey]: nextTargetCards,
     })
+    setRecentDrop({ columnKey: targetColumnKey, taskId })
     setDraggedCard(null)
     setDropTargetColumn(null)
 
@@ -455,8 +475,8 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
           </div>
         </div>
 
-        <div className="flex-1 overflow-x-auto p-6 bg-muted/20">
-          <div className="flex gap-5 h-full">
+        <div className="flex-1 overflow-x-auto p-4 bg-muted/20">
+          <div className="flex gap-4 h-full">
             {boardColumns.map((col) => (
               <KanbanColumn
                 key={col.id}
@@ -466,9 +486,13 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
                 onAddCard={() => handleAddCard(col.key)}
                 onEditCard={handleEditCard}
                 onDragStart={handleDragStart}
+                onDragEnd={handleDragEnd}
                 onDragOver={handleDragOver}
-                onDrop={(colKey) => void handleDrop(colKey)}
+                onDrop={(colKey, idx) => void handleDrop(colKey, idx)}
                 isDropTarget={dropTargetColumn === col.key}
+                draggedTaskId={draggedCard?.taskId ?? null}
+                justDropped={recentDrop?.columnKey === col.key}
+                justDroppedTaskId={recentDrop?.columnKey === col.key ? recentDrop.taskId : null}
               />
             ))}
           </div>

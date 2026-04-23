@@ -7,10 +7,10 @@ interface ReportsPageProps {
 }
 
 export default async function ReportsPage({ params }: ReportsPageProps) {
-  const { projectId } = await params
+  const { organizationId, projectId } = await params
 
   return (
-    <ProjectShell projectId={projectId}>
+    <ProjectShell projectId={projectId} organizationId={organizationId}>
       <div className="p-6">
         <div className="mx-auto max-w-6xl space-y-6">
           <div>

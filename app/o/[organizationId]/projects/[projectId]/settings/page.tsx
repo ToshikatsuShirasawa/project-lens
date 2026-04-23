@@ -23,11 +23,11 @@ interface SettingsPageProps {
 }
 
 export default function SettingsPage({ params }: SettingsPageProps) {
-  const { projectId } = use(params)
+  const { organizationId, projectId } = use(params)
   const [activeTab, setActiveTab] = useState<TabId>('general')
 
   return (
-    <ProjectShell projectId={projectId}>
+    <ProjectShell projectId={projectId} organizationId={organizationId}>
       <div className="p-6">
         <div className="mx-auto max-w-4xl space-y-6">
           <div>

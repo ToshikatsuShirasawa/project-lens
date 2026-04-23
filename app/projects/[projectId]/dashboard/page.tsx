@@ -9,7 +9,7 @@ export default async function DashboardPage({ params }: DashboardPageProps) {
   const { projectId } = await params
 
   return (
-    <ProjectShell projectId={projectId}>
+    <ProjectShell projectId={projectId} redirectToNewUrl>
       <div className="p-6">
         <ProjectDashboard projectId={projectId} />
       </div>

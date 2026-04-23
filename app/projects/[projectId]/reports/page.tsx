@@ -10,7 +10,7 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
   const { projectId } = await params
 
   return (
-    <ProjectShell projectId={projectId}>
+    <ProjectShell projectId={projectId} redirectToNewUrl>
       <div className="p-6">
         <div className="mx-auto max-w-6xl space-y-6">
           <div>

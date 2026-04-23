@@ -6,10 +6,10 @@ interface KanbanPageProps {
 }
 
 export default async function KanbanPage({ params }: KanbanPageProps) {
-  const { projectId } = await params
+  const { organizationId, projectId } = await params
 
   return (
-    <ProjectShell projectId={projectId}>
+    <ProjectShell projectId={projectId} organizationId={organizationId}>
       <div className="h-full">
         <KanbanBoard projectId={projectId} />
       </div>

@@ -9,7 +9,7 @@ export default async function MeetingsPage({ params }: MeetingsPageProps) {
   const { projectId } = await params
 
   return (
-    <ProjectShell projectId={projectId}>
+    <ProjectShell projectId={projectId} redirectToNewUrl>
       <div className="p-6">
         <div className="mx-auto max-w-7xl">
           <MeetingsClient projectId={projectId} />

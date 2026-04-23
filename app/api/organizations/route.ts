@@ -4,6 +4,7 @@ import { requireAppUserJson } from '@/lib/auth/require-app-user'
 import { prisma } from '@/lib/prisma'
 import { userIsOwnerInAnyOrganization } from '@/lib/organization/organization-membership-helpers'
 import { remainingProjectSlots } from '@/lib/organization/project-limit'
+import { generateUniqueOrgSlug } from '@/lib/organization/generate-slug'
 import type {
   OrganizationCreateRequest,
   OrganizationCreateResponse,
@@ -122,6 +123,10 @@ export async function POST(request: Request) {
     }
 
     const userId = auth.ctx.appUser.id
+    const slug = await generateUniqueOrgSlug(name, async (candidate) => {
+      const existing = await prisma.organization.findUnique({ where: { slug: candidate }, select: { id: true } })
+      return existing !== null
+    })
     const created = await prisma.$transaction(async (tx) => {
       if (await userIsOwnerInAnyOrganization(userId, tx)) {
         return { conflict: true as const }
@@ -129,6 +134,7 @@ export async function POST(request: Request) {
       const org = await tx.organization.create({
         data: {
           name,
+          slug,
           members: {
             create: { userId, role: OrganizationMemberRole.OWNER },
           },

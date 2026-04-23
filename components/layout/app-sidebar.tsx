@@ -34,6 +34,7 @@ import type { ProjectApiRecord, ProjectListResponse } from '@/lib/types'
 
 interface AppSidebarProps {
   projectId: string
+  organizationId?: string | null
 }
 
 const SIDEBAR_COLLAPSED_STORAGE_KEY = 'projectlens:sidebar-collapsed'
@@ -51,7 +52,7 @@ const getNavigation = (projectId: string, organizationId: string | null) => {
   ]
 }
 
-export function AppSidebar({ projectId }: AppSidebarProps) {
+export function AppSidebar({ projectId, organizationId: organizationIdProp }: AppSidebarProps) {
   const pathname = usePathname()
 
   const [quickProjects, setQuickProjects] = useState<ProjectApiRecord[] | null>(null)
@@ -114,7 +115,7 @@ export function AppSidebar({ projectId }: AppSidebarProps) {
   }, [collapsed, sidebarStateLoaded])
 
   const currentMeta = quickProjects?.find((p) => p.id === projectId)
-  const currentOrganizationId = currentMeta?.organizationId ?? null
+  const currentOrganizationId = organizationIdProp ?? currentMeta?.organizationId ?? null
   const workspaceProjects = quickProjects?.filter((project) => project.organizationId === currentOrganizationId) ?? []
   const triggerTitle = currentMeta?.name ?? (quickProjects === null ? '読み込み中…' : 'プロジェクト')
   const navigation = getNavigation(projectId, currentOrganizationId)

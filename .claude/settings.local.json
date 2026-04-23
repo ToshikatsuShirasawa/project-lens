@@ -1,10 +1,11 @@
 {
   "permissions": {
+    "allow": [
+      "Bash(npx tsc *)",
+      "Bash(awk '{print $NF}')"
+    ],
     "additionalDirectories": [
       "c:\\work\\ai\\project-lens\\app\\projects\\[projectId]"
-    ],
-    "allow": [
-      "Bash(npx tsc *)"
     ]
   }
 }

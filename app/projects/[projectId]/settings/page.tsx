@@ -27,7 +27,7 @@ export default function SettingsPage({ params }: SettingsPageProps) {
   const [activeTab, setActiveTab] = useState<TabId>('general')
 
   return (
-    <ProjectShell projectId={projectId}>
+    <ProjectShell projectId={projectId} redirectToNewUrl>
       <div className="p-6">
         <div className="mx-auto max-w-4xl space-y-6">
           <div>

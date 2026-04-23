@@ -1,6 +1,7 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 import { AppSidebar } from '@/components/layout/app-sidebar'
 import { ProjectHeader } from '@/components/layout/project-header'
 import { getProject } from '@/lib/mock/project'
@@ -9,8 +10,12 @@ import { setLastVisitedProjectId } from '@/lib/organization/last-visited-project
 import type { ProjectApiRecord, ProjectMember } from '@/lib/types'
 import type { ReactNode } from 'react'
 
+const REDIRECT_SEGMENTS = new Set(['dashboard', 'kanban', 'settings', 'reports', 'meetings'])
+
 interface ProjectShellProps {
   projectId: string
+  organizationId?: string
+  redirectToNewUrl?: boolean
   children: ReactNode
 }
 
@@ -46,7 +51,9 @@ function mapApiToDisplay(row: ProjectApiRecord): ShellDisplay {
   }
 }
 
-export function ProjectShell({ projectId, children }: ProjectShellProps) {
+export function ProjectShell({ projectId, organizationId, redirectToNewUrl, children }: ProjectShellProps) {
+  const pathname = usePathname()
+  const router = useRouter()
   const [loading, setLoading] = useState(true)
   const [display, setDisplay] = useState<ShellDisplay | null>(null)
   const [loadNote, setLoadNote] = useState<string | null>(null)
@@ -103,9 +110,19 @@ export function ProjectShell({ projectId, children }: ProjectShellProps) {
   }, [projectId, refetch])
 
   useEffect(() => {
-    if (!display?.organizationId) return
-    setLastVisitedProjectId(display.organizationId, projectId)
-  }, [display?.organizationId, projectId])
+    const orgId = organizationId ?? display?.organizationId
+    if (!orgId) return
+    setLastVisitedProjectId(orgId, projectId)
+  }, [organizationId, display?.organizationId, projectId])
+
+  useEffect(() => {
+    if (!redirectToNewUrl) return
+    const orgId = organizationId ?? display?.organizationId
+    if (!orgId) return
+    const segment = pathname.split('/').at(-1) ?? ''
+    if (!REDIRECT_SEGMENTS.has(segment)) return
+    router.replace(`/o/${encodeURIComponent(orgId)}/projects/${projectId}/${segment}`)
+  }, [redirectToNewUrl, organizationId, display?.organizationId, pathname, projectId, router])
 
   if (loading) {
     return (
@@ -132,7 +149,7 @@ export function ProjectShell({ projectId, children }: ProjectShellProps) {
 
   return (
     <div className="flex h-screen bg-background">
-      <AppSidebar projectId={projectId} />
+      <AppSidebar projectId={projectId} organizationId={organizationId ?? display?.organizationId ?? null} />
       <div className="flex flex-1 flex-col overflow-hidden">
         <ProjectHeader
           projectName={display.projectName}

@@ -6,10 +6,10 @@ interface DashboardPageProps {
 }
 
 export default async function DashboardPage({ params }: DashboardPageProps) {
-  const { projectId } = await params
+  const { organizationId, projectId } = await params
 
   return (
-    <ProjectShell projectId={projectId}>
+    <ProjectShell projectId={projectId} organizationId={organizationId}>
       <div className="p-6">
         <ProjectDashboard projectId={projectId} />
       </div>

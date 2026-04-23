@@ -1,4 +1,5 @@
 import { OrganizationMemberRole, type Prisma } from '@/lib/generated/prisma/client'
+import { generateUniqueOrgSlug } from '@/lib/organization/generate-slug'
 
 type ClientOrTx = Prisma.TransactionClient
 
@@ -28,9 +29,15 @@ export async function ensureOrganizationForCurrentUser(
     return first.organization
   }
   // Legacy: 未所属で最初の project を作ったときの自動スピン（GETTING_STARTED 未経由）
+  const orgName = workspaceNameFromUser(appUser.email, appUser.name)
+  const slug = await generateUniqueOrgSlug(orgName, async (candidate) => {
+    const existing = await tx.organization.findUnique({ where: { slug: candidate }, select: { id: true } })
+    return existing !== null
+  })
   return tx.organization.create({
     data: {
-      name: workspaceNameFromUser(appUser.email, appUser.name),
+      name: orgName,
+      slug,
       members: {
         create: {
           userId: appUser.id,

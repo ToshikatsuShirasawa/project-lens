@@ -5,6 +5,7 @@ import { AppSidebar } from '@/components/layout/app-sidebar'
 import { ProjectHeader } from '@/components/layout/project-header'
 import { getProject } from '@/lib/mock/project'
 import { PROJECT_UPDATED_EVENT, type ProjectUpdatedDetail } from '@/lib/project-events'
+import { setLastVisitedProjectId } from '@/lib/organization/last-visited-project'
 import type { ProjectApiRecord, ProjectMember } from '@/lib/types'
 import type { ReactNode } from 'react'
 
@@ -14,6 +15,7 @@ interface ProjectShellProps {
 }
 
 type ShellDisplay = {
+  organizationId: string | null
   projectName: string
   status: 'active' | 'paused' | 'completed' | '注意' | '遅延'
   lastUpdated: string
@@ -23,6 +25,7 @@ type ShellDisplay = {
 
 function mapMockToDisplay(project: NonNullable<ReturnType<typeof getProject>>): ShellDisplay {
   return {
+    organizationId: null,
     projectName: project.name,
     status: project.status,
     lastUpdated: project.lastUpdated,
@@ -34,6 +37,7 @@ function mapMockToDisplay(project: NonNullable<ReturnType<typeof getProject>>): 
 function mapApiToDisplay(row: ProjectApiRecord): ShellDisplay {
   const updated = new Date(row.updatedAt)
   return {
+    organizationId: row.organizationId,
     projectName: row.name,
     status: 'active',
     lastUpdated: `更新: ${updated.toLocaleString('ja-JP')}`,
@@ -97,6 +101,11 @@ export function ProjectShell({ projectId, children }: ProjectShellProps) {
     window.addEventListener(PROJECT_UPDATED_EVENT, onUpdated as EventListener)
     return () => window.removeEventListener(PROJECT_UPDATED_EVENT, onUpdated as EventListener)
   }, [projectId, refetch])
+
+  useEffect(() => {
+    if (!display?.organizationId) return
+    setLastVisitedProjectId(display.organizationId, projectId)
+  }, [display?.organizationId, projectId])
 
   if (loading) {
     return (

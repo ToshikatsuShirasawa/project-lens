@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -14,6 +14,8 @@ interface TaskCandidateSidePanelProps {
   onHold: (id: string) => void
   onDismiss: (id: string) => void
 }
+
+const KANBAN_AI_PANEL_OPEN_STORAGE_KEY = 'projectlens:kanban-ai-panel-open'
 
 const sourceConfig = {
   slack: { label: 'Slack', class: 'bg-emerald-100 text-emerald-700' },
@@ -29,6 +31,31 @@ export function TaskCandidateSidePanel({
   onDismiss,
 }: TaskCandidateSidePanelProps) {
   const [open, setOpen] = useState(true)
+  const [openStateLoaded, setOpenStateLoaded] = useState(false)
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(KANBAN_AI_PANEL_OPEN_STORAGE_KEY)
+      if (stored === 'true') {
+        setOpen(true)
+      } else if (stored === 'false') {
+        setOpen(false)
+      }
+    } catch {
+      // localStorage may be unavailable; keep default behavior.
+    } finally {
+      setOpenStateLoaded(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!openStateLoaded) return
+    try {
+      window.localStorage.setItem(KANBAN_AI_PANEL_OPEN_STORAGE_KEY, String(open))
+    } catch {
+      // Ignore persistence failures and keep panel usable.
+    }
+  }, [open, openStateLoaded])
 
   if (!open) {
     return (

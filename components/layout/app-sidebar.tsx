@@ -37,6 +37,8 @@ interface AppSidebarProps {
   projectId: string
 }
 
+const SIDEBAR_COLLAPSED_STORAGE_KEY = 'projectlens:sidebar-collapsed'
+
 const getNavigation = (projectId: string) => [
   { name: 'ダッシュボード', href: `/projects/${projectId}/dashboard`, icon: LayoutDashboard },
   { name: 'カンバン', href: `/projects/${projectId}/kanban`, icon: Kanban },
@@ -53,6 +55,7 @@ export function AppSidebar({ projectId }: AppSidebarProps) {
   const [quickListError, setQuickListError] = useState(false)
   const [newProjectOpen, setNewProjectOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(false)
+  const [sidebarStateLoaded, setSidebarStateLoaded] = useState(false)
 
   const loadQuickList = useCallback(async () => {
     try {
@@ -82,6 +85,30 @@ export function AppSidebar({ projectId }: AppSidebarProps) {
     window.addEventListener(PROJECT_UPDATED_EVENT, onUpdated)
     return () => window.removeEventListener(PROJECT_UPDATED_EVENT, onUpdated)
   }, [loadQuickList])
+
+  useEffect(() => {
+    try {
+      const stored = window.localStorage.getItem(SIDEBAR_COLLAPSED_STORAGE_KEY)
+      if (stored === 'true') {
+        setCollapsed(true)
+      } else if (stored === 'false') {
+        setCollapsed(false)
+      }
+    } catch {
+      // localStorage is unavailable in some environments.
+    } finally {
+      setSidebarStateLoaded(true)
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!sidebarStateLoaded) return
+    try {
+      window.localStorage.setItem(SIDEBAR_COLLAPSED_STORAGE_KEY, String(collapsed))
+    } catch {
+      // Ignore persistence errors and keep UI interactive.
+    }
+  }, [collapsed, sidebarStateLoaded])
 
   const currentMeta = quickProjects?.find((p) => p.id === projectId)
   const triggerTitle = currentMeta?.name ?? (quickProjects === null ? '読み込み中…' : 'プロジェクト')

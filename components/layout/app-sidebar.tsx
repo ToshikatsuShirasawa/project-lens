@@ -4,7 +4,6 @@ import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import {
-  Home,
   LayoutDashboard,
   Kanban,
   FileText,
@@ -17,7 +16,6 @@ import {
   Plus,
   List,
   Check,
-  Building2,
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import {
@@ -165,23 +163,15 @@ export function AppSidebar({ projectId }: AppSidebarProps) {
 
       {!collapsed ? (
         <div className="border-b border-border/80 px-3 py-3">
-          <WorkspaceSwitcher activeOrganizationId={currentOrganizationId} />
+          <WorkspaceSwitcher activeOrganizationId={currentOrganizationId} variant="headerControl" />
         </div>
       ) : null}
 
       {!collapsed ? (
         <div className="border-b border-border/80 px-3 py-2.5">
-          <p className="mb-1.5 px-1 text-[10px] font-semibold tracking-wider text-muted-foreground">ワークスペース</p>
           <div className="space-y-1">
             <Link
-              href={currentOrganizationId ? `/workspace?organizationId=${encodeURIComponent(currentOrganizationId)}` : '/workspace'}
-              className="flex items-center gap-2.5 rounded-md border border-transparent px-2.5 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
-            >
-              <Home className="h-4 w-4 shrink-0" aria-hidden />
-              <span>ホーム</span>
-            </Link>
-            <Link
-              href={currentOrganizationId ? `/projects?organizationId=${encodeURIComponent(currentOrganizationId)}` : '/projects'}
+              href={currentOrganizationId ? `/o/${encodeURIComponent(currentOrganizationId)}/projects` : '/projects'}
               className="flex items-center gap-2.5 rounded-md border border-transparent px-2.5 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
             >
               <List className="h-4 w-4 shrink-0" aria-hidden />
@@ -195,13 +185,6 @@ export function AppSidebar({ projectId }: AppSidebarProps) {
               <Plus className="h-4 w-4 shrink-0" aria-hidden />
               <span>新規プロジェクト</span>
             </button>
-            <Link
-              href="/workspace"
-              className="flex items-center gap-2.5 rounded-md border border-transparent px-2.5 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
-            >
-              <Building2 className="h-4 w-4 shrink-0" aria-hidden />
-              <span>全ワークスペース</span>
-            </Link>
           </div>
         </div>
       ) : null}

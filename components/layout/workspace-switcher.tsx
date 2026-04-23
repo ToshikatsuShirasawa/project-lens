@@ -1,6 +1,5 @@
 'use client'
 
-import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { Building2, Check, ChevronDown, Loader2 } from 'lucide-react'
@@ -13,7 +12,6 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import type { OrganizationListResponse, OrganizationMembershipApiRecord } from '@/lib/types'
@@ -264,15 +262,6 @@ export function WorkspaceSwitcher({
             style={fullWidth ? { width: 'var(--radix-popper-anchor-width)' } : undefined}
           >
             <DropdownMenuLabel className="text-[11px] font-normal text-muted-foreground">ワークスペース</DropdownMenuLabel>
-            <DropdownMenuItem asChild className="p-0" disabled={navigating}>
-              <Link
-                href="/projects"
-                className="w-full cursor-pointer rounded-sm px-2 py-2.5 text-sm text-foreground block leading-snug"
-              >
-                すべてのプロジェクト一覧
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator />
             {organizations.map((o) => {
               const isCurrent = o.id === activeOrganizationId
               return (
@@ -347,15 +336,6 @@ export function WorkspaceSwitcher({
           style={fullWidth ? { width: 'var(--radix-popper-anchor-width)' } : undefined}
         >
           <DropdownMenuLabel className="text-[11px] font-normal text-muted-foreground">ワークスペース</DropdownMenuLabel>
-          <DropdownMenuItem asChild className="p-0" disabled={navigating}>
-            <Link
-              href="/projects"
-              className="w-full cursor-pointer rounded-sm px-2 py-2.5 text-sm text-foreground block leading-snug"
-            >
-              すべてのプロジェクト一覧
-            </Link>
-          </DropdownMenuItem>
-          <DropdownMenuSeparator />
           {organizations.map((o) => {
             const isCurrent = o.id === activeOrganizationId
             return (

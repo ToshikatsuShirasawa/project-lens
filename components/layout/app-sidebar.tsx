@@ -4,6 +4,7 @@ import Link from 'next/link'
 import { useCallback, useEffect, useState } from 'react'
 import { usePathname } from 'next/navigation'
 import {
+  Home,
   LayoutDashboard,
   Kanban,
   FileText,
@@ -111,6 +112,8 @@ export function AppSidebar({ projectId }: AppSidebarProps) {
   }, [collapsed, sidebarStateLoaded])
 
   const currentMeta = quickProjects?.find((p) => p.id === projectId)
+  const currentOrganizationId = currentMeta?.organizationId ?? null
+  const workspaceProjects = quickProjects?.filter((project) => project.organizationId === currentOrganizationId) ?? []
   const triggerTitle = currentMeta?.name ?? (quickProjects === null ? '読み込み中…' : 'プロジェクト')
 
   return (
@@ -162,7 +165,44 @@ export function AppSidebar({ projectId }: AppSidebarProps) {
 
       {!collapsed ? (
         <div className="border-b border-border/80 px-3 py-3">
-          <WorkspaceSwitcher activeOrganizationId={currentMeta?.organizationId ?? null} />
+          <WorkspaceSwitcher activeOrganizationId={currentOrganizationId} />
+        </div>
+      ) : null}
+
+      {!collapsed ? (
+        <div className="border-b border-border/80 px-3 py-2.5">
+          <p className="mb-1.5 px-1 text-[10px] font-semibold tracking-wider text-muted-foreground">ワークスペース</p>
+          <div className="space-y-1">
+            <Link
+              href={currentOrganizationId ? `/workspace?organizationId=${encodeURIComponent(currentOrganizationId)}` : '/workspace'}
+              className="flex items-center gap-2.5 rounded-md border border-transparent px-2.5 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+            >
+              <Home className="h-4 w-4 shrink-0" aria-hidden />
+              <span>ホーム</span>
+            </Link>
+            <Link
+              href={currentOrganizationId ? `/projects?organizationId=${encodeURIComponent(currentOrganizationId)}` : '/projects'}
+              className="flex items-center gap-2.5 rounded-md border border-transparent px-2.5 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+            >
+              <List className="h-4 w-4 shrink-0" aria-hidden />
+              <span>プロジェクト一覧</span>
+            </Link>
+            <button
+              type="button"
+              onClick={() => setNewProjectOpen(true)}
+              className="flex w-full items-center gap-2.5 rounded-md border border-transparent px-2.5 py-2 text-left text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+            >
+              <Plus className="h-4 w-4 shrink-0" aria-hidden />
+              <span>新規プロジェクト</span>
+            </button>
+            <Link
+              href="/workspace"
+              className="flex items-center gap-2.5 rounded-md border border-transparent px-2.5 py-2 text-[13px] font-medium text-muted-foreground transition-colors hover:bg-muted/50 hover:text-foreground"
+            >
+              <Building2 className="h-4 w-4 shrink-0" aria-hidden />
+              <span>全ワークスペース</span>
+            </Link>
+          </div>
         </div>
       ) : null}
 
@@ -202,30 +242,6 @@ export function AppSidebar({ projectId }: AppSidebarProps) {
             </button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="start" className="w-52 min-w-52">
-            <DropdownMenuLabel className="px-2 pt-1.5 pb-1 text-[11px] font-normal text-muted-foreground">
-              ワークスペース
-            </DropdownMenuLabel>
-            {currentMeta?.organizationId ? (
-              <DropdownMenuItem asChild className="p-0">
-                <Link
-                  href={`/workspace?organizationId=${encodeURIComponent(currentMeta.organizationId)}`}
-                  className="flex cursor-pointer items-center gap-2 px-2 py-2.5"
-                >
-                  <Building2 className="h-3.5 w-3.5" />
-                  <span>このワークスペースのホーム</span>
-                </Link>
-              </DropdownMenuItem>
-            ) : null}
-            <DropdownMenuItem asChild className="p-0 text-xs text-muted-foreground focus:text-foreground">
-              <Link
-                href={currentMeta?.organizationId ? `/projects?organizationId=${currentMeta.organizationId}` : '/projects'}
-                className="flex cursor-pointer items-center gap-2 px-2 py-2.5"
-              >
-                <List className="h-3.5 w-3.5 opacity-80" />
-                <span>このワークスペースのプロジェクト一覧</span>
-              </Link>
-            </DropdownMenuItem>
-            <DropdownMenuSeparator className="my-2" />
             <DropdownMenuLabel className="px-2 pt-1.5 pb-1 text-[11px] font-normal text-muted-foreground">プロジェクト</DropdownMenuLabel>
             {quickProjects === null && (
               <DropdownMenuItem disabled className="text-xs text-muted-foreground">
@@ -239,14 +255,14 @@ export function AppSidebar({ projectId }: AppSidebarProps) {
             )}
             {quickProjects !== null &&
               !quickListError &&
-              quickProjects.length === 0 && (
+              workspaceProjects.length === 0 && (
                 <DropdownMenuItem disabled className="text-xs text-muted-foreground">
                   プロジェクトがありません
                 </DropdownMenuItem>
               )}
-            {quickProjects !== null && !quickListError && quickProjects.length > 0 && (
+            {quickProjects !== null && !quickListError && workspaceProjects.length > 0 && (
               <div className="max-h-60 overflow-y-auto">
-                {quickProjects.map((project) => {
+                {workspaceProjects.map((project) => {
                   const isCurrent = project.id === projectId
                   return (
                     <DropdownMenuItem
@@ -277,14 +293,6 @@ export function AppSidebar({ projectId }: AppSidebarProps) {
                 })}
               </div>
             )}
-            <DropdownMenuSeparator className="my-2" />
-            <DropdownMenuItem
-              className="flex cursor-pointer items-center gap-2"
-              onSelect={() => setNewProjectOpen(true)}
-            >
-              <Plus className="h-4 w-4" />
-              <span>新規プロジェクト</span>
-            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>

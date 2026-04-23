@@ -73,6 +73,8 @@ export interface OrganizationApiRecord {
   id: string
   name: string
   slug: string | null
+  /** `null` = 制限なし。将来プラン等で上書き */
+  projectLimit: number | null
   createdAt: string
   updatedAt: string
 }

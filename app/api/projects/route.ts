@@ -8,6 +8,11 @@ import {
   isKanbanTemplateKey,
 } from '@/lib/kanban/kanban-column-templates'
 import { ensureOrganizationForCurrentUser } from '@/lib/organization/ensure-organization-for-user'
+import {
+  assertProjectCreationAllowed,
+  isThrownProjectCountLimitError,
+  projectCountLimitErrorMessage,
+} from '@/lib/organization/project-limit'
 import { prisma } from '@/lib/prisma'
 import type { KanbanTemplateKey } from '@/lib/types'
 
@@ -94,6 +99,8 @@ export async function POST(request: Request) {
         tx
       )
 
+      await assertProjectCreationAllowed(org.id, tx)
+
       const project = await tx.project.create({
         data: {
           name: nameStr,
@@ -147,6 +154,9 @@ export async function POST(request: Request) {
       { status: 201 }
     )
   } catch (e) {
+    if (isThrownProjectCountLimitError(e)) {
+      return NextResponse.json({ message: projectCountLimitErrorMessage(e) }, { status: 409 })
+    }
     console.error('[POST /api/projects]', e)
     return NextResponse.json({ message: 'プロジェクトの作成に失敗しました' }, { status: 500 })
   }

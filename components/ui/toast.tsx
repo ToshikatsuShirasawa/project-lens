@@ -29,9 +29,13 @@ const toastVariants = cva(
   {
     variants: {
       variant: {
-        default: 'border bg-background text-foreground',
+        default: 'border border-border bg-background text-foreground',
+        /** 障害・例外。赤系 */
         destructive:
-          'destructive group border-destructive bg-destructive text-destructive-foreground',
+          'destructive group border-2 border-destructive bg-destructive text-destructive-foreground',
+        /// 制限到達等（挙動として正常）—amber / yellow 系。**destructive と色で明確に差別化**
+        warning:
+          'group border-2 border-amber-400/95 bg-amber-100 text-amber-950 shadow-sm ring-2 ring-amber-300/35 dark:border-amber-500/90 dark:bg-amber-950/60 dark:text-amber-50 dark:ring-amber-600/30',
       },
     },
     defaultVariants: {
@@ -48,6 +52,7 @@ const Toast = React.forwardRef<
   return (
     <ToastPrimitives.Root
       ref={ref}
+      data-toast-variant={variant ?? 'default'}
       className={cn(toastVariants({ variant }), className)}
       {...props}
     />
@@ -77,7 +82,9 @@ const ToastClose = React.forwardRef<
   <ToastPrimitives.Close
     ref={ref}
     className={cn(
-      'absolute right-2 top-2 rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100 group-[.destructive]:text-red-300 group-[.destructive]:hover:text-red-50 group-[.destructive]:focus:ring-red-400 group-[.destructive]:focus:ring-offset-red-600',
+      'absolute right-2 top-2 rounded-md p-1 text-foreground/50 opacity-0 transition-opacity hover:text-foreground focus:opacity-100 focus:outline-none focus:ring-2 group-hover:opacity-100',
+      'group-data-[toast-variant=destructive]:text-red-200 group-data-[toast-variant=destructive]:hover:text-red-50 group-data-[toast-variant=destructive]:focus:ring-red-400 group-data-[toast-variant=destructive]:focus:ring-offset-red-800',
+      'group-data-[toast-variant=warning]:text-amber-800/70 group-data-[toast-variant=warning]:hover:text-amber-950 group-data-[toast-variant=warning]:focus:ring-amber-500/50 dark:group-data-[toast-variant=warning]:text-amber-200/80 dark:group-data-[toast-variant=warning]:hover:text-amber-50',
       className,
     )}
     toast-close=""

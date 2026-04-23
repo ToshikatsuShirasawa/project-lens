@@ -9,6 +9,7 @@ function toApiRecord(row: {
   id: string
   name: string
   slug: string | null
+  projectLimit: number | null
   createdAt: Date
   updatedAt: Date
 }): OrganizationApiRecord {
@@ -16,6 +17,7 @@ function toApiRecord(row: {
     id: row.id,
     name: row.name,
     slug: row.slug,
+    projectLimit: row.projectLimit,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   }
@@ -68,6 +70,7 @@ export async function POST(request: Request) {
           id: true,
           name: true,
           slug: true,
+          projectLimit: true,
           createdAt: true,
           updatedAt: true,
         },

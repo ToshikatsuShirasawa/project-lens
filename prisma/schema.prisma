@@ -61,6 +61,8 @@ model Organization {
   id        String   @id @default(cuid())
   name      String
   slug      String?  @unique
+  /// このワークスペース内で作成可能な `projects` 数の上限。`null` はプラン等で定めない限り無制限
+  projectLimit Int?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 

@@ -15,8 +15,12 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 import { Loader2 } from 'lucide-react'
+import {
+  type ProjectCreateRejectionResult,
+  userFacingRejectionForProjectCreate,
+} from '@/lib/api/user-facing-rejection'
 import { DEFAULT_KANBAN_TEMPLATE_KEY } from '@/lib/kanban/kanban-column-templates'
-import { toastError, toastSuccess } from '@/lib/operation-toast'
+import { toastError, toastResourceConstraint, toastSuccess } from '@/lib/operation-toast'
 import type { NewProjectFormState, ProjectApiRecord, ProjectCreateRequest } from '@/lib/types'
 
 export interface NewProjectDialogProps {
@@ -35,13 +39,13 @@ export function NewProjectDialog({ open, onOpenChange }: NewProjectDialogProps) 
   const router = useRouter()
   const baseId = useId()
   const [form, setForm] = useState<NewProjectFormState>(emptyForm)
-  const [error, setError] = useState<string | null>(null)
   const [submitting, setSubmitting] = useState(false)
+  const [rejection, setRejection] = useState<ProjectCreateRejectionResult | null>(null)
 
   useEffect(() => {
     if (!open) {
       setForm(emptyForm)
-      setError(null)
+      setRejection(null)
       setSubmitting(false)
     }
   }, [open])
@@ -51,7 +55,7 @@ export function NewProjectDialog({ open, onOpenChange }: NewProjectDialogProps) 
     const nameTrim = form.name.trim()
     if (!nameTrim || submitting) return
 
-    setError(null)
+    setRejection(null)
     setSubmitting(true)
     try {
       const res = await fetch('/api/projects', {
@@ -63,28 +67,52 @@ export function NewProjectDialog({ open, onOpenChange }: NewProjectDialogProps) 
           templateKey: form.templateKey,
         } satisfies ProjectCreateRequest),
       })
-      const body: unknown = await res.json().catch(() => null)
-      if (!res.ok) {
-        const msg =
-          body &&
-          typeof body === 'object' &&
-          'message' in body &&
-          typeof (body as { message: unknown }).message === 'string'
-            ? (body as { message: string }).message
-            : `HTTP ${res.status}`
-        throw new Error(msg)
+      // `res.json()` だけだと例外時に catch へ落ち、制限分岐より先に toastError になる。必ず text で受けてから parse する
+      const rawText = await res.text()
+      let body: unknown = null
+      if (rawText) {
+        try {
+          body = JSON.parse(rawText) as unknown
+        } catch {
+          body = null
+        }
       }
-      const created = body as ProjectApiRecord
+      const apiMsg =
+        body &&
+        typeof body === 'object' &&
+        body !== null &&
+        'message' in body &&
+        typeof (body as { message: unknown }).message === 'string'
+          ? (body as { message: string }).message
+          : undefined
+
+      if (!res.ok) {
+        const u = userFacingRejectionForProjectCreate(res.status, apiMsg)
+        setRejection(u)
+        if (u.kind === 'resource_limit') {
+          toastResourceConstraint(u.toastTitle, u.toastDescription)
+        } else {
+          console.error('[projects] create', res.status, apiMsg)
+          toastError(u.message)
+        }
+        return
+      }
+
+      const created = body as ProjectApiRecord | null
       if (!created?.id) {
-        throw new Error('レスポンスが不正です')
+        setRejection({ kind: 'failure', message: 'レスポンスが不正です' })
+        toastError('レスポンスが不正です')
+        return
       }
       toastSuccess('プロジェクトを作成しました')
       onOpenChange(false)
+      setRejection(null)
       router.push(`/projects/${created.id}/kanban`)
     } catch (err) {
-      const msg = err instanceof Error ? err.message : '作成に失敗しました'
+      // fetch 失敗など、HTTP 応答を解釈する前のエラーのみ
+      const msg = err instanceof Error ? err.message : 'プロジェクトの作成に失敗しました'
       console.error('[projects] create', err)
-      setError(msg)
+      setRejection({ kind: 'failure', message: msg })
       toastError(msg)
     } finally {
       setSubmitting(false)
@@ -180,9 +208,21 @@ export function NewProjectDialog({ open, onOpenChange }: NewProjectDialogProps) 
               </label>
             </div>
           </div>
-          {error && (
+          {rejection?.kind === 'resource_limit' && (
+            <div
+              className="rounded-md border-2 border-amber-400/90 bg-amber-100/95 px-3 py-2.5 text-sm text-amber-950 shadow-sm ring-1 ring-amber-300/40 dark:border-amber-500/85 dark:bg-amber-950/55 dark:text-amber-50 dark:ring-amber-600/30"
+              role="status"
+              data-onboarding="resource-limit"
+            >
+              <p className="font-medium text-amber-950 dark:text-amber-50">プロジェクト数の上限に達しています</p>
+              <p className="mt-1.5 text-amber-900/95 dark:text-amber-100/95 leading-relaxed">
+                {rejection.inlineMessage}
+              </p>
+            </div>
+          )}
+          {rejection?.kind === 'failure' && (
             <p className="text-sm text-destructive" role="alert">
-              {error}
+              {rejection.message}
             </p>
           )}
           <DialogFooter className="gap-2 sm:gap-0">

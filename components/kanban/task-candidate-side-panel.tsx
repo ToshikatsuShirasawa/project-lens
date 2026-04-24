@@ -11,6 +11,7 @@ import { Sparkles, Plus, Pause, X, ChevronLeft, ChevronRight, CheckCircle2, Penc
 import { cn } from '@/lib/utils'
 import type { ProjectMemberApiRecord, TaskCandidate } from '@/lib/types'
 import { summarizeCandidateReasons } from '@/lib/ai/candidate-reason-summary'
+import { scoreTaskCandidate } from '@/lib/ai/task-candidate-score'
 import {
   buildAiTaskCandidateEventPayload,
   logAiTaskCandidateEvent,
@@ -274,8 +275,9 @@ export function TaskCandidateSidePanel({
             const src = sourceConfig[c.source]
             const isTopCandidate = index === 0
             const isSubmitting = submittingId === c.id
-            const reasonSummary = summarizeCandidateReasons(c, { isTopCandidate, maxChips: 4 })
-            const confidence = confidenceLabelConfig[reasonSummary.confidenceLevel]
+            const reasonSummary = summarizeCandidateReasons(c, { isTopCandidate: false, maxChips: 4 })
+            const scoreResult = scoreTaskCandidate(c)
+            const confidence = confidenceLabelConfig[scoreResult.confidenceLevel]
             return (
               <Card
                 key={c.id}
@@ -300,8 +302,8 @@ export function TaskCandidateSidePanel({
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    {isTopCandidate && reasonSummary.recommendationReason ? (
-                      <p className="text-[11px] font-medium text-primary">{reasonSummary.recommendationReason}</p>
+                    {isTopCandidate && scoreResult.recommendationReason ? (
+                      <p className="text-[11px] font-medium text-primary">{scoreResult.recommendationReason}</p>
                     ) : null}
                     <div className="flex flex-wrap gap-1">
                       {reasonSummary.chips.map((chip, chipIndex) => (

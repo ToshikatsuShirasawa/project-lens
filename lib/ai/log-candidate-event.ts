@@ -1,4 +1,5 @@
 import { summarizeCandidateReasons } from '@/lib/ai/candidate-reason-summary'
+import { scoreTaskCandidate } from '@/lib/ai/task-candidate-score'
 import type { TaskCandidate } from '@/lib/types'
 
 export type AiTaskCandidateEventTypeApi = 'shown' | 'accepted' | 'snoozed' | 'dismissed'
@@ -35,23 +36,28 @@ export function buildAiTaskCandidateEventPayload(
   }
 ): LogAiTaskCandidateEventPayload {
   const summary = summarizeCandidateReasons(candidate, {
-    isTopCandidate: options.isTopCandidate,
+    isTopCandidate: false,
     maxChips: 4,
   })
   const structuredReasons = summary.chips.map((c) => c.label)
+  const scored = scoreTaskCandidate(candidate)
   return {
     projectId,
     candidateId: candidate.id,
     eventType,
     candidateTitle: candidate.title,
     candidateSource: SOURCE_LABEL[candidate.source],
-    confidenceLevel: summary.confidenceLevel,
-    recommendationReason: summary.recommendationReason,
+    confidenceLevel: scored.confidenceLevel,
+    recommendationReason: scored.recommendationReason,
     structuredReasons,
     createdTaskId: options.createdTaskId,
     metadata: {
       ...(options.metadata ?? {}),
       candidateSourceKey: candidate.source,
+      isTopCandidate: options.isTopCandidate,
+      score: scored.score,
+      scoreBreakdown: scored.scoreBreakdown,
+      legacyConfidenceLevel: scored.legacyConfidenceLevel,
     },
   }
 }

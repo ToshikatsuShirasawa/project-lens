@@ -36,6 +36,7 @@ import {
   buildAiTaskCandidateEventPayload,
   logAiTaskCandidateEvent,
 } from '@/lib/ai/log-candidate-event'
+import { sortTaskCandidatesByScore } from '@/lib/ai/task-candidate-score'
 import {
   KANBAN_COLUMNS_UPDATED_EVENT,
   type KanbanColumnsUpdatedDetail,
@@ -115,6 +116,8 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   const [createError, setCreateError] = useState<string | null>(null)
   const [candidates, setCandidates] = useState<TaskCandidate[]>(mockKanbanCandidates)
   const [projectMembers, setProjectMembers] = useState<ProjectMemberApiRecord[]>([])
+
+  const orderedAiCandidates = useMemo(() => sortTaskCandidatesByScore(candidates), [candidates])
 
   const loadTasks = useCallback(
     async (options?: { silent?: boolean }) => {
@@ -428,7 +431,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
     boardColumns.find((c) => c.key === 'backlog')?.key ?? boardColumns[0]?.key ?? 'backlog'
 
   const handleAddToKanban = (candidate: TaskCandidate, overrides?: CandidateApprovalOverrides) => {
-    const isTopCandidate = candidates[0]?.id === candidate.id
+    const isTopCandidate = orderedAiCandidates[0]?.id === candidate.id
     const clientTaskId = `from-ai-${candidate.id}`
     logAiTaskCandidateEvent(
       buildAiTaskCandidateEventPayload(projectId, candidate, 'accepted', {
@@ -535,7 +538,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
 
       <TaskCandidateSidePanel
         projectId={projectId}
-        candidates={candidates}
+        candidates={orderedAiCandidates}
         projectMembers={projectMembers}
         onAddToKanban={handleAddToKanban}
         onHold={(id) => {
@@ -543,14 +546,14 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
           if (target) {
             logAiTaskCandidateEvent(
               buildAiTaskCandidateEventPayload(projectId, target, 'snoozed', {
-                isTopCandidate: candidates[0]?.id === target.id,
+                isTopCandidate: orderedAiCandidates[0]?.id === target.id,
               })
             )
           }
           setCandidates((prev) => {
             const idx = prev.findIndex((c) => c.id === id)
             if (idx < 0) return prev
-            const t = prev[idx]
+            const t = { ...prev[idx], held: true }
             const others = prev.filter((c) => c.id !== id)
             toastSuccess('候補をあとで確認に回しました')
             return [...others, t]
@@ -561,7 +564,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
           if (target) {
             logAiTaskCandidateEvent(
               buildAiTaskCandidateEventPayload(projectId, target, 'dismissed', {
-                isTopCandidate: candidates[0]?.id === target.id,
+                isTopCandidate: orderedAiCandidates[0]?.id === target.id,
               })
             )
           }

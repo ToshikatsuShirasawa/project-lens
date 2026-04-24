@@ -26,6 +26,7 @@ import { Label } from '@/components/ui/label'
 import { Filter, Loader2, User, Sparkles } from 'lucide-react'
 import { toastError, toastSuccess } from '@/lib/operation-toast'
 import { mockKanbanCandidates } from '@/lib/mock/kanban'
+import { mockReports } from '@/lib/mock/reports'
 import {
   DEFAULT_KANBAN_TEMPLATE_KEY,
   getAllKanbanColumnKeysForEmptyBoard,
@@ -36,6 +37,7 @@ import {
   buildAiTaskCandidateEventPayload,
   logAiTaskCandidateEvent,
 } from '@/lib/ai/log-candidate-event'
+import { extractTaskCandidatesFromReports } from '@/lib/ai/extract-task-candidates-from-reports'
 import { buildComparativeRecommendationReason, sortTaskCandidatesByScore } from '@/lib/ai/task-candidate-score'
 import {
   KANBAN_COLUMNS_UPDATED_EVENT,
@@ -108,13 +110,19 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
     [stableColumnKeys]
   )
 
+  const reportBasedCandidates = useMemo(() => extractTaskCandidatesFromReports(mockReports), [])
+  const initialCandidates = useMemo(
+    () => (reportBasedCandidates.length > 0 ? reportBasedCandidates : mockKanbanCandidates),
+    [reportBasedCandidates]
+  )
+
   const [boardColumns, setBoardColumns] = useState<ProjectKanbanColumnApi[]>(placeholderBoardColumns)
   const [cards, setCards] = useState<Record<string, KanbanTask[]>>(emptyCards)
   const [tasksLoading, setTasksLoading] = useState(true)
   const [tasksError, setTasksError] = useState<string | null>(null)
   const [addSaving, setAddSaving] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
-  const [candidates, setCandidates] = useState<TaskCandidate[]>(mockKanbanCandidates)
+  const [candidates, setCandidates] = useState<TaskCandidate[]>(() => initialCandidates)
   const [projectMembers, setProjectMembers] = useState<ProjectMemberApiRecord[]>([])
 
   const orderedAiCandidates = useMemo(() => sortTaskCandidatesByScore(candidates), [candidates])

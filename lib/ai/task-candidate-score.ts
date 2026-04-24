@@ -8,21 +8,30 @@ export type TaskCandidateScoreResult = {
   confidenceLevel: TaskCandidateScoreConfidence
   recommendationReason: string
   scoreBreakdown: {
+    sourceKey: TaskCandidate['source']
     source: number
     reason: number
     rawReason: number
     assignee: number
     dueDate: number
+    actionability: number
+    urgency: number
+    hasConfirmationSignal: boolean
+    hasDecisionSignal: boolean
   }
   /** summarizeCandidateReasons ベース（ログや調整用） */
   legacyConfidenceLevel: TaskCandidateScoreConfidence
 }
 
-/** 表示・ログ用の重み（ログ分析に合わせて調整しやすいよう定数化） */
-const SOURCE_WEIGHT: Record<TaskCandidate['source'], number> = {
+/** source 別の基礎点。ログ分析でここを主調整点にする。 */
+const SOURCE_WEIGHTS: Record<TaskCandidate['source'], number> = {
+  // 会話起点の依頼・確認が多く、即タスク化しやすい
   slack: 2,
-  meeting: 2,
+  // 決定事項は強いが、期限未確定のメモも混ざるため中程度
+  meeting: 1,
+  // 状況共有・報告文脈が混ざるため現時点は控えめ
   report: 1,
+  // AI派生のみの候補は単体では加点しない
   ai: 0,
 }
 
@@ -37,6 +46,19 @@ const REASON_LABEL_WEIGHTS: Record<string, number> = {
 }
 
 const MAX_REASON_SCORE = 5
+const ACTIONABILITY_WEIGHT = {
+  assignee: 1,
+  dueDate: 1,
+  meetingWithoutDueDate: -1,
+  reportWithoutConfirmation: -1,
+} as const
+
+type CandidateSignals = {
+  hasConfirmationSignal: boolean
+  hasDecisionSignal: boolean
+  hasDueDate: boolean
+  hasAssignee: boolean
+}
 
 const REASON_LABEL_GROUPS = {
   confirmation: ['確認依頼あり', 'Slackで確認依頼'],
@@ -80,18 +102,48 @@ function scoreReasonBucket(labels: Set<string>): { rawReason: number; reason: nu
 }
 
 function scoreSourceBucket(candidate: TaskCandidate): number {
-  return SOURCE_WEIGHT[candidate.source] ?? 0
+  return SOURCE_WEIGHTS[candidate.source] ?? 0
 }
 
-function scoreAssigneeBucket(candidate: TaskCandidate): number {
-  return hasNonEmpty(candidate.suggestedAssignee) ? 1 : 0
+function collectCandidateSignals(candidate: TaskCandidate, labels: Set<string>): CandidateSignals {
+  const hasConfirmationSignal =
+    labels.has('確認依頼あり') || labels.has('Slackで確認依頼') || /確認依頼|お願いします|対応お願い/.test(candidate.reason ?? '')
+  const hasDecisionSignal = labels.has('決定事項に紐づく')
+  const hasDueDate = hasNonEmpty(candidate.suggestedDueDate)
+  const hasAssignee = hasNonEmpty(candidate.suggestedAssignee)
+
+  return { hasConfirmationSignal, hasDecisionSignal, hasDueDate, hasAssignee }
 }
 
-function scoreDueDateBucket(candidate: TaskCandidate): number {
-  return hasNonEmpty(candidate.suggestedDueDate) ? 1 : 0
+function scoreActionabilityBucket(candidate: TaskCandidate, signals: CandidateSignals): number {
+  let score = 0
+
+  if (signals.hasDueDate) score += ACTIONABILITY_WEIGHT.dueDate
+  if (signals.hasAssignee) score += ACTIONABILITY_WEIGHT.assignee
+
+  if (candidate.source === 'meeting' && !signals.hasDueDate) {
+    score += ACTIONABILITY_WEIGHT.meetingWithoutDueDate
+  }
+  if (candidate.source === 'report' && !signals.hasConfirmationSignal) {
+    score += ACTIONABILITY_WEIGHT.reportWithoutConfirmation
+  }
+
+  // 減点が強くなりすぎないよう、最低値を -1 に制限
+  return Math.max(score, -1)
+}
+
+function scoreUrgencyBucket(labels: Set<string>, signals: CandidateSignals): number {
+  if (labels.has('期限が近い')) return 1
+  if (signals.hasDueDate && signals.hasConfirmationSignal) return 1
+  return 0
+}
+
+function scoreNowTaskBucket(actionability: number, urgency: number): number {
+  return actionability + urgency
 }
 
 function confidenceFromScore(score: number): TaskCandidateScoreConfidence {
+  // 閾値は現状維持。ログ分析を見て必要時のみ調整する。
   if (score >= 6) return 'high'
   if (score >= 3) return 'medium'
   return 'review'
@@ -114,8 +166,8 @@ function mergeConfidenceWithLegacy(
 
 function buildRecommendationReason(candidate: TaskCandidate, labels: Set<string>): string {
   const hasDeadline = labels.has('期限が近い')
-  const hasConfirm =
-    labels.has('確認依頼あり') || labels.has('Slackで確認依頼') || /確認依頼|お願いします|対応お願い/.test(candidate.reason ?? '')
+  const signals = collectCandidateSignals(candidate, labels)
+  const hasConfirm = signals.hasConfirmationSignal
   const hasDecision = labels.has('決定事項に紐づく')
 
   if (hasDeadline && hasConfirm) {
@@ -142,12 +194,16 @@ function buildRecommendationReason(candidate: TaskCandidate, labels: Set<string>
 export function scoreTaskCandidate(candidate: TaskCandidate): TaskCandidateScoreResult {
   const labels = collectReasonLabels(candidate)
   const legacy = summarizeCandidateReasons(candidate, { isTopCandidate: false, maxChips: 4 }).confidenceLevel
+  const signals = collectCandidateSignals(candidate, labels)
 
   const source = scoreSourceBucket(candidate)
   const { rawReason, reason } = scoreReasonBucket(labels)
-  const assignee = scoreAssigneeBucket(candidate)
-  const dueDate = scoreDueDateBucket(candidate)
-  const score = source + reason + assignee + dueDate
+  const assignee = signals.hasAssignee ? 1 : 0
+  const dueDate = signals.hasDueDate ? 1 : 0
+  const actionability = scoreActionabilityBucket(candidate, signals)
+  const urgency = scoreUrgencyBucket(labels, signals)
+  const nowTask = scoreNowTaskBucket(actionability, urgency)
+  const score = source + reason + nowTask
 
   const rawTier = confidenceFromScore(score)
   const confidenceLevel = mergeConfidenceWithLegacy(rawTier, legacy)
@@ -157,7 +213,18 @@ export function scoreTaskCandidate(candidate: TaskCandidate): TaskCandidateScore
     score,
     confidenceLevel,
     recommendationReason,
-    scoreBreakdown: { source, reason, rawReason, assignee, dueDate },
+    scoreBreakdown: {
+      sourceKey: candidate.source,
+      source,
+      reason,
+      rawReason,
+      assignee,
+      dueDate,
+      actionability,
+      urgency,
+      hasConfirmationSignal: signals.hasConfirmationSignal,
+      hasDecisionSignal: signals.hasDecisionSignal,
+    },
     legacyConfidenceLevel: legacy,
   }
 }

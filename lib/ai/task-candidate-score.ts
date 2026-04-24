@@ -18,6 +18,11 @@ export type TaskCandidateScoreResult = {
     urgency: number
     hasConfirmationSignal: boolean
     hasDecisionSignal: boolean
+    /** タイトル・理由・ラベルから見た具体性（-1〜+1） */
+    specificity: number
+    hasConcreteTaskSignal: boolean
+    /** 具体語がなく、抽象語が目立つ（減点条件を満たす）とき true */
+    hasAbstractOnlySignal: boolean
   }
   /** summarizeCandidateReasons ベース（ログや調整用） */
   legacyConfidenceLevel: TaskCandidateScoreConfidence
@@ -52,6 +57,35 @@ const REASON_LABEL_WEIGHTS: Record<string, number> = {
 }
 
 const MAX_REASON_SCORE = 5
+
+/** 長い語から先にマッチさせる（「確認が必要」と「確認」を分ける） */
+const SPECIFICITY_CONCRETE_KEYWORDS = [
+  '確認依頼',
+  '実装',
+  '準備',
+  '作成',
+  '修正',
+  '設定',
+  '対応',
+  '手配',
+  '依頼',
+  '更新',
+  '追加',
+  '調整',
+  '連絡',
+  '確認',
+] as const
+
+const SPECIFICITY_ABSTRACT_KEYWORDS = [
+  '確認が必要',
+  '検討',
+  '共有',
+  '議論',
+  '方針',
+  '課題',
+  'レビュー',
+] as const
+
 const ACTIONABILITY_WEIGHT = {
   assignee: 1,
   dueDate: 1,
@@ -148,6 +182,68 @@ function scoreNowTaskBucket(actionability: number, urgency: number): number {
   return actionability + urgency
 }
 
+function buildSpecificityHaystack(candidate: TaskCandidate, labels: Set<string>): string {
+  const labelText = [...labels].join(' ')
+  return `${candidate.title ?? ''} ${candidate.reason ?? ''} ${labelText}`
+}
+
+function haystackHasConcreteKeyword(haystack: string): boolean {
+  for (const kw of SPECIFICITY_CONCRETE_KEYWORDS) {
+    if (kw === '確認') {
+      if (haystack.includes('確認が必要')) continue
+      if (/確認(?!が必要)/.test(haystack)) return true
+      continue
+    }
+    if (haystack.includes(kw)) return true
+  }
+  return false
+}
+
+function collectAbstractKeywordHits(haystack: string): string[] {
+  const hits: string[] = []
+  for (const kw of SPECIFICITY_ABSTRACT_KEYWORDS) {
+    if (haystack.includes(kw)) hits.push(kw)
+  }
+  return hits
+}
+
+/**
+ * タイトル・理由・構造化ラベルから具体性を推定する（ルールベース）。
+ * 加点は最大 +1、減点は最大 -1。確認依頼があるときは抽象のみ減点を付けない。
+ */
+export function scoreSpecificityBucket(
+  candidate: TaskCandidate,
+  labels: Set<string>,
+  _sourceKey: TaskCandidate['source']
+): { specificity: number; hasConcreteTaskSignal: boolean; hasAbstractOnlySignal: boolean } {
+  void _sourceKey
+  const haystack = buildSpecificityHaystack(candidate, labels)
+  const hasConfirmationSignal =
+    labels.has('確認依頼あり') ||
+    labels.has('Slackで確認依頼') ||
+    /確認依頼|お願いします|対応お願い/.test(candidate.reason ?? '')
+
+  const hasConcreteTaskSignal = haystackHasConcreteKeyword(haystack)
+  const abstractHits = collectAbstractKeywordHits(haystack)
+
+  const onlyReviewAbstract =
+    abstractHits.length > 0 && abstractHits.every((h) => h === 'レビュー')
+
+  const hasAbstractOnlySignal =
+    !hasConcreteTaskSignal &&
+    abstractHits.length > 0 &&
+    !hasConfirmationSignal &&
+    !onlyReviewAbstract
+
+  let specificity = 0
+  if (hasConcreteTaskSignal) specificity += 1
+  else if (hasAbstractOnlySignal) specificity -= 1
+
+  specificity = Math.max(-1, Math.min(1, specificity))
+
+  return { specificity, hasConcreteTaskSignal, hasAbstractOnlySignal }
+}
+
 function confidenceFromScore(score: number): TaskCandidateScoreConfidence {
   // 閾値は現状維持。ログ分析を見て必要時のみ調整する。
   if (score >= 6) return 'high'
@@ -203,6 +299,7 @@ function buildPriorityEvidenceText(score: TaskCandidateScoreResult): string {
   if (score.scoreBreakdown.hasConfirmationSignal) parts.push('確認依頼がある')
   if (score.scoreBreakdown.actionability >= 2) parts.push('担当や期限が見えている')
   if (score.scoreBreakdown.hasDecisionSignal) parts.push('決定事項に紐づく')
+  if (score.scoreBreakdown.hasConcreteTaskSignal) parts.push('具体的な作業内容が見えている')
   if (score.scoreBreakdown.sourceKey === 'slack' && score.scoreBreakdown.source >= 2) {
     parts.push('Slack由来の明確な依頼')
   }
@@ -222,7 +319,12 @@ export function scoreTaskCandidate(candidate: TaskCandidate): TaskCandidateScore
   const actionability = scoreActionabilityBucket(candidate, signals)
   const urgency = scoreUrgencyBucket(labels, signals)
   const nowTask = scoreNowTaskBucket(actionability, urgency)
-  const score = source + reason + nowTask
+  const { specificity, hasConcreteTaskSignal, hasAbstractOnlySignal } = scoreSpecificityBucket(
+    candidate,
+    labels,
+    candidate.source
+  )
+  const score = source + reason + nowTask + specificity
 
   const rawTier = confidenceFromScore(score)
   const confidenceLevel = mergeConfidenceWithLegacy(rawTier, legacy)
@@ -243,6 +345,9 @@ export function scoreTaskCandidate(candidate: TaskCandidate): TaskCandidateScore
       urgency,
       hasConfirmationSignal: signals.hasConfirmationSignal,
       hasDecisionSignal: signals.hasDecisionSignal,
+      specificity,
+      hasConcreteTaskSignal,
+      hasAbstractOnlySignal,
     },
     legacyConfidenceLevel: legacy,
   }

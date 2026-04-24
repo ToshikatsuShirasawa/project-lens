@@ -57,3 +57,8 @@ export type ProjectMember = Prisma.ProjectMemberModel
  * 
  */
 export type KanbanTask = Prisma.KanbanTaskModel
+/**
+ * Model AiTaskCandidateEvent
+ * AI候補の表示・承認・あとで・却下の最小ログ（クライアント送信・失敗時もUIは継続）
+ */
+export type AiTaskCandidateEvent = Prisma.AiTaskCandidateEventModel

@@ -41,6 +41,14 @@ enum TaskPriority {
   HIGH
 }
 
+/// AIタスク候補に対するユーザー操作ログ（分析・精度改善用）
+enum AiTaskCandidateEventType {
+  SHOWN
+  ACCEPTED
+  SNOOZED
+  DISMISSED
+}
+
 model User {
   /// Supabase Auth `auth.users.id`（UUID）と1対1
   id        String   @id
@@ -100,10 +108,11 @@ model Project {
   organizationId String
   organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Restrict)
 
-  members        ProjectMember[]
-  tasks          KanbanTask[]
-  kanbanColumns  ProjectKanbanColumn[]
-  invitations    ProjectInvitation[]
+  members                 ProjectMember[]
+  tasks                   KanbanTask[]
+  kanbanColumns           ProjectKanbanColumn[]
+  invitations             ProjectInvitation[]
+  aiTaskCandidateEvents   AiTaskCandidateEvent[]
 
   @@index([organizationId])
   @@map("projects")
@@ -208,4 +217,37 @@ model KanbanTask {
   @@index([projectId, columnId, sortOrder])
   @@index([projectId, dueDate])
   @@map("kanban_tasks")
+}
+
+/// AI候補の表示・承認・あとで・却下の最小ログ（クライアント送信・失敗時もUIは継続）
+model AiTaskCandidateEvent {
+  id        String   @id @default(cuid())
+  createdAt DateTime @default(now())
+
+  projectId String
+  project   Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  candidateId String
+
+  eventType AiTaskCandidateEventType
+
+  candidateTitle          String
+  /// UI / 集計用のソース表現（例: slack, Slack ラベルはクライアント任せ）
+  candidateSource         String
+  confidenceLevel           String
+  recommendationReason    String?
+  structuredReasonsJson     Json
+
+  /// サーバーで作成されたタスク ID（クライアントのみの場合は null）
+  createdTaskId String?
+
+  userId         String
+  organizationId String
+
+  metadataJson Json?
+
+  @@index([projectId, eventType, createdAt])
+  @@index([projectId, createdAt])
+  @@index([organizationId, createdAt])
+  @@map("ai_task_candidate_events")
 }

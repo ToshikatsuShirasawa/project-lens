@@ -1,0 +1,1 @@
+SELECT * FROM ai_task_candidate_events ORDER BY "createdAt" DESC LIMIT 20

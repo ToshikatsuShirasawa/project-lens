@@ -195,6 +195,7 @@ export type ProjectWhereInput = {
   tasks?: Prisma.KanbanTaskListRelationFilter
   kanbanColumns?: Prisma.ProjectKanbanColumnListRelationFilter
   invitations?: Prisma.ProjectInvitationListRelationFilter
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventListRelationFilter
 }
 
 export type ProjectOrderByWithRelationInput = {
@@ -209,6 +210,7 @@ export type ProjectOrderByWithRelationInput = {
   tasks?: Prisma.KanbanTaskOrderByRelationAggregateInput
   kanbanColumns?: Prisma.ProjectKanbanColumnOrderByRelationAggregateInput
   invitations?: Prisma.ProjectInvitationOrderByRelationAggregateInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventOrderByRelationAggregateInput
 }
 
 export type ProjectWhereUniqueInput = Prisma.AtLeast<{
@@ -226,6 +228,7 @@ export type ProjectWhereUniqueInput = Prisma.AtLeast<{
   tasks?: Prisma.KanbanTaskListRelationFilter
   kanbanColumns?: Prisma.ProjectKanbanColumnListRelationFilter
   invitations?: Prisma.ProjectInvitationListRelationFilter
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventListRelationFilter
 }, "id">
 
 export type ProjectOrderByWithAggregationInput = {
@@ -263,6 +266,7 @@ export type ProjectCreateInput = {
   tasks?: Prisma.KanbanTaskCreateNestedManyWithoutProjectInput
   kanbanColumns?: Prisma.ProjectKanbanColumnCreateNestedManyWithoutProjectInput
   invitations?: Prisma.ProjectInvitationCreateNestedManyWithoutProjectInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateInput = {
@@ -276,6 +280,7 @@ export type ProjectUncheckedCreateInput = {
   tasks?: Prisma.KanbanTaskUncheckedCreateNestedManyWithoutProjectInput
   kanbanColumns?: Prisma.ProjectKanbanColumnUncheckedCreateNestedManyWithoutProjectInput
   invitations?: Prisma.ProjectInvitationUncheckedCreateNestedManyWithoutProjectInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUpdateInput = {
@@ -289,6 +294,7 @@ export type ProjectUpdateInput = {
   tasks?: Prisma.KanbanTaskUpdateManyWithoutProjectNestedInput
   kanbanColumns?: Prisma.ProjectKanbanColumnUpdateManyWithoutProjectNestedInput
   invitations?: Prisma.ProjectInvitationUpdateManyWithoutProjectNestedInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateInput = {
@@ -302,6 +308,7 @@ export type ProjectUncheckedUpdateInput = {
   tasks?: Prisma.KanbanTaskUncheckedUpdateManyWithoutProjectNestedInput
   kanbanColumns?: Prisma.ProjectKanbanColumnUncheckedUpdateManyWithoutProjectNestedInput
   invitations?: Prisma.ProjectInvitationUncheckedUpdateManyWithoutProjectNestedInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateManyInput = {
@@ -470,6 +477,20 @@ export type ProjectUpdateOneRequiredWithoutTasksNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ProjectUpdateToOneWithWhereWithoutTasksInput, Prisma.ProjectUpdateWithoutTasksInput>, Prisma.ProjectUncheckedUpdateWithoutTasksInput>
 }
 
+export type ProjectCreateNestedOneWithoutAiTaskCandidateEventsInput = {
+  create?: Prisma.XOR<Prisma.ProjectCreateWithoutAiTaskCandidateEventsInput, Prisma.ProjectUncheckedCreateWithoutAiTaskCandidateEventsInput>
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutAiTaskCandidateEventsInput
+  connect?: Prisma.ProjectWhereUniqueInput
+}
+
+export type ProjectUpdateOneRequiredWithoutAiTaskCandidateEventsNestedInput = {
+  create?: Prisma.XOR<Prisma.ProjectCreateWithoutAiTaskCandidateEventsInput, Prisma.ProjectUncheckedCreateWithoutAiTaskCandidateEventsInput>
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutAiTaskCandidateEventsInput
+  upsert?: Prisma.ProjectUpsertWithoutAiTaskCandidateEventsInput
+  connect?: Prisma.ProjectWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProjectUpdateToOneWithWhereWithoutAiTaskCandidateEventsInput, Prisma.ProjectUpdateWithoutAiTaskCandidateEventsInput>, Prisma.ProjectUncheckedUpdateWithoutAiTaskCandidateEventsInput>
+}
+
 export type ProjectCreateWithoutOrganizationInput = {
   id?: string
   name: string
@@ -480,6 +501,7 @@ export type ProjectCreateWithoutOrganizationInput = {
   tasks?: Prisma.KanbanTaskCreateNestedManyWithoutProjectInput
   kanbanColumns?: Prisma.ProjectKanbanColumnCreateNestedManyWithoutProjectInput
   invitations?: Prisma.ProjectInvitationCreateNestedManyWithoutProjectInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutOrganizationInput = {
@@ -492,6 +514,7 @@ export type ProjectUncheckedCreateWithoutOrganizationInput = {
   tasks?: Prisma.KanbanTaskUncheckedCreateNestedManyWithoutProjectInput
   kanbanColumns?: Prisma.ProjectKanbanColumnUncheckedCreateNestedManyWithoutProjectInput
   invitations?: Prisma.ProjectInvitationUncheckedCreateNestedManyWithoutProjectInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutOrganizationInput = {
@@ -542,6 +565,7 @@ export type ProjectCreateWithoutInvitationsInput = {
   members?: Prisma.ProjectMemberCreateNestedManyWithoutProjectInput
   tasks?: Prisma.KanbanTaskCreateNestedManyWithoutProjectInput
   kanbanColumns?: Prisma.ProjectKanbanColumnCreateNestedManyWithoutProjectInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutInvitationsInput = {
@@ -554,6 +578,7 @@ export type ProjectUncheckedCreateWithoutInvitationsInput = {
   members?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutProjectInput
   tasks?: Prisma.KanbanTaskUncheckedCreateNestedManyWithoutProjectInput
   kanbanColumns?: Prisma.ProjectKanbanColumnUncheckedCreateNestedManyWithoutProjectInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutInvitationsInput = {
@@ -582,6 +607,7 @@ export type ProjectUpdateWithoutInvitationsInput = {
   members?: Prisma.ProjectMemberUpdateManyWithoutProjectNestedInput
   tasks?: Prisma.KanbanTaskUpdateManyWithoutProjectNestedInput
   kanbanColumns?: Prisma.ProjectKanbanColumnUpdateManyWithoutProjectNestedInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutInvitationsInput = {
@@ -594,6 +620,7 @@ export type ProjectUncheckedUpdateWithoutInvitationsInput = {
   members?: Prisma.ProjectMemberUncheckedUpdateManyWithoutProjectNestedInput
   tasks?: Prisma.KanbanTaskUncheckedUpdateManyWithoutProjectNestedInput
   kanbanColumns?: Prisma.ProjectKanbanColumnUncheckedUpdateManyWithoutProjectNestedInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutKanbanColumnsInput = {
@@ -606,6 +633,7 @@ export type ProjectCreateWithoutKanbanColumnsInput = {
   members?: Prisma.ProjectMemberCreateNestedManyWithoutProjectInput
   tasks?: Prisma.KanbanTaskCreateNestedManyWithoutProjectInput
   invitations?: Prisma.ProjectInvitationCreateNestedManyWithoutProjectInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutKanbanColumnsInput = {
@@ -618,6 +646,7 @@ export type ProjectUncheckedCreateWithoutKanbanColumnsInput = {
   members?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutProjectInput
   tasks?: Prisma.KanbanTaskUncheckedCreateNestedManyWithoutProjectInput
   invitations?: Prisma.ProjectInvitationUncheckedCreateNestedManyWithoutProjectInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutKanbanColumnsInput = {
@@ -646,6 +675,7 @@ export type ProjectUpdateWithoutKanbanColumnsInput = {
   members?: Prisma.ProjectMemberUpdateManyWithoutProjectNestedInput
   tasks?: Prisma.KanbanTaskUpdateManyWithoutProjectNestedInput
   invitations?: Prisma.ProjectInvitationUpdateManyWithoutProjectNestedInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutKanbanColumnsInput = {
@@ -658,6 +688,7 @@ export type ProjectUncheckedUpdateWithoutKanbanColumnsInput = {
   members?: Prisma.ProjectMemberUncheckedUpdateManyWithoutProjectNestedInput
   tasks?: Prisma.KanbanTaskUncheckedUpdateManyWithoutProjectNestedInput
   invitations?: Prisma.ProjectInvitationUncheckedUpdateManyWithoutProjectNestedInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutMembersInput = {
@@ -670,6 +701,7 @@ export type ProjectCreateWithoutMembersInput = {
   tasks?: Prisma.KanbanTaskCreateNestedManyWithoutProjectInput
   kanbanColumns?: Prisma.ProjectKanbanColumnCreateNestedManyWithoutProjectInput
   invitations?: Prisma.ProjectInvitationCreateNestedManyWithoutProjectInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutMembersInput = {
@@ -682,6 +714,7 @@ export type ProjectUncheckedCreateWithoutMembersInput = {
   tasks?: Prisma.KanbanTaskUncheckedCreateNestedManyWithoutProjectInput
   kanbanColumns?: Prisma.ProjectKanbanColumnUncheckedCreateNestedManyWithoutProjectInput
   invitations?: Prisma.ProjectInvitationUncheckedCreateNestedManyWithoutProjectInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutMembersInput = {
@@ -710,6 +743,7 @@ export type ProjectUpdateWithoutMembersInput = {
   tasks?: Prisma.KanbanTaskUpdateManyWithoutProjectNestedInput
   kanbanColumns?: Prisma.ProjectKanbanColumnUpdateManyWithoutProjectNestedInput
   invitations?: Prisma.ProjectInvitationUpdateManyWithoutProjectNestedInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutMembersInput = {
@@ -722,6 +756,7 @@ export type ProjectUncheckedUpdateWithoutMembersInput = {
   tasks?: Prisma.KanbanTaskUncheckedUpdateManyWithoutProjectNestedInput
   kanbanColumns?: Prisma.ProjectKanbanColumnUncheckedUpdateManyWithoutProjectNestedInput
   invitations?: Prisma.ProjectInvitationUncheckedUpdateManyWithoutProjectNestedInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutTasksInput = {
@@ -734,6 +769,7 @@ export type ProjectCreateWithoutTasksInput = {
   members?: Prisma.ProjectMemberCreateNestedManyWithoutProjectInput
   kanbanColumns?: Prisma.ProjectKanbanColumnCreateNestedManyWithoutProjectInput
   invitations?: Prisma.ProjectInvitationCreateNestedManyWithoutProjectInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutTasksInput = {
@@ -746,6 +782,7 @@ export type ProjectUncheckedCreateWithoutTasksInput = {
   members?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutProjectInput
   kanbanColumns?: Prisma.ProjectKanbanColumnUncheckedCreateNestedManyWithoutProjectInput
   invitations?: Prisma.ProjectInvitationUncheckedCreateNestedManyWithoutProjectInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutTasksInput = {
@@ -774,6 +811,7 @@ export type ProjectUpdateWithoutTasksInput = {
   members?: Prisma.ProjectMemberUpdateManyWithoutProjectNestedInput
   kanbanColumns?: Prisma.ProjectKanbanColumnUpdateManyWithoutProjectNestedInput
   invitations?: Prisma.ProjectInvitationUpdateManyWithoutProjectNestedInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutTasksInput = {
@@ -784,6 +822,75 @@ export type ProjectUncheckedUpdateWithoutTasksInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   organizationId?: Prisma.StringFieldUpdateOperationsInput | string
   members?: Prisma.ProjectMemberUncheckedUpdateManyWithoutProjectNestedInput
+  kanbanColumns?: Prisma.ProjectKanbanColumnUncheckedUpdateManyWithoutProjectNestedInput
+  invitations?: Prisma.ProjectInvitationUncheckedUpdateManyWithoutProjectNestedInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUncheckedUpdateManyWithoutProjectNestedInput
+}
+
+export type ProjectCreateWithoutAiTaskCandidateEventsInput = {
+  id?: string
+  name: string
+  description?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutProjectsInput
+  members?: Prisma.ProjectMemberCreateNestedManyWithoutProjectInput
+  tasks?: Prisma.KanbanTaskCreateNestedManyWithoutProjectInput
+  kanbanColumns?: Prisma.ProjectKanbanColumnCreateNestedManyWithoutProjectInput
+  invitations?: Prisma.ProjectInvitationCreateNestedManyWithoutProjectInput
+}
+
+export type ProjectUncheckedCreateWithoutAiTaskCandidateEventsInput = {
+  id?: string
+  name: string
+  description?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  organizationId: string
+  members?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutProjectInput
+  tasks?: Prisma.KanbanTaskUncheckedCreateNestedManyWithoutProjectInput
+  kanbanColumns?: Prisma.ProjectKanbanColumnUncheckedCreateNestedManyWithoutProjectInput
+  invitations?: Prisma.ProjectInvitationUncheckedCreateNestedManyWithoutProjectInput
+}
+
+export type ProjectCreateOrConnectWithoutAiTaskCandidateEventsInput = {
+  where: Prisma.ProjectWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProjectCreateWithoutAiTaskCandidateEventsInput, Prisma.ProjectUncheckedCreateWithoutAiTaskCandidateEventsInput>
+}
+
+export type ProjectUpsertWithoutAiTaskCandidateEventsInput = {
+  update: Prisma.XOR<Prisma.ProjectUpdateWithoutAiTaskCandidateEventsInput, Prisma.ProjectUncheckedUpdateWithoutAiTaskCandidateEventsInput>
+  create: Prisma.XOR<Prisma.ProjectCreateWithoutAiTaskCandidateEventsInput, Prisma.ProjectUncheckedCreateWithoutAiTaskCandidateEventsInput>
+  where?: Prisma.ProjectWhereInput
+}
+
+export type ProjectUpdateToOneWithWhereWithoutAiTaskCandidateEventsInput = {
+  where?: Prisma.ProjectWhereInput
+  data: Prisma.XOR<Prisma.ProjectUpdateWithoutAiTaskCandidateEventsInput, Prisma.ProjectUncheckedUpdateWithoutAiTaskCandidateEventsInput>
+}
+
+export type ProjectUpdateWithoutAiTaskCandidateEventsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutProjectsNestedInput
+  members?: Prisma.ProjectMemberUpdateManyWithoutProjectNestedInput
+  tasks?: Prisma.KanbanTaskUpdateManyWithoutProjectNestedInput
+  kanbanColumns?: Prisma.ProjectKanbanColumnUpdateManyWithoutProjectNestedInput
+  invitations?: Prisma.ProjectInvitationUpdateManyWithoutProjectNestedInput
+}
+
+export type ProjectUncheckedUpdateWithoutAiTaskCandidateEventsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  members?: Prisma.ProjectMemberUncheckedUpdateManyWithoutProjectNestedInput
+  tasks?: Prisma.KanbanTaskUncheckedUpdateManyWithoutProjectNestedInput
   kanbanColumns?: Prisma.ProjectKanbanColumnUncheckedUpdateManyWithoutProjectNestedInput
   invitations?: Prisma.ProjectInvitationUncheckedUpdateManyWithoutProjectNestedInput
 }
@@ -806,6 +913,7 @@ export type ProjectUpdateWithoutOrganizationInput = {
   tasks?: Prisma.KanbanTaskUpdateManyWithoutProjectNestedInput
   kanbanColumns?: Prisma.ProjectKanbanColumnUpdateManyWithoutProjectNestedInput
   invitations?: Prisma.ProjectInvitationUpdateManyWithoutProjectNestedInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutOrganizationInput = {
@@ -818,6 +926,7 @@ export type ProjectUncheckedUpdateWithoutOrganizationInput = {
   tasks?: Prisma.KanbanTaskUncheckedUpdateManyWithoutProjectNestedInput
   kanbanColumns?: Prisma.ProjectKanbanColumnUncheckedUpdateManyWithoutProjectNestedInput
   invitations?: Prisma.ProjectInvitationUncheckedUpdateManyWithoutProjectNestedInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateManyWithoutOrganizationInput = {
@@ -838,6 +947,7 @@ export type ProjectCountOutputType = {
   tasks: number
   kanbanColumns: number
   invitations: number
+  aiTaskCandidateEvents: number
 }
 
 export type ProjectCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -845,6 +955,7 @@ export type ProjectCountOutputTypeSelect<ExtArgs extends runtime.Types.Extension
   tasks?: boolean | ProjectCountOutputTypeCountTasksArgs
   kanbanColumns?: boolean | ProjectCountOutputTypeCountKanbanColumnsArgs
   invitations?: boolean | ProjectCountOutputTypeCountInvitationsArgs
+  aiTaskCandidateEvents?: boolean | ProjectCountOutputTypeCountAiTaskCandidateEventsArgs
 }
 
 /**
@@ -885,6 +996,13 @@ export type ProjectCountOutputTypeCountInvitationsArgs<ExtArgs extends runtime.T
   where?: Prisma.ProjectInvitationWhereInput
 }
 
+/**
+ * ProjectCountOutputType without action
+ */
+export type ProjectCountOutputTypeCountAiTaskCandidateEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AiTaskCandidateEventWhereInput
+}
+
 
 export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -898,6 +1016,7 @@ export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   tasks?: boolean | Prisma.Project$tasksArgs<ExtArgs>
   kanbanColumns?: boolean | Prisma.Project$kanbanColumnsArgs<ExtArgs>
   invitations?: boolean | Prisma.Project$invitationsArgs<ExtArgs>
+  aiTaskCandidateEvents?: boolean | Prisma.Project$aiTaskCandidateEventsArgs<ExtArgs>
   _count?: boolean | Prisma.ProjectCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["project"]>
 
@@ -937,6 +1056,7 @@ export type ProjectInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   tasks?: boolean | Prisma.Project$tasksArgs<ExtArgs>
   kanbanColumns?: boolean | Prisma.Project$kanbanColumnsArgs<ExtArgs>
   invitations?: boolean | Prisma.Project$invitationsArgs<ExtArgs>
+  aiTaskCandidateEvents?: boolean | Prisma.Project$aiTaskCandidateEventsArgs<ExtArgs>
   _count?: boolean | Prisma.ProjectCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ProjectIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -954,6 +1074,7 @@ export type $ProjectPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     tasks: Prisma.$KanbanTaskPayload<ExtArgs>[]
     kanbanColumns: Prisma.$ProjectKanbanColumnPayload<ExtArgs>[]
     invitations: Prisma.$ProjectInvitationPayload<ExtArgs>[]
+    aiTaskCandidateEvents: Prisma.$AiTaskCandidateEventPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1361,6 +1482,7 @@ export interface Prisma__ProjectClient<T, Null = never, ExtArgs extends runtime.
   tasks<T extends Prisma.Project$tasksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$tasksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$KanbanTaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   kanbanColumns<T extends Prisma.Project$kanbanColumnsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$kanbanColumnsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProjectKanbanColumnPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   invitations<T extends Prisma.Project$invitationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$invitationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProjectInvitationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  aiTaskCandidateEvents<T extends Prisma.Project$aiTaskCandidateEventsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$aiTaskCandidateEventsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AiTaskCandidateEventPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1890,6 +2012,30 @@ export type Project$invitationsArgs<ExtArgs extends runtime.Types.Extensions.Int
   take?: number
   skip?: number
   distinct?: Prisma.ProjectInvitationScalarFieldEnum | Prisma.ProjectInvitationScalarFieldEnum[]
+}
+
+/**
+ * Project.aiTaskCandidateEvents
+ */
+export type Project$aiTaskCandidateEventsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AiTaskCandidateEvent
+   */
+  select?: Prisma.AiTaskCandidateEventSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AiTaskCandidateEvent
+   */
+  omit?: Prisma.AiTaskCandidateEventOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AiTaskCandidateEventInclude<ExtArgs> | null
+  where?: Prisma.AiTaskCandidateEventWhereInput
+  orderBy?: Prisma.AiTaskCandidateEventOrderByWithRelationInput | Prisma.AiTaskCandidateEventOrderByWithRelationInput[]
+  cursor?: Prisma.AiTaskCandidateEventWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AiTaskCandidateEventScalarFieldEnum | Prisma.AiTaskCandidateEventScalarFieldEnum[]
 }
 
 /**

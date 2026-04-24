@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -11,6 +11,10 @@ import { Sparkles, Plus, Pause, X, ChevronLeft, ChevronRight, CheckCircle2, Penc
 import { cn } from '@/lib/utils'
 import type { ProjectMemberApiRecord, TaskCandidate } from '@/lib/types'
 import { summarizeCandidateReasons } from '@/lib/ai/candidate-reason-summary'
+import {
+  buildAiTaskCandidateEventPayload,
+  logAiTaskCandidateEvent,
+} from '@/lib/ai/log-candidate-event'
 
 export interface CandidateApprovalOverrides {
   title?: string
@@ -20,6 +24,7 @@ export interface CandidateApprovalOverrides {
 }
 
 interface TaskCandidateSidePanelProps {
+  projectId: string
   candidates: TaskCandidate[]
   projectMembers: ProjectMemberApiRecord[]
   onAddToKanban: (candidate: TaskCandidate, overrides?: CandidateApprovalOverrides) => void
@@ -70,6 +75,7 @@ function toDateInputValue(s: string | undefined): string {
 }
 
 export function TaskCandidateSidePanel({
+  projectId,
   candidates,
   projectMembers,
   onAddToKanban,
@@ -78,6 +84,7 @@ export function TaskCandidateSidePanel({
 }: TaskCandidateSidePanelProps) {
   const [open, setOpen] = useState(true)
   const [openStateLoaded, setOpenStateLoaded] = useState(false)
+  const shownCandidateIdsRef = useRef<Set<string>>(new Set())
   const [submittingId, setSubmittingId] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [drafts, setDrafts] = useState<Record<string, CandidateDraft>>({})
@@ -105,6 +112,20 @@ export function TaskCandidateSidePanel({
       // Ignore persistence failures and keep panel usable.
     }
   }, [open, openStateLoaded])
+
+  useEffect(() => {
+    if (!open || !openStateLoaded || candidates.length === 0) return
+    const topId = candidates[0]?.id
+    for (const c of candidates) {
+      if (shownCandidateIdsRef.current.has(c.id)) continue
+      shownCandidateIdsRef.current.add(c.id)
+      logAiTaskCandidateEvent(
+        buildAiTaskCandidateEventPayload(projectId, c, 'shown', {
+          isTopCandidate: topId === c.id,
+        })
+      )
+    }
+  }, [open, openStateLoaded, candidates, projectId])
 
   useEffect(() => {
     const candidateIds = new Set(candidates.map((candidate) => candidate.id))

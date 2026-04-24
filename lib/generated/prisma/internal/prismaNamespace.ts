@@ -391,7 +391,8 @@ export const ModelName = {
   ProjectInvitation: 'ProjectInvitation',
   ProjectKanbanColumn: 'ProjectKanbanColumn',
   ProjectMember: 'ProjectMember',
-  KanbanTask: 'KanbanTask'
+  KanbanTask: 'KanbanTask',
+  AiTaskCandidateEvent: 'AiTaskCandidateEvent'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -407,7 +408,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "organization" | "organizationMember" | "project" | "projectInvitation" | "projectKanbanColumn" | "projectMember" | "kanbanTask"
+    modelProps: "user" | "organization" | "organizationMember" | "project" | "projectInvitation" | "projectKanbanColumn" | "projectMember" | "kanbanTask" | "aiTaskCandidateEvent"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1003,6 +1004,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AiTaskCandidateEvent: {
+      payload: Prisma.$AiTaskCandidateEventPayload<ExtArgs>
+      fields: Prisma.AiTaskCandidateEventFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AiTaskCandidateEventFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiTaskCandidateEventPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AiTaskCandidateEventFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiTaskCandidateEventPayload>
+        }
+        findFirst: {
+          args: Prisma.AiTaskCandidateEventFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiTaskCandidateEventPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AiTaskCandidateEventFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiTaskCandidateEventPayload>
+        }
+        findMany: {
+          args: Prisma.AiTaskCandidateEventFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiTaskCandidateEventPayload>[]
+        }
+        create: {
+          args: Prisma.AiTaskCandidateEventCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiTaskCandidateEventPayload>
+        }
+        createMany: {
+          args: Prisma.AiTaskCandidateEventCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AiTaskCandidateEventCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiTaskCandidateEventPayload>[]
+        }
+        delete: {
+          args: Prisma.AiTaskCandidateEventDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiTaskCandidateEventPayload>
+        }
+        update: {
+          args: Prisma.AiTaskCandidateEventUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiTaskCandidateEventPayload>
+        }
+        deleteMany: {
+          args: Prisma.AiTaskCandidateEventDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AiTaskCandidateEventUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AiTaskCandidateEventUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiTaskCandidateEventPayload>[]
+        }
+        upsert: {
+          args: Prisma.AiTaskCandidateEventUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiTaskCandidateEventPayload>
+        }
+        aggregate: {
+          args: Prisma.AiTaskCandidateEventAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAiTaskCandidateEvent>
+        }
+        groupBy: {
+          args: Prisma.AiTaskCandidateEventGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AiTaskCandidateEventGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AiTaskCandidateEventCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AiTaskCandidateEventCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1150,12 +1225,47 @@ export const KanbanTaskScalarFieldEnum = {
 export type KanbanTaskScalarFieldEnum = (typeof KanbanTaskScalarFieldEnum)[keyof typeof KanbanTaskScalarFieldEnum]
 
 
+export const AiTaskCandidateEventScalarFieldEnum = {
+  id: 'id',
+  createdAt: 'createdAt',
+  projectId: 'projectId',
+  candidateId: 'candidateId',
+  eventType: 'eventType',
+  candidateTitle: 'candidateTitle',
+  candidateSource: 'candidateSource',
+  confidenceLevel: 'confidenceLevel',
+  recommendationReason: 'recommendationReason',
+  structuredReasonsJson: 'structuredReasonsJson',
+  createdTaskId: 'createdTaskId',
+  userId: 'userId',
+  organizationId: 'organizationId',
+  metadataJson: 'metadataJson'
+} as const
+
+export type AiTaskCandidateEventScalarFieldEnum = (typeof AiTaskCandidateEventScalarFieldEnum)[keyof typeof AiTaskCandidateEventScalarFieldEnum]
+
+
 export const SortOrder = {
   asc: 'asc',
   desc: 'desc'
 } as const
 
 export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
+
+
+export const JsonNullValueInput = {
+  JsonNull: JsonNull
+} as const
+
+export type JsonNullValueInput = (typeof JsonNullValueInput)[keyof typeof JsonNullValueInput]
+
+
+export const NullableJsonNullValueInput = {
+  DbNull: DbNull,
+  JsonNull: JsonNull
+} as const
+
+export type NullableJsonNullValueInput = (typeof NullableJsonNullValueInput)[keyof typeof NullableJsonNullValueInput]
 
 
 export const QueryMode = {
@@ -1172,6 +1282,15 @@ export const NullsOrder = {
 } as const
 
 export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
+
+export const JsonNullValueFilter = {
+  DbNull: DbNull,
+  JsonNull: JsonNull,
+  AnyNull: AnyNull
+} as const
+
+export type JsonNullValueFilter = (typeof JsonNullValueFilter)[keyof typeof JsonNullValueFilter]
 
 
 
@@ -1282,6 +1401,34 @@ export type EnumTaskPriorityFieldRefInput<$PrismaModel> = FieldRefInputType<$Pri
  * Reference to a field of type 'TaskPriority[]'
  */
 export type ListEnumTaskPriorityFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'TaskPriority[]'>
+    
+
+
+/**
+ * Reference to a field of type 'AiTaskCandidateEventType'
+ */
+export type EnumAiTaskCandidateEventTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiTaskCandidateEventType'>
+    
+
+
+/**
+ * Reference to a field of type 'AiTaskCandidateEventType[]'
+ */
+export type ListEnumAiTaskCandidateEventTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiTaskCandidateEventType[]'>
+    
+
+
+/**
+ * Reference to a field of type 'Json'
+ */
+export type JsonFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Json'>
+    
+
+
+/**
+ * Reference to a field of type 'QueryMode'
+ */
+export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'QueryMode'>
     
 
 
@@ -1401,6 +1548,7 @@ export type GlobalOmitConfig = {
   projectKanbanColumn?: Prisma.ProjectKanbanColumnOmit
   projectMember?: Prisma.ProjectMemberOmit
   kanbanTask?: Prisma.KanbanTaskOmit
+  aiTaskCandidateEvent?: Prisma.AiTaskCandidateEventOmit
 }
 
 /* Types for Logging */

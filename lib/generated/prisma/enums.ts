@@ -44,3 +44,13 @@ export const TaskPriority = {
 } as const
 
 export type TaskPriority = (typeof TaskPriority)[keyof typeof TaskPriority]
+
+
+export const AiTaskCandidateEventType = {
+  SHOWN: 'SHOWN',
+  ACCEPTED: 'ACCEPTED',
+  SNOOZED: 'SNOOZED',
+  DISMISSED: 'DISMISSED'
+} as const
+
+export type AiTaskCandidateEventType = (typeof AiTaskCandidateEventType)[keyof typeof AiTaskCandidateEventType]

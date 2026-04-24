@@ -10,6 +10,7 @@ export type TaskCandidateScoreResult = {
   scoreBreakdown: {
     source: number
     reason: number
+    rawReason: number
     assignee: number
     dueDate: number
   }
@@ -35,6 +36,16 @@ const REASON_LABEL_WEIGHTS: Record<string, number> = {
   言及あり: 1,
 }
 
+const MAX_REASON_SCORE = 5
+
+const REASON_LABEL_GROUPS = {
+  confirmation: ['確認依頼あり', 'Slackで確認依頼'],
+  dueSoon: ['期限が近い'],
+  decision: ['決定事項に紐づく'],
+  assignee: ['担当候補あり'],
+  mention: ['言及あり'],
+} as const
+
 const RANK: Record<TaskCandidateScoreConfidence, number> = {
   review: 0,
   medium: 1,
@@ -52,21 +63,20 @@ function collectReasonLabels(candidate: TaskCandidate): Set<string> {
 
 function scoreReasonFromLabels(labels: Set<string>): number {
   let total = 0
-  const used = new Set<string>()
-  for (const label of labels) {
-    const w = REASON_LABEL_WEIGHTS[label]
+  for (const groupLabels of Object.values(REASON_LABEL_GROUPS)) {
+    const matchedLabel = groupLabels.find((label) => labels.has(label))
+    if (!matchedLabel) continue
+    const w = REASON_LABEL_WEIGHTS[matchedLabel]
     if (w === undefined || w === 0) continue
-    const key =
-      label === 'Slackで確認依頼' || label === '確認依頼あり' ? '__confirm__' : label === '期限が近い' ? '__due__' : label
-    if (used.has(key)) continue
-    used.add(key)
     total += w
   }
   return total
 }
 
-function scoreReasonBucket(labels: Set<string>): number {
-  return scoreReasonFromLabels(labels)
+function scoreReasonBucket(labels: Set<string>): { rawReason: number; reason: number } {
+  const rawReason = scoreReasonFromLabels(labels)
+  const reason = Math.min(rawReason, MAX_REASON_SCORE)
+  return { rawReason, reason }
 }
 
 function scoreSourceBucket(candidate: TaskCandidate): number {
@@ -109,10 +119,10 @@ function buildRecommendationReason(candidate: TaskCandidate, labels: Set<string>
   const hasDecision = labels.has('決定事項に紐づく')
 
   if (hasDeadline && hasConfirm) {
-    return '期限が近く、確認依頼もあるため優先度が高い候補です'
+    return '期限が近く、確認依頼もあるため候補化しています'
   }
   if (candidate.source === 'slack' && hasConfirm) {
-    return 'Slackで明確な依頼があるため優先度が高い候補です'
+    return '確認依頼があるため候補化しています'
   }
   if (hasDecision) {
     return '決定事項に紐づくため候補化しています'
@@ -134,7 +144,7 @@ export function scoreTaskCandidate(candidate: TaskCandidate): TaskCandidateScore
   const legacy = summarizeCandidateReasons(candidate, { isTopCandidate: false, maxChips: 4 }).confidenceLevel
 
   const source = scoreSourceBucket(candidate)
-  const reason = scoreReasonBucket(labels)
+  const { rawReason, reason } = scoreReasonBucket(labels)
   const assignee = scoreAssigneeBucket(candidate)
   const dueDate = scoreDueDateBucket(candidate)
   const score = source + reason + assignee + dueDate
@@ -147,7 +157,7 @@ export function scoreTaskCandidate(candidate: TaskCandidate): TaskCandidateScore
     score,
     confidenceLevel,
     recommendationReason,
-    scoreBreakdown: { source, reason, assignee, dueDate },
+    scoreBreakdown: { source, reason, rawReason, assignee, dueDate },
     legacyConfidenceLevel: legacy,
   }
 }

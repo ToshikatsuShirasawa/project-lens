@@ -33,6 +33,9 @@ export function buildAiTaskCandidateEventPayload(
     isTopCandidate: boolean
     createdTaskId?: string | null
     metadata?: Record<string, unknown> | null
+    recommendationReasonOverride?: string
+    scoreDiffToNext?: number | null
+    isComparativeRecommendation?: boolean
   }
 ): LogAiTaskCandidateEventPayload {
   const summary = summarizeCandidateReasons(candidate, {
@@ -48,7 +51,7 @@ export function buildAiTaskCandidateEventPayload(
     candidateTitle: candidate.title,
     candidateSource: SOURCE_LABEL[candidate.source],
     confidenceLevel: scored.confidenceLevel,
-    recommendationReason: scored.recommendationReason,
+    recommendationReason: options.recommendationReasonOverride ?? scored.recommendationReason,
     structuredReasons,
     createdTaskId: options.createdTaskId,
     metadata: {
@@ -57,6 +60,8 @@ export function buildAiTaskCandidateEventPayload(
       isTopCandidate: options.isTopCandidate,
       score: scored.score,
       scoreBreakdown: scored.scoreBreakdown,
+      scoreDiffToNext: options.scoreDiffToNext ?? null,
+      isComparativeRecommendation: Boolean(options.isComparativeRecommendation),
       legacyConfidenceLevel: scored.legacyConfidenceLevel,
     },
   }

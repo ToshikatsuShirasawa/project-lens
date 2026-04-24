@@ -36,7 +36,7 @@ import {
   buildAiTaskCandidateEventPayload,
   logAiTaskCandidateEvent,
 } from '@/lib/ai/log-candidate-event'
-import { sortTaskCandidatesByScore } from '@/lib/ai/task-candidate-score'
+import { buildComparativeRecommendationReason, sortTaskCandidatesByScore } from '@/lib/ai/task-candidate-score'
 import {
   KANBAN_COLUMNS_UPDATED_EVENT,
   type KanbanColumnsUpdatedDetail,
@@ -118,6 +118,10 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   const [projectMembers, setProjectMembers] = useState<ProjectMemberApiRecord[]>([])
 
   const orderedAiCandidates = useMemo(() => sortTaskCandidatesByScore(candidates), [candidates])
+  const topRecommendation = useMemo(
+    () => buildComparativeRecommendationReason(orderedAiCandidates),
+    [orderedAiCandidates]
+  )
 
   const loadTasks = useCallback(
     async (options?: { silent?: boolean }) => {
@@ -438,6 +442,9 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
         isTopCandidate,
         createdTaskId: clientTaskId,
         metadata: { approvalTitle: overrides?.title?.trim() || undefined },
+        recommendationReasonOverride: isTopCandidate ? topRecommendation.recommendationReason : undefined,
+        scoreDiffToNext: isTopCandidate ? topRecommendation.scoreDiffToNext : undefined,
+        isComparativeRecommendation: isTopCandidate ? topRecommendation.isComparativeRecommendation : undefined,
       })
     )
 
@@ -547,6 +554,12 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
             logAiTaskCandidateEvent(
               buildAiTaskCandidateEventPayload(projectId, target, 'snoozed', {
                 isTopCandidate: orderedAiCandidates[0]?.id === target.id,
+                recommendationReasonOverride:
+                  orderedAiCandidates[0]?.id === target.id ? topRecommendation.recommendationReason : undefined,
+                scoreDiffToNext:
+                  orderedAiCandidates[0]?.id === target.id ? topRecommendation.scoreDiffToNext : undefined,
+                isComparativeRecommendation:
+                  orderedAiCandidates[0]?.id === target.id ? topRecommendation.isComparativeRecommendation : undefined,
               })
             )
           }
@@ -565,6 +578,12 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
             logAiTaskCandidateEvent(
               buildAiTaskCandidateEventPayload(projectId, target, 'dismissed', {
                 isTopCandidate: orderedAiCandidates[0]?.id === target.id,
+                recommendationReasonOverride:
+                  orderedAiCandidates[0]?.id === target.id ? topRecommendation.recommendationReason : undefined,
+                scoreDiffToNext:
+                  orderedAiCandidates[0]?.id === target.id ? topRecommendation.scoreDiffToNext : undefined,
+                isComparativeRecommendation:
+                  orderedAiCandidates[0]?.id === target.id ? topRecommendation.isComparativeRecommendation : undefined,
               })
             )
           }

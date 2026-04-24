@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
@@ -11,7 +11,7 @@ import { Sparkles, Plus, Pause, X, ChevronLeft, ChevronRight, CheckCircle2, Penc
 import { cn } from '@/lib/utils'
 import type { ProjectMemberApiRecord, TaskCandidate } from '@/lib/types'
 import { summarizeCandidateReasons } from '@/lib/ai/candidate-reason-summary'
-import { scoreTaskCandidate } from '@/lib/ai/task-candidate-score'
+import { buildComparativeRecommendationReason, scoreTaskCandidate } from '@/lib/ai/task-candidate-score'
 import {
   buildAiTaskCandidateEventPayload,
   logAiTaskCandidateEvent,
@@ -89,6 +89,7 @@ export function TaskCandidateSidePanel({
   const [submittingId, setSubmittingId] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [drafts, setDrafts] = useState<Record<string, CandidateDraft>>({})
+  const topRecommendation = useMemo(() => buildComparativeRecommendationReason(candidates), [candidates])
 
   useEffect(() => {
     try {
@@ -123,10 +124,13 @@ export function TaskCandidateSidePanel({
       logAiTaskCandidateEvent(
         buildAiTaskCandidateEventPayload(projectId, c, 'shown', {
           isTopCandidate: topId === c.id,
+          recommendationReasonOverride: topId === c.id ? topRecommendation.recommendationReason : undefined,
+          scoreDiffToNext: topId === c.id ? topRecommendation.scoreDiffToNext : undefined,
+          isComparativeRecommendation: topId === c.id ? topRecommendation.isComparativeRecommendation : undefined,
         })
       )
     }
-  }, [open, openStateLoaded, candidates, projectId])
+  }, [open, openStateLoaded, candidates, projectId, topRecommendation])
 
   useEffect(() => {
     const candidateIds = new Set(candidates.map((candidate) => candidate.id))
@@ -302,8 +306,8 @@ export function TaskCandidateSidePanel({
                     </div>
                   </div>
                   <div className="space-y-1.5">
-                    {isTopCandidate && scoreResult.recommendationReason ? (
-                      <p className="text-[11px] font-medium text-primary">{scoreResult.recommendationReason}</p>
+                    {isTopCandidate && topRecommendation.recommendationReason ? (
+                      <p className="text-[11px] font-medium text-primary">{topRecommendation.recommendationReason}</p>
                     ) : null}
                     <div className="flex flex-wrap gap-1">
                       {reasonSummary.chips.map((chip, chipIndex) => (

@@ -23,6 +23,12 @@ export type TaskCandidateScoreResult = {
   legacyConfidenceLevel: TaskCandidateScoreConfidence
 }
 
+export type ComparativeRecommendationResult = {
+  recommendationReason: string
+  scoreDiffToNext: number | null
+  isComparativeRecommendation: boolean
+}
+
 /** source 別の基礎点。ログ分析でここを主調整点にする。 */
 const SOURCE_WEIGHTS: Record<TaskCandidate['source'], number> = {
   // 会話起点の依頼・確認が多く、即タスク化しやすい
@@ -191,6 +197,19 @@ function buildRecommendationReason(candidate: TaskCandidate, labels: Set<string>
   return '複数のシグナルから候補化しています'
 }
 
+function buildPriorityEvidenceText(score: TaskCandidateScoreResult): string {
+  const parts: string[] = []
+  if (score.scoreBreakdown.urgency >= 1) parts.push('期限が近い')
+  if (score.scoreBreakdown.hasConfirmationSignal) parts.push('確認依頼がある')
+  if (score.scoreBreakdown.actionability >= 2) parts.push('担当や期限が見えている')
+  if (score.scoreBreakdown.hasDecisionSignal) parts.push('決定事項に紐づく')
+  if (score.scoreBreakdown.sourceKey === 'slack' && score.scoreBreakdown.source >= 2) {
+    parts.push('Slack由来の明確な依頼')
+  }
+  if (parts.length === 0) return '根拠が比較的そろっている'
+  return parts.slice(0, 2).join('、')
+}
+
 export function scoreTaskCandidate(candidate: TaskCandidate): TaskCandidateScoreResult {
   const labels = collectReasonLabels(candidate)
   const legacy = summarizeCandidateReasons(candidate, { isTopCandidate: false, maxChips: 4 }).confidenceLevel
@@ -226,6 +245,48 @@ export function scoreTaskCandidate(candidate: TaskCandidate): TaskCandidateScore
       hasDecisionSignal: signals.hasDecisionSignal,
     },
     legacyConfidenceLevel: legacy,
+  }
+}
+
+export function buildComparativeRecommendationReason(candidates: TaskCandidate[]): ComparativeRecommendationResult {
+  if (candidates.length === 0) {
+    return {
+      recommendationReason: '根拠があるため、まず確認したい候補です',
+      scoreDiffToNext: null,
+      isComparativeRecommendation: false,
+    }
+  }
+
+  const top = scoreTaskCandidate(candidates[0])
+  const next = candidates.length >= 2 ? scoreTaskCandidate(candidates[1]) : null
+  const diff = next ? top.score - next.score : null
+  const evidence = buildPriorityEvidenceText(top)
+
+  if (diff === null) {
+    return {
+      recommendationReason: `${evidence}ため、まず確認したい候補です`,
+      scoreDiffToNext: null,
+      isComparativeRecommendation: false,
+    }
+  }
+  if (diff >= 2) {
+    return {
+      recommendationReason: `他の候補よりも${evidence}ため、優先しています`,
+      scoreDiffToNext: diff,
+      isComparativeRecommendation: true,
+    }
+  }
+  if (diff <= 0) {
+    return {
+      recommendationReason: `他の候補と同程度ですが、${evidence}ため先に確認したい候補です`,
+      scoreDiffToNext: diff,
+      isComparativeRecommendation: true,
+    }
+  }
+  return {
+    recommendationReason: `他の候補と近いスコアですが、${evidence}ため先に確認したい候補です`,
+    scoreDiffToNext: diff,
+    isComparativeRecommendation: true,
   }
 }
 

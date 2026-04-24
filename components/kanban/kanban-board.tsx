@@ -26,7 +26,6 @@ import { Label } from '@/components/ui/label'
 import { Filter, Loader2, User, Sparkles } from 'lucide-react'
 import { toastError, toastSuccess } from '@/lib/operation-toast'
 import { mockKanbanCandidates } from '@/lib/mock/kanban'
-import { mockReports } from '@/lib/mock/reports'
 import {
   DEFAULT_KANBAN_TEMPLATE_KEY,
   getAllKanbanColumnKeysForEmptyBoard,
@@ -50,6 +49,7 @@ import type {
   ProjectMemberApiRecord,
   TaskCandidate,
   TaskPriority,
+  WorkReport,
 } from '@/lib/types'
 
 type TaskFormPriority = 'none' | TaskPriority
@@ -110,19 +110,13 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
     [stableColumnKeys]
   )
 
-  const reportBasedCandidates = useMemo(() => extractTaskCandidatesFromReports(mockReports), [])
-  const initialCandidates = useMemo(
-    () => (reportBasedCandidates.length > 0 ? reportBasedCandidates : mockKanbanCandidates),
-    [reportBasedCandidates]
-  )
-
   const [boardColumns, setBoardColumns] = useState<ProjectKanbanColumnApi[]>(placeholderBoardColumns)
   const [cards, setCards] = useState<Record<string, KanbanTask[]>>(emptyCards)
   const [tasksLoading, setTasksLoading] = useState(true)
   const [tasksError, setTasksError] = useState<string | null>(null)
   const [addSaving, setAddSaving] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
-  const [candidates, setCandidates] = useState<TaskCandidate[]>(() => initialCandidates)
+  const [candidates, setCandidates] = useState<TaskCandidate[]>(() => mockKanbanCandidates)
   const [projectMembers, setProjectMembers] = useState<ProjectMemberApiRecord[]>([])
 
   const orderedAiCandidates = useMemo(() => sortTaskCandidatesByScore(candidates), [candidates])
@@ -185,6 +179,86 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   useEffect(() => {
     void loadTasks()
   }, [loadTasks])
+
+  useEffect(() => {
+    let cancelled = false
+
+    const toWorkReport = (raw: unknown, index: number): WorkReport | null => {
+      if (!raw || typeof raw !== 'object') return null
+      const r = raw as Record<string, unknown>
+      const submittedByUser =
+        r.submittedBy && typeof r.submittedBy === 'object'
+          ? (r.submittedBy as Record<string, unknown>)
+          : null
+
+      const submittedByName =
+        (typeof r.submittedBy === 'string' && r.submittedBy.trim()) ||
+        (typeof r.authorName === 'string' && r.authorName.trim()) ||
+        (typeof r.userName === 'string' && r.userName.trim()) ||
+        (typeof submittedByUser?.name === 'string' && submittedByUser.name.trim()) ||
+        (typeof submittedByUser?.email === 'string' && submittedByUser.email.trim()) ||
+        '不明'
+
+      return {
+        id: typeof r.id === 'string' && r.id.trim() ? r.id : `report-${projectId}-${index}`,
+        completed: typeof r.completed === 'string' ? r.completed : '',
+        inProgress: typeof r.inProgress === 'string' ? r.inProgress : '',
+        blockers: typeof r.blockers === 'string' ? r.blockers : '',
+        nextActions: typeof r.nextActions === 'string' ? r.nextActions : '',
+        submittedAt:
+          (typeof r.submittedAt === 'string' && r.submittedAt) ||
+          (typeof r.createdAt === 'string' && r.createdAt) ||
+          new Date().toISOString(),
+        submittedBy: submittedByName,
+      }
+    }
+
+    void (async () => {
+      const endpoint = `/api/projects/${encodeURIComponent(projectId)}/reports`
+      try {
+        const res = await fetch(endpoint)
+        const body: unknown = await res.json().catch(() => null)
+        if (!res.ok) {
+          throw new Error(`HTTP ${res.status}`)
+        }
+
+        const list = Array.isArray(body)
+          ? body
+          : body && typeof body === 'object' && 'reports' in body && Array.isArray((body as { reports: unknown }).reports)
+            ? ((body as { reports: unknown[] }).reports ?? [])
+            : []
+
+        const reports = list
+          .map((item, index) => toWorkReport(item, index))
+          .filter((item): item is WorkReport => Boolean(item))
+          .filter(
+            (item) =>
+              item.completed.trim() ||
+              item.inProgress.trim() ||
+              item.blockers.trim() ||
+              item.nextActions.trim()
+          )
+
+        const extracted = extractTaskCandidatesFromReports(reports)
+        if (cancelled) return
+        if (extracted.length > 0) {
+          setCandidates(extracted)
+          return
+        }
+
+        console.info('[kanban] reports から候補を生成できなかったため demo 候補を利用します')
+        setCandidates(mockKanbanCandidates)
+      } catch (error) {
+        if (cancelled) return
+        console.warn('[kanban] reports の取得に失敗したため demo 候補へフォールバックします', error)
+        setCandidates(mockKanbanCandidates)
+      }
+    })()
+
+    return () => {
+      cancelled = true
+    }
+  }, [projectId])
 
   useEffect(() => {
     let cancelled = false

@@ -113,6 +113,7 @@ model Project {
   kanbanColumns           ProjectKanbanColumn[]
   invitations             ProjectInvitation[]
   aiTaskCandidateEvents   AiTaskCandidateEvent[]
+  workReports             WorkReport[]
 
   @@index([organizationId])
   @@map("projects")
@@ -217,6 +218,33 @@ model KanbanTask {
   @@index([projectId, columnId, sortOrder])
   @@index([projectId, dueDate])
   @@map("kanban_tasks")
+}
+
+/// 作業日報。プロジェクトメンバーが日々の進捗・ブロッカーを記録し AI 候補生成の素材にする
+model WorkReport {
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  /// 投稿者の User.id（未ログイン投稿や将来の匿名投稿は null 許容）
+  submittedByUserId String?
+  /// 表示用の投稿者名（User.name / email から設定）
+  submittedBy       String
+
+  completed   String @default("")
+  inProgress  String @default("")
+  blockers    String @default("")
+  nextActions String @default("")
+
+  /// 報告対象日（省略時は作成日時）
+  reportDate DateTime @default(now())
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId])
+  @@index([projectId, reportDate])
+  @@map("work_reports")
 }
 
 /// AI候補の表示・承認・あとで・却下の最小ログ（クライアント送信・失敗時もUIは継続）

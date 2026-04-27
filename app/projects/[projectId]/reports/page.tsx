@@ -19,8 +19,8 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
               AIが入力内容を整理し、タスク候補と課題を自動検出します
             </p>
           </div>
-          <WorkReportForm />
-          <RecentReportsPanel />
+          <WorkReportForm projectId={projectId} />
+          <RecentReportsPanel projectId={projectId} />
         </div>
       </div>
     </ProjectShell>

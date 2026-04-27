@@ -591,6 +591,35 @@ export interface WorkReportPreview {
   taskCandidates: string[]
 }
 
+/** GET /api/projects/[projectId]/reports の1件レスポンス */
+export interface WorkReportApiRecord {
+  id: string
+  projectId: string
+  submittedByUserId: string | null
+  submittedBy: string
+  completed: string
+  inProgress: string
+  blockers: string
+  nextActions: string
+  reportDate: string
+  createdAt: string
+  updatedAt: string
+}
+
+/** GET /api/projects/[projectId]/reports のレスポンス */
+export interface WorkReportListResponse {
+  reports: WorkReportApiRecord[]
+}
+
+/** POST /api/projects/[projectId]/reports のリクエストボディ */
+export interface WorkReportCreateRequest {
+  completed?: string
+  inProgress?: string
+  blockers?: string
+  nextActions?: string
+  reportDate?: string
+}
+
 // ============================================================
 // Meetings
 // ============================================================

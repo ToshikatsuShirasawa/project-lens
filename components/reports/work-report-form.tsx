@@ -7,7 +7,6 @@ import { Textarea } from '@/components/ui/textarea'
 import { Badge } from '@/components/ui/badge'
 import {
   Sparkles,
-  Save,
   Send,
   Loader2,
   CheckCircle,
@@ -18,6 +17,7 @@ import {
   ListPlus,
   Plus,
 } from 'lucide-react'
+import { useToast } from '@/components/ui/use-toast'
 import type { WorkReportPreview } from '@/lib/types'
 
 interface ReportFormData {
@@ -27,7 +27,12 @@ interface ReportFormData {
   nextActions: string
 }
 
-export function WorkReportForm() {
+interface WorkReportFormProps {
+  projectId: string
+}
+
+export function WorkReportForm({ projectId }: WorkReportFormProps) {
+  const { toast } = useToast()
   const [report, setReport] = useState<ReportFormData>({
     completed: '',
     inProgress: '',
@@ -65,15 +70,35 @@ export function WorkReportForm() {
     }
   }, [report])
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
+    if (!hasContent || isSubmitting) return
     setIsSubmitting(true)
-    setTimeout(() => {
-      setIsSubmitting(false)
-      setSubmitted(true)
+    try {
+      const res = await fetch(`/api/projects/${encodeURIComponent(projectId)}/reports`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(report),
+      })
+      if (!res.ok) {
+        const body: unknown = await res.json().catch(() => null)
+        const message =
+          body && typeof body === 'object' && 'message' in body
+            ? String((body as { message: unknown }).message)
+            : '保存に失敗しました'
+        toast({ title: 'エラー', description: message, variant: 'destructive' })
+        return
+      }
       setReport({ completed: '', inProgress: '', blockers: '', nextActions: '' })
       setAnalysis(null)
+      setSubmitted(true)
       setTimeout(() => setSubmitted(false), 3000)
-    }, 1000)
+      toast({ title: '送信しました', description: '作業報告を保存しました' })
+      window.dispatchEvent(new CustomEvent('projectlens:reports-updated', { detail: { projectId } }))
+    } catch {
+      toast({ title: 'エラー', description: 'ネットワークエラーが発生しました', variant: 'destructive' })
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -127,10 +152,6 @@ export function WorkReportForm() {
             />
           </div>
           <div className="flex gap-2 pt-2">
-            <Button variant="outline" disabled={!hasContent} className="gap-2">
-              <Save className="h-4 w-4" />
-              下書き保存
-            </Button>
             <Button
               onClick={handleSubmit}
               disabled={!hasContent || isSubmitting}
@@ -183,7 +204,6 @@ export function WorkReportForm() {
             </div>
           ) : (
             <div className="space-y-4">
-              {/* Status */}
               <AnalysisSection
                 icon={<TrendingUp className="h-3 w-3" />}
                 label="状況整理"
@@ -193,7 +213,6 @@ export function WorkReportForm() {
                 itemClass="text-success"
                 ItemIcon={<CheckCircle className="h-4 w-4 text-success shrink-0 mt-0.5" />}
               />
-              {/* Issues */}
               <AnalysisSection
                 icon={<AlertTriangle className="h-3 w-3" />}
                 label="課題"
@@ -202,7 +221,6 @@ export function WorkReportForm() {
                 emptyText="ブロッカーから抽出されます"
                 borderColor="border-warning/50"
               />
-              {/* Risks */}
               <AnalysisSection
                 icon={<AlertTriangle className="h-3 w-3" />}
                 label="リスク"
@@ -211,7 +229,6 @@ export function WorkReportForm() {
                 emptyText="AIが潜在リスクを検出します"
                 borderColor="border-destructive/50"
               />
-              {/* TODOs */}
               <AnalysisSection
                 icon={<ArrowRight className="h-3 w-3" />}
                 label="次にやること"
@@ -220,7 +237,6 @@ export function WorkReportForm() {
                 emptyText="「次にやること」から抽出されます"
                 borderColor="border-primary/50"
               />
-              {/* Missing Info */}
               <AnalysisSection
                 icon={<HelpCircle className="h-3 w-3" />}
                 label="不足情報"
@@ -229,7 +245,6 @@ export function WorkReportForm() {
                 emptyText="AIが確認すべき点を検出します"
                 borderColor="border-muted-foreground/30"
               />
-              {/* Task Candidates */}
               {analysis?.taskCandidates && analysis.taskCandidates.length > 0 && (
                 <div className="space-y-2 pt-3 border-t border-border">
                   <div className="flex items-center gap-2">

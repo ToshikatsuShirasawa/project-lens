@@ -392,6 +392,7 @@ export const ModelName = {
   ProjectKanbanColumn: 'ProjectKanbanColumn',
   ProjectMember: 'ProjectMember',
   KanbanTask: 'KanbanTask',
+  WorkReport: 'WorkReport',
   AiTaskCandidateEvent: 'AiTaskCandidateEvent'
 } as const
 
@@ -408,7 +409,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "organization" | "organizationMember" | "project" | "projectInvitation" | "projectKanbanColumn" | "projectMember" | "kanbanTask" | "aiTaskCandidateEvent"
+    modelProps: "user" | "organization" | "organizationMember" | "project" | "projectInvitation" | "projectKanbanColumn" | "projectMember" | "kanbanTask" | "workReport" | "aiTaskCandidateEvent"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1004,6 +1005,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    WorkReport: {
+      payload: Prisma.$WorkReportPayload<ExtArgs>
+      fields: Prisma.WorkReportFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.WorkReportFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkReportPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.WorkReportFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkReportPayload>
+        }
+        findFirst: {
+          args: Prisma.WorkReportFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkReportPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.WorkReportFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkReportPayload>
+        }
+        findMany: {
+          args: Prisma.WorkReportFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkReportPayload>[]
+        }
+        create: {
+          args: Prisma.WorkReportCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkReportPayload>
+        }
+        createMany: {
+          args: Prisma.WorkReportCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.WorkReportCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkReportPayload>[]
+        }
+        delete: {
+          args: Prisma.WorkReportDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkReportPayload>
+        }
+        update: {
+          args: Prisma.WorkReportUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkReportPayload>
+        }
+        deleteMany: {
+          args: Prisma.WorkReportDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.WorkReportUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.WorkReportUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkReportPayload>[]
+        }
+        upsert: {
+          args: Prisma.WorkReportUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$WorkReportPayload>
+        }
+        aggregate: {
+          args: Prisma.WorkReportAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateWorkReport>
+        }
+        groupBy: {
+          args: Prisma.WorkReportGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WorkReportGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.WorkReportCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.WorkReportCountAggregateOutputType> | number
+        }
+      }
+    }
     AiTaskCandidateEvent: {
       payload: Prisma.$AiTaskCandidateEventPayload<ExtArgs>
       fields: Prisma.AiTaskCandidateEventFieldRefs
@@ -1223,6 +1298,23 @@ export const KanbanTaskScalarFieldEnum = {
 } as const
 
 export type KanbanTaskScalarFieldEnum = (typeof KanbanTaskScalarFieldEnum)[keyof typeof KanbanTaskScalarFieldEnum]
+
+
+export const WorkReportScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  submittedByUserId: 'submittedByUserId',
+  submittedBy: 'submittedBy',
+  completed: 'completed',
+  inProgress: 'inProgress',
+  blockers: 'blockers',
+  nextActions: 'nextActions',
+  reportDate: 'reportDate',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type WorkReportScalarFieldEnum = (typeof WorkReportScalarFieldEnum)[keyof typeof WorkReportScalarFieldEnum]
 
 
 export const AiTaskCandidateEventScalarFieldEnum = {
@@ -1548,6 +1640,7 @@ export type GlobalOmitConfig = {
   projectKanbanColumn?: Prisma.ProjectKanbanColumnOmit
   projectMember?: Prisma.ProjectMemberOmit
   kanbanTask?: Prisma.KanbanTaskOmit
+  workReport?: Prisma.WorkReportOmit
   aiTaskCandidateEvent?: Prisma.AiTaskCandidateEventOmit
 }
 

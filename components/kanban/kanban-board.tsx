@@ -118,6 +118,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   const [createError, setCreateError] = useState<string | null>(null)
   const [candidates, setCandidates] = useState<TaskCandidate[]>(() => mockKanbanCandidates)
   const [projectMembers, setProjectMembers] = useState<ProjectMemberApiRecord[]>([])
+  const [reportsFetchKey, setReportsFetchKey] = useState(0)
 
   const orderedAiCandidates = useMemo(() => sortTaskCandidatesByScore(candidates), [candidates])
   const topRecommendation = useMemo(
@@ -258,6 +259,17 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
     return () => {
       cancelled = true
     }
+  }, [projectId, reportsFetchKey])
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ projectId?: string }>).detail
+      if (!detail?.projectId || detail.projectId === projectId) {
+        setReportsFetchKey((k) => k + 1)
+      }
+    }
+    window.addEventListener('projectlens:reports-updated', handler)
+    return () => window.removeEventListener('projectlens:reports-updated', handler)
   }, [projectId])
 
   useEffect(() => {

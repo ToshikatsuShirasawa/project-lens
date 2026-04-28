@@ -120,10 +120,6 @@ function toDateInputValue(s: string | undefined): string {
   return ''
 }
 
-function scrollToBacklogColumn() {
-  document.getElementById('kanban-col-backlog')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
-}
-
 export function TaskCandidateSidePanel({
   projectId,
   candidates,
@@ -580,20 +576,11 @@ export function TaskCandidateSidePanel({
                     </div>
                   )}
                   {isAdded ? (
-                    <div className="flex items-center justify-between gap-2 rounded-md bg-emerald-50 px-2.5 py-1.5 text-xs text-emerald-700 border border-emerald-200/60">
+                    <div className="flex items-center gap-2 rounded-md bg-emerald-50 px-2.5 py-1.5 text-xs text-emerald-700 border border-emerald-200/60">
                       <span className="flex items-center gap-1.5 font-medium">
                         <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
                         {backlogColumnName} に追加済み
                       </span>
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        className="h-6 px-2 text-[11px] text-emerald-700 hover:bg-emerald-100"
-                        onClick={scrollToBacklogColumn}
-                      >
-                        タスクを見る
-                      </Button>
                     </div>
                   ) : (
                     <>

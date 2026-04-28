@@ -31,6 +31,7 @@ interface TaskCandidateSidePanelProps {
   candidatesLoading?: boolean
   projectMembers: ProjectMemberApiRecord[]
   addedCandidateIds: ReadonlySet<string>
+  dismissedCandidateIds: ReadonlySet<string>
   backlogColumnName: string
   isMobile?: boolean
   onMobileClose?: () => void
@@ -126,6 +127,7 @@ export function TaskCandidateSidePanel({
   candidatesLoading = false,
   projectMembers,
   addedCandidateIds,
+  dismissedCandidateIds,
   backlogColumnName,
   isMobile = false,
   onMobileClose,
@@ -133,7 +135,22 @@ export function TaskCandidateSidePanel({
   onHold,
   onDismiss,
 }: TaskCandidateSidePanelProps) {
-  const pendingCount = candidates.filter((c) => !addedCandidateIds.has(c.id)).length
+  const unresolvedCandidates = useMemo(
+    () =>
+      candidates.filter(
+        (candidate) => !addedCandidateIds.has(candidate.id) && !dismissedCandidateIds.has(candidate.id) && !candidate.held
+      ),
+    [candidates, addedCandidateIds, dismissedCandidateIds]
+  )
+  const processedCandidates = useMemo(
+    () =>
+      candidates.filter(
+        (candidate) => addedCandidateIds.has(candidate.id) || dismissedCandidateIds.has(candidate.id) || candidate.held
+      ),
+    [candidates, addedCandidateIds, dismissedCandidateIds]
+  )
+  const pendingCount = unresolvedCandidates.length
+  const shouldAutoCollapse = pendingCount === 0
   const [open, setOpen] = useState(true)
   const [openStateLoaded, setOpenStateLoaded] = useState(false)
   const shownCandidateIdsRef = useRef<Set<string>>(new Set())
@@ -141,6 +158,7 @@ export function TaskCandidateSidePanel({
   const [editingId, setEditingId] = useState<string | null>(null)
   const [drafts, setDrafts] = useState<Record<string, CandidateDraft>>({})
   const [expandedDetailIds, setExpandedDetailIds] = useState<Set<string>>(new Set())
+  const [showProcessed, setShowProcessed] = useState(false)
 
   const toggleDetail = (id: string) => {
     setExpandedDetailIds((prev) => {
@@ -269,10 +287,10 @@ export function TaskCandidateSidePanel({
     return Object.keys(overrides).length > 0 ? overrides : undefined
   }
 
-  if (!open && !isMobile) {
+  if ((!open || shouldAutoCollapse) && !isMobile) {
     return (
       <aside
-        className="w-11 shrink-0 flex flex-col border-l border-border bg-background h-full"
+        className="w-14 shrink-0 flex flex-col border-l border-border bg-background h-full"
         aria-label="AIタスク候補パネル（閉じています）"
       >
         <div className="flex flex-1 flex-col items-center gap-2 border-b border-border/80 py-2 bg-background">
@@ -288,12 +306,19 @@ export function TaskCandidateSidePanel({
             <ChevronLeft className="h-4 w-4" />
             <span className="sr-only">AIタスク候補を開く</span>
           </Button>
-          <Sparkles className="h-4 w-4 text-primary shrink-0" aria-hidden />
+          <div className="flex flex-col items-center gap-1">
+            <Sparkles className="h-4 w-4 text-primary shrink-0" aria-hidden />
+            <span className="text-[10px] font-semibold tracking-wide text-muted-foreground">AI</span>
+          </div>
           {pendingCount > 0 ? (
-            <Badge className="text-[10px] h-5 min-w-5 px-1 justify-center bg-primary/10 text-primary border-0">
+            <Badge className="h-5 min-w-5 px-1 text-[10px] justify-center bg-primary/10 text-primary border-0">
               {pendingCount}
             </Badge>
-          ) : null}
+          ) : (
+            <Badge className="h-5 min-w-5 px-1 text-[10px] justify-center bg-emerald-100 text-emerald-700 border-0">
+              ✓
+            </Badge>
+          )}
         </div>
       </aside>
     )
@@ -340,7 +365,7 @@ export function TaskCandidateSidePanel({
       </p>
 
       <div className="flex-1 overflow-y-auto p-3 space-y-3 bg-background">
-        {candidates.length === 0 ? (
+        {unresolvedCandidates.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
             {candidatesLoading ? (
               <>
@@ -358,7 +383,7 @@ export function TaskCandidateSidePanel({
             )}
           </div>
         ) : (
-          candidates.map((c, index) => {
+          unresolvedCandidates.map((c, index) => {
             const src = sourceConfig[c.source]
             const isTopCandidate = index === 0
             const isSubmitting = submittingId === c.id
@@ -366,7 +391,7 @@ export function TaskCandidateSidePanel({
             const scoreResult = scoreTaskCandidate(c)
             const priorityReason = buildTaskCandidatePriorityReason(c, scoreResult)
             const priority = priorityLabelConfig[scoreResult.confidenceLevel]
-            const isAdded = addedCandidateIds.has(c.id)
+            const isAdded = false
             const isWaiting = c.extractionStatus === 'waiting'
             const visibleReasons = (c.extractionReasons ?? []).slice(0, 3)
             const overflowCount = Math.max(0, (c.extractionReasons?.length ?? 0) - 3)
@@ -641,6 +666,41 @@ export function TaskCandidateSidePanel({
               </Card>
             )
           })
+        )}
+
+        {processedCandidates.length > 0 && (
+          <div className="pt-2">
+            <Button
+              type="button"
+              variant="ghost"
+              className="h-7 w-full justify-between px-2 text-xs text-muted-foreground"
+              onClick={() => setShowProcessed((prev) => !prev)}
+            >
+              <span>処理済み {processedCandidates.length}件</span>
+              <ChevronDown className={cn('h-3.5 w-3.5 transition-transform', showProcessed && 'rotate-180')} />
+            </Button>
+            {showProcessed && (
+              <div className="mt-2 space-y-2">
+                {processedCandidates.map((c) => {
+                  const isAdded = addedCandidateIds.has(c.id)
+                  const isDismissed = dismissedCandidateIds.has(c.id)
+                  const statusText = isAdded
+                    ? `${backlogColumnName} に追加済み`
+                    : isDismissed
+                      ? '却下済み'
+                      : 'あとで確認'
+                  return (
+                    <Card key={`processed-${c.id}`} className="bg-muted/20 border-border/60">
+                      <CardContent className="p-2.5 space-y-1.5">
+                        <p className="text-xs font-medium text-foreground leading-snug">{c.displayTitle ?? c.title}</p>
+                        <p className="text-[11px] text-muted-foreground">{statusText}</p>
+                      </CardContent>
+                    </Card>
+                  )
+                })}
+              </div>
+            )}
+          </div>
         )}
       </div>
     </aside>

@@ -122,6 +122,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   const [candidates, setCandidates] = useState<TaskCandidate[]>([])
   const [candidatesLoading, setCandidatesLoading] = useState(true)
   const [addedCandidateIds, setAddedCandidateIds] = useState<Set<string>>(new Set())
+  const [dismissedCandidateIds, setDismissedCandidateIds] = useState<Set<string>>(new Set())
   const [projectMembers, setProjectMembers] = useState<ProjectMemberApiRecord[]>([])
   const [reportsFetchKey, setReportsFetchKey] = useState(0)
 
@@ -587,7 +588,9 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
     boardColumns.find((c) => c.key === 'backlog')?.key ?? boardColumns[0]?.key ?? 'backlog'
   const backlogColumnName =
     boardColumns.find((c) => c.key === backlogColumnKey)?.name ?? 'バックログ'
-  const pendingCandidateCount = candidates.filter((c) => !addedCandidateIds.has(c.id)).length
+  const pendingCandidateCount = candidates.filter(
+    (c) => !addedCandidateIds.has(c.id) && !dismissedCandidateIds.has(c.id) && !c.held
+  ).length
 
   const handleAddToKanban = async (candidate: TaskCandidate, overrides?: CandidateApprovalOverrides): Promise<void> => {
     const isTopCandidate = orderedAiCandidates[0]?.id === candidate.id
@@ -772,6 +775,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
         candidatesLoading={candidatesLoading}
         projectMembers={projectMembers}
         addedCandidateIds={addedCandidateIds}
+        dismissedCandidateIds={dismissedCandidateIds}
         backlogColumnName={backlogColumnName}
         isMobile={isMobile}
         onMobileClose={() => setMobileAiOpen(false)}
@@ -816,7 +820,9 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
             )
           }
           const existed = candidates.some((c) => c.id === id)
-          setCandidates((prev) => prev.filter((c) => c.id !== id))
+          if (existed) {
+            setDismissedCandidateIds((prev) => new Set([...prev, id]))
+          }
           if (existed) toastSuccess('候補を却下しました')
         }}
       />

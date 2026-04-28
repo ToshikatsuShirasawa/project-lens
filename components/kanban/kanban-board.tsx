@@ -37,6 +37,7 @@ import {
   logAiTaskCandidateEvent,
 } from '@/lib/ai/log-candidate-event'
 import { extractTaskCandidatesFromReports } from '@/lib/ai/extract-task-candidates-from-reports'
+import { mergeTaskCandidates } from '@/lib/ai/merge-task-candidates'
 import { buildComparativeRecommendationReason, sortTaskCandidatesByScore } from '@/lib/ai/task-candidate-score'
 import {
   KANBAN_COLUMNS_UPDATED_EVENT,
@@ -243,7 +244,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
         const extracted = extractTaskCandidatesFromReports(reports)
         if (cancelled) return
         if (extracted.length > 0) {
-          setCandidates(extracted)
+          setCandidates(mergeTaskCandidates(extracted))
           return
         }
 

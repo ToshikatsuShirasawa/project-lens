@@ -300,6 +300,10 @@ export interface TaskCandidate {
   extractionReasons?: string[]
   /** 判定の確信度 0〜1 */
   extractionConfidence?: number
+  /** 重複統合された候補の総数（1 の場合は単一候補、2以上でマージあり） */
+  mergedCount?: number
+  /** 統合前の各候補の displayTitle ?? title 一覧 */
+  mergedTitles?: string[]
 }
 
 // ============================================================

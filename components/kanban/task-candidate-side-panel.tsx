@@ -335,7 +335,14 @@ export function TaskCandidateSidePanel({
               >
                 <CardContent className="p-3 space-y-3">
                   <div className="flex items-start justify-between gap-2">
-                    <p className="text-sm font-medium text-foreground leading-snug">{c.displayTitle ?? c.title}</p>
+                    <div className="min-w-0">
+                      <p className="text-sm font-medium text-foreground leading-snug">{c.displayTitle ?? c.title}</p>
+                      {(c.mergedCount ?? 1) > 1 && (
+                        <p className="text-[10px] text-muted-foreground/70 mt-0.5">
+                          （関連{c.mergedCount}件）
+                        </p>
+                      )}
+                    </div>
                     <div className="flex shrink-0 flex-wrap justify-end items-center gap-1">
                       {isTopCandidate && (
                         <Badge className="text-[10px] h-4 px-1.5 border-0 bg-primary text-primary-foreground">

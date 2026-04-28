@@ -24,6 +24,7 @@ import {
 import { Textarea } from '@/components/ui/textarea'
 import { Label } from '@/components/ui/label'
 import { Filter, Loader2, User, Sparkles } from 'lucide-react'
+import { cn } from '@/lib/utils'
 import { toastError, toastSuccess } from '@/lib/operation-toast'
 import { mockKanbanCandidates } from '@/lib/mock/kanban'
 import {
@@ -350,6 +351,8 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
     })
   }, [tasksLoading, cards, candidates])
 
+  const [isMobile, setIsMobile] = useState(false)
+  const [mobileAiOpen, setMobileAiOpen] = useState(false)
   const [draggedCard, setDraggedCard] = useState<{ taskId: string; sourceColumn: string } | null>(null)
   const [dropTargetColumn, setDropTargetColumn] = useState<string | null>(null)
   const [recentDrop, setRecentDrop] = useState<{ columnKey: string; taskId: string } | null>(null)
@@ -374,6 +377,13 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   const handleDragOver = (columnKey: string, _insertIndex: number) => {
     setDropTargetColumn(columnKey)
   }
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768)
+    check()
+    window.addEventListener('resize', check)
+    return () => window.removeEventListener('resize', check)
+  }, [])
 
   useEffect(() => {
     if (!recentDrop) return
@@ -661,10 +671,10 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   return (
     <div className="flex h-full">
       <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
-        <div className="flex items-center gap-3 px-6 py-3 border-b border-border bg-card shrink-0">
-          <Filter className="h-4 w-4 text-muted-foreground" />
+        <div className="flex items-center gap-2 px-3 py-2 md:gap-3 md:px-6 md:py-3 border-b border-border bg-card shrink-0">
+          <Filter className="h-4 w-4 text-muted-foreground shrink-0" />
           <Select value={filterAssignee} onValueChange={setFilterAssignee}>
-            <SelectTrigger className="w-40">
+            <SelectTrigger className="w-32 md:w-40">
               <User className="mr-2 h-4 w-4" />
               <SelectValue placeholder="担当者" />
             </SelectTrigger>
@@ -677,25 +687,40 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
               ))}
             </SelectContent>
           </Select>
-          <div className="ml-auto flex items-center gap-3">
+          <div className="ml-auto flex items-center gap-2 md:gap-3">
             {tasksError && (
-              <span className="text-xs text-destructive max-w-[220px] truncate" title={tasksError}>
+              <span className="text-xs text-destructive max-w-[120px] md:max-w-[220px] truncate" title={tasksError}>
                 {tasksError}
               </span>
             )}
-            <Badge variant="secondary" className="text-xs">
+            <Badge variant="secondary" className="text-xs hidden sm:inline-flex">
               {tasksLoading ? 'タスク読み込み中…' : `確定タスク: ${totalTasks}件`}
             </Badge>
             {pendingCandidateCount > 0 && (
-              <Badge variant="secondary" className="text-xs gap-1 bg-primary/10 text-primary border-0">
+              <Badge variant="secondary" className="text-xs gap-1 bg-primary/10 text-primary border-0 hidden md:inline-flex">
                 <Sparkles className="h-3 w-3" />
                 候補: {pendingCandidateCount}件
               </Badge>
             )}
+            <Button
+              size="sm"
+              variant="outline"
+              className="md:hidden h-7 gap-1 text-xs border-primary/30 text-primary hover:bg-primary/5 shrink-0"
+              onClick={() => setMobileAiOpen(true)}
+              aria-label="AI候補を開く"
+            >
+              <Sparkles className="h-3.5 w-3.5" />
+              AI候補
+              {pendingCandidateCount > 0 && (
+                <Badge className="ml-0.5 text-[10px] h-4 px-1 bg-primary/10 text-primary border-0">
+                  {pendingCandidateCount}
+                </Badge>
+              )}
+            </Button>
           </div>
         </div>
 
-        <div className="flex-1 overflow-x-auto p-4 bg-muted/20">
+        <div className="flex-1 overflow-x-auto p-2 md:p-4 bg-muted/20">
           <div className="flex gap-4 h-full">
             {boardColumns.map((col) => (
               <KanbanColumn
@@ -722,6 +747,25 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
         </div>
       </div>
 
+      {/* モバイル用バックドロップ */}
+      {isMobile && mobileAiOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-black/50"
+          onClick={() => setMobileAiOpen(false)}
+          aria-hidden
+        />
+      )}
+
+      {/* パネルコンテナ: デスクトップ=静的サイドバー / モバイル=右スライドオーバーレイ */}
+      <div
+        className={cn(
+          isMobile
+            ? mobileAiOpen
+              ? 'fixed right-0 inset-y-0 z-50 flex shadow-2xl'
+              : 'hidden'
+            : 'flex shrink-0'
+        )}
+      >
       <TaskCandidateSidePanel
         projectId={projectId}
         candidates={orderedAiCandidates}
@@ -729,6 +773,8 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
         projectMembers={projectMembers}
         addedCandidateIds={addedCandidateIds}
         backlogColumnName={backlogColumnName}
+        isMobile={isMobile}
+        onMobileClose={() => setMobileAiOpen(false)}
         onAddToKanban={handleAddToKanban}
         onHold={(id) => {
           const target = candidates.find((c) => c.id === id)
@@ -774,6 +820,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
           if (existed) toastSuccess('候補を却下しました')
         }}
       />
+      </div>
 
       <Dialog
         open={isDialogOpen}

@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Sparkles, Plus, Pause, X, ChevronLeft, ChevronRight, CheckCircle2, Loader2, PencilLine } from 'lucide-react'
+import { Sparkles, Plus, Pause, X, ChevronLeft, ChevronRight, ChevronDown, CheckCircle2, Loader2, PencilLine } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ProjectMemberApiRecord, TaskCandidate } from '@/lib/types'
 import { summarizeCandidateReasons } from '@/lib/ai/candidate-reason-summary'
@@ -32,6 +32,8 @@ interface TaskCandidateSidePanelProps {
   projectMembers: ProjectMemberApiRecord[]
   addedCandidateIds: ReadonlySet<string>
   backlogColumnName: string
+  isMobile?: boolean
+  onMobileClose?: () => void
   onAddToKanban: (candidate: TaskCandidate, overrides?: CandidateApprovalOverrides) => Promise<void>
   onHold: (id: string) => void
   onDismiss: (id: string) => void
@@ -129,6 +131,8 @@ export function TaskCandidateSidePanel({
   projectMembers,
   addedCandidateIds,
   backlogColumnName,
+  isMobile = false,
+  onMobileClose,
   onAddToKanban,
   onHold,
   onDismiss,
@@ -140,6 +144,16 @@ export function TaskCandidateSidePanel({
   const [submittingId, setSubmittingId] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [drafts, setDrafts] = useState<Record<string, CandidateDraft>>({})
+  const [expandedDetailIds, setExpandedDetailIds] = useState<Set<string>>(new Set())
+
+  const toggleDetail = (id: string) => {
+    setExpandedDetailIds((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
   const topRecommendation = useMemo(() => buildComparativeRecommendationReason(candidates), [candidates])
 
   useEffect(() => {
@@ -167,7 +181,7 @@ export function TaskCandidateSidePanel({
   }, [open, openStateLoaded])
 
   useEffect(() => {
-    if (!open || !openStateLoaded || candidates.length === 0) return
+    if ((!open && !isMobile) || !openStateLoaded || candidates.length === 0) return
     const topId = candidates[0]?.id
     for (const c of candidates) {
       if (shownCandidateIdsRef.current.has(c.id)) continue
@@ -259,7 +273,7 @@ export function TaskCandidateSidePanel({
     return Object.keys(overrides).length > 0 ? overrides : undefined
   }
 
-  if (!open) {
+  if (!open && !isMobile) {
     return (
       <aside
         className="w-11 shrink-0 flex flex-col border-l border-border bg-background h-full"
@@ -291,7 +305,10 @@ export function TaskCandidateSidePanel({
 
   return (
     <aside
-      className="w-80 shrink-0 flex flex-col border-l border-border bg-background h-full"
+      className={cn(
+        'shrink-0 flex flex-col border-l border-border bg-background h-full',
+        isMobile ? 'w-full max-w-sm' : 'w-80'
+      )}
       aria-label="AIタスク候補"
     >
       <div className="flex items-center gap-2 border-b border-border/80 px-3 py-2.5 pr-2 bg-background">
@@ -308,7 +325,13 @@ export function TaskCandidateSidePanel({
           variant="ghost"
           size="icon"
           className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
-          onClick={() => setOpen(false)}
+          onClick={() => {
+            if (isMobile && onMobileClose) {
+              onMobileClose()
+            } else {
+              setOpen(false)
+            }
+          }}
           title="候補パネルを閉じる"
           aria-expanded={true}
         >
@@ -343,14 +366,23 @@ export function TaskCandidateSidePanel({
             const src = sourceConfig[c.source]
             const isTopCandidate = index === 0
             const isSubmitting = submittingId === c.id
-            const reasonSummary = summarizeCandidateReasons(c, { isTopCandidate: false, maxChips: 4 })
+            const reasonSummary = summarizeCandidateReasons(c, { isTopCandidate: false, maxChips: 3 })
             const scoreResult = scoreTaskCandidate(c)
             const priorityReason = buildTaskCandidatePriorityReason(c, scoreResult)
             const priority = priorityLabelConfig[scoreResult.confidenceLevel]
             const isAdded = addedCandidateIds.has(c.id)
             const isWaiting = c.extractionStatus === 'waiting'
-            const visibleReasons = (c.extractionReasons ?? []).slice(0, 2)
-            const overflowCount = Math.max(0, (c.extractionReasons?.length ?? 0) - 2)
+            const visibleReasons = (c.extractionReasons ?? []).slice(0, 3)
+            const overflowCount = Math.max(0, (c.extractionReasons?.length ?? 0) - 3)
+            const hasDetail = Boolean(
+              reasonSummary.supportText ||
+              visibleReasons.length > 0 ||
+              c.suggestedAssignee ||
+              c.suggestedDueDate ||
+              isWaiting ||
+              (c.mergedCount ?? 1) > 1
+            )
+            const isDetailOpen = expandedDetailIds.has(c.id)
             return (
               <Card
                 key={c.id}
@@ -359,40 +391,32 @@ export function TaskCandidateSidePanel({
                   isTopCandidate && 'border-border'
                 )}
               >
-                <CardContent className="p-3 space-y-3">
+                <CardContent className="p-3 space-y-2.5">
+                  {/* ── Row 1: タイトル + バッジ ── */}
                   <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0">
-                      <p className="text-sm font-medium text-foreground leading-snug">{c.displayTitle ?? c.title}</p>
-                      <p className="mt-0.5 truncate whitespace-nowrap text-[11px] text-muted-foreground">
-                        優先理由: {priorityReason}
-                      </p>
-                      {(c.mergedCount ?? 1) > 1 && (
-                        <p className="text-[10px] text-muted-foreground/70 mt-0.5">
-                          （関連{c.mergedCount}件）
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex shrink-0 flex-wrap justify-end items-center gap-1">
+                    <div className="min-w-0 flex-1">
                       {isTopCandidate && (
-                        <Badge className="text-[10px] h-4 px-1.5 border-0 bg-primary text-primary-foreground">
+                        <Badge className="text-[10px] h-4 px-1.5 border-0 bg-primary text-primary-foreground mb-1 inline-flex">
                           おすすめ
                         </Badge>
                       )}
-                      <Badge className={cn('text-[10px] h-4 px-1.5 border-0', src.class)}>{src.label}</Badge>
+                      <p className="text-sm font-medium text-foreground leading-snug">{c.displayTitle ?? c.title}</p>
+                    </div>
+                    <div className="flex shrink-0 items-center gap-1 pt-0.5">
                       <Badge className={cn('text-[10px] h-4 px-1.5 border-0', priority.class)}>
                         {priority.label}
                       </Badge>
+                      <Badge className={cn('text-[10px] h-4 px-1.5 border-0', src.class)}>{src.label}</Badge>
                     </div>
                   </div>
-                  {isWaiting && (
-                    <Badge className="text-[10px] h-5 px-2 border-0 bg-sky-100 text-sky-700">
-                      回答待ち候補
-                    </Badge>
-                  )}
-                  <div className="space-y-1.5">
-                    {isTopCandidate && topRecommendation.recommendationReason ? (
-                      <p className="text-[11px] font-medium text-primary">{topRecommendation.recommendationReason}</p>
-                    ) : null}
+
+                  {/* ── Row 2: 優先理由 ── */}
+                  <p className="text-[11px] text-muted-foreground leading-relaxed truncate">
+                    {(isTopCandidate && topRecommendation.recommendationReason) || priorityReason}
+                  </p>
+
+                  {/* ── Row 3: 重要タグ（最大3） ── */}
+                  {reasonSummary.chips.length > 0 && (
                     <div className="flex flex-wrap gap-1">
                       {reasonSummary.chips.map((chip, chipIndex) => (
                         <Badge
@@ -408,41 +432,71 @@ export function TaskCandidateSidePanel({
                         </Badge>
                       ))}
                     </div>
-                  </div>
-                  {visibleReasons.length > 0 && (
-                    <div className="space-y-1">
-                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/90">
-                        理由
-                      </p>
-                      <ul className="space-y-0.5">
-                        {visibleReasons.map((r) => (
-                          <li key={r} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                            <span className="h-1 w-1 shrink-0 rounded-full bg-muted-foreground/40" aria-hidden />
-                            {formatExtractionReason(r)}
-                          </li>
-                        ))}
-                        {overflowCount > 0 && (
-                          <li className="text-xs text-muted-foreground/70 pl-2.5">
-                            ほか{overflowCount}件
-                          </li>
-                        )}
-                      </ul>
+                  )}
+
+                  {/* ── 詳細トグル ── */}
+                  {hasDetail && (
+                    <button
+                      type="button"
+                      className="flex items-center gap-0.5 text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+                      onClick={() => toggleDetail(c.id)}
+                    >
+                      <ChevronDown
+                        className={cn('h-3 w-3 transition-transform duration-150', isDetailOpen && 'rotate-180')}
+                      />
+                      {isDetailOpen ? '詳細を閉じる' : '詳細を見る'}
+                    </button>
+                  )}
+
+                  {/* ── 詳細セクション（折りたたみ） ── */}
+                  {isDetailOpen && (
+                    <div className="space-y-2 border-t border-border/40 pt-2">
+                      {(c.mergedCount ?? 1) > 1 && (
+                        <p className="text-[10px] text-muted-foreground/70">（関連{c.mergedCount}件）</p>
+                      )}
+                      {isWaiting && (
+                        <Badge className="text-[10px] h-5 px-2 border-0 bg-sky-100 text-sky-700">
+                          回答待ち候補
+                        </Badge>
+                      )}
+                      {reasonSummary.supportText && (
+                        <div className="space-y-0.5">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                            補足
+                          </p>
+                          <p className="text-xs text-muted-foreground leading-relaxed">
+                            {reasonSummary.supportText}
+                          </p>
+                        </div>
+                      )}
+                      {visibleReasons.length > 0 && (
+                        <div className="space-y-0.5">
+                          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                            理由
+                          </p>
+                          <ul className="space-y-0.5">
+                            {visibleReasons.map((r) => (
+                              <li key={r} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                                <span className="h-1 w-1 shrink-0 rounded-full bg-muted-foreground/40" aria-hidden />
+                                {formatExtractionReason(r)}
+                              </li>
+                            ))}
+                            {overflowCount > 0 && (
+                              <li className="text-xs text-muted-foreground/70 pl-2.5">ほか{overflowCount}件</li>
+                            )}
+                          </ul>
+                        </div>
+                      )}
+                      {(c.suggestedAssignee || c.suggestedDueDate) && (
+                        <div className="flex gap-3 text-[11px] text-muted-foreground">
+                          {c.suggestedAssignee && <span>担当候補: {c.suggestedAssignee}</span>}
+                          {c.suggestedDueDate && <span>期限候補: {c.suggestedDueDate}</span>}
+                        </div>
+                      )}
                     </div>
                   )}
-                  <div className="space-y-1">
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/90">
-                      補足
-                    </p>
-                    <p className="text-xs text-muted-foreground leading-relaxed line-clamp-2">
-                      {reasonSummary.supportText}
-                    </p>
-                  </div>
-                  {(c.suggestedAssignee || c.suggestedDueDate) && (
-                    <div className="flex gap-3 text-[11px] text-muted-foreground">
-                      {c.suggestedAssignee && <span>担当候補: {c.suggestedAssignee}</span>}
-                      {c.suggestedDueDate && <span>期限候補: {c.suggestedDueDate}</span>}
-                    </div>
-                  )}
+
+                  {/* ── 編集ボタン / フォーム ── */}
                   {!isAdded && editingId !== c.id && (
                     <div className="flex justify-start">
                       <Button

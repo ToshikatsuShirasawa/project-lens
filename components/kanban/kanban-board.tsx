@@ -37,7 +37,7 @@ import {
   logAiTaskCandidateEvent,
 } from '@/lib/ai/log-candidate-event'
 import { extractTaskCandidatesFromReports } from '@/lib/ai/extract-task-candidates-from-reports'
-import { mergeTaskCandidates } from '@/lib/ai/merge-task-candidates'
+import { buildTaskCandidateKey, mergeTaskCandidates } from '@/lib/ai/merge-task-candidates'
 import { sortTaskCandidatesForDisplay } from '@/lib/ai/sort-task-candidates'
 import { buildComparativeRecommendationReason, sortTaskCandidatesByScore } from '@/lib/ai/task-candidate-score'
 import {
@@ -320,6 +320,32 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
     window.addEventListener(KANBAN_COLUMNS_UPDATED_EVENT, onColumnsUpdated as EventListener)
     return () => window.removeEventListener(KANBAN_COLUMNS_UPDATED_EVENT, onColumnsUpdated as EventListener)
   }, [projectId, loadTasks])
+
+  useEffect(() => {
+    if (tasksLoading || candidates.length === 0) return
+    const allTasks = Object.values(cards).flat()
+    if (allTasks.length === 0) return
+    const taskTitleKeys = new Set(allTasks.map((t) => buildTaskCandidateKey(t.title)))
+    const matchedIds: string[] = []
+    for (const candidate of candidates) {
+      const candidateKey = buildTaskCandidateKey(candidate.displayTitle ?? candidate.title)
+      if (taskTitleKeys.has(candidateKey)) {
+        matchedIds.push(candidate.id)
+      }
+    }
+    if (matchedIds.length === 0) return
+    setAddedCandidateIds((prev) => {
+      const next = new Set(prev)
+      let changed = false
+      for (const id of matchedIds) {
+        if (!next.has(id)) {
+          next.add(id)
+          changed = true
+        }
+      }
+      return changed ? next : prev
+    })
+  }, [tasksLoading, cards, candidates])
 
   const [draggedCard, setDraggedCard] = useState<{ taskId: string; sourceColumn: string } | null>(null)
   const [dropTargetColumn, setDropTargetColumn] = useState<string | null>(null)

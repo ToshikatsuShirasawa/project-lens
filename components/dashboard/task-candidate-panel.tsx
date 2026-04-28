@@ -7,6 +7,7 @@ import { Sparkles, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { TaskCandidate } from '@/lib/types'
 import { scoreTaskCandidate } from '@/lib/ai/task-candidate-score'
+import { buildTaskCandidatePriorityReason } from '@/lib/ai/task-candidate-priority-reason'
 
 interface TaskCandidatePanelProps {
   candidates: TaskCandidate[]
@@ -39,12 +40,18 @@ export function TaskCandidatePanel({ candidates }: TaskCandidatePanelProps) {
         {candidates.map((c) => {
           const src = sourceConfig[c.source]
           const scoreResult = scoreTaskCandidate(c)
+          const priorityReason = buildTaskCandidatePriorityReason(c, scoreResult)
           const priority = priorityLabelConfig[scoreResult.confidenceLevel]
           const isWaiting = c.extractionStatus === 'waiting'
           return (
             <div key={c.id} className="rounded-lg border border-border bg-primary/5 p-3 space-y-2">
               <div className="flex items-start justify-between gap-2">
-                <p className="text-sm font-medium text-foreground">{c.displayTitle ?? c.title}</p>
+                <div className="min-w-0">
+                  <p className="text-sm font-medium text-foreground">{c.displayTitle ?? c.title}</p>
+                  <p className="mt-0.5 truncate whitespace-nowrap text-[11px] text-muted-foreground">
+                    優先理由: {priorityReason}
+                  </p>
+                </div>
                 <div className="flex shrink-0 flex-wrap justify-end items-center gap-1">
                   <Badge className={cn('text-[10px] h-4 px-1.5 border-0', src.class)}>
                     {src.label}

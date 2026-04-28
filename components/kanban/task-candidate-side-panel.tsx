@@ -12,6 +12,7 @@ import { cn } from '@/lib/utils'
 import type { ProjectMemberApiRecord, TaskCandidate } from '@/lib/types'
 import { summarizeCandidateReasons } from '@/lib/ai/candidate-reason-summary'
 import { buildComparativeRecommendationReason, scoreTaskCandidate } from '@/lib/ai/task-candidate-score'
+import { buildTaskCandidatePriorityReason } from '@/lib/ai/task-candidate-priority-reason'
 import {
   buildAiTaskCandidateEventPayload,
   logAiTaskCandidateEvent,
@@ -330,6 +331,7 @@ export function TaskCandidateSidePanel({
             const isSubmitting = submittingId === c.id
             const reasonSummary = summarizeCandidateReasons(c, { isTopCandidate: false, maxChips: 4 })
             const scoreResult = scoreTaskCandidate(c)
+            const priorityReason = buildTaskCandidatePriorityReason(c, scoreResult)
             const priority = priorityLabelConfig[scoreResult.confidenceLevel]
             const isAdded = addedCandidateIds.has(c.id)
             const isWaiting = c.extractionStatus === 'waiting'
@@ -347,6 +349,9 @@ export function TaskCandidateSidePanel({
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="text-sm font-medium text-foreground leading-snug">{c.displayTitle ?? c.title}</p>
+                      <p className="mt-0.5 truncate whitespace-nowrap text-[11px] text-muted-foreground">
+                        優先理由: {priorityReason}
+                      </p>
                       {(c.mergedCount ?? 1) > 1 && (
                         <p className="text-[10px] text-muted-foreground/70 mt-0.5">
                           （関連{c.mergedCount}件）
@@ -519,7 +524,7 @@ export function TaskCandidateSidePanel({
                         className="h-6 px-2 text-[11px] text-emerald-700 hover:bg-emerald-100"
                         onClick={scrollToBacklogColumn}
                       >
-                        カンバンで確認
+                        タスクを見る
                       </Button>
                     </div>
                   ) : (

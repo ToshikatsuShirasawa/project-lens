@@ -7,7 +7,7 @@ import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Sparkles, Plus, Pause, X, ChevronLeft, ChevronRight, CheckCircle2, PencilLine } from 'lucide-react'
+import { Sparkles, Plus, Pause, X, ChevronLeft, ChevronRight, CheckCircle2, Loader2, PencilLine } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ProjectMemberApiRecord, TaskCandidate } from '@/lib/types'
 import { summarizeCandidateReasons } from '@/lib/ai/candidate-reason-summary'
@@ -28,6 +28,7 @@ export interface CandidateApprovalOverrides {
 interface TaskCandidateSidePanelProps {
   projectId: string
   candidates: TaskCandidate[]
+  candidatesLoading?: boolean
   projectMembers: ProjectMemberApiRecord[]
   addedCandidateIds: ReadonlySet<string>
   backlogColumnName: string
@@ -124,6 +125,7 @@ function scrollToBacklogColumn() {
 export function TaskCandidateSidePanel({
   projectId,
   candidates,
+  candidatesLoading = false,
   projectMembers,
   addedCandidateIds,
   backlogColumnName,
@@ -320,9 +322,21 @@ export function TaskCandidateSidePanel({
 
       <div className="flex-1 overflow-y-auto p-3 space-y-3 bg-background">
         {candidates.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center gap-2">
-            <Sparkles className="h-8 w-8 text-muted-foreground/40" />
-            <p className="text-sm text-muted-foreground">候補はありません</p>
+          <div className="flex flex-col items-center justify-center py-12 text-center gap-3">
+            {candidatesLoading ? (
+              <>
+                <Loader2 className="h-7 w-7 animate-spin text-primary/40" />
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">AI候補を確認しています...</p>
+                  <p className="text-xs text-muted-foreground/60">作業報告から候補を抽出しています</p>
+                </div>
+              </>
+            ) : (
+              <>
+                <Sparkles className="h-8 w-8 text-muted-foreground/40" />
+                <p className="text-sm text-muted-foreground">候補はありません</p>
+              </>
+            )}
           </div>
         ) : (
           candidates.map((c, index) => {

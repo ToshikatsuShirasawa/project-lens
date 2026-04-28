@@ -20,6 +20,7 @@ interface KanbanCardProps {
   columnId: string
   isDragging?: boolean
   justDropped?: boolean
+  justAiAdded?: boolean
 }
 
 const aiOriginLabel = {
@@ -77,6 +78,7 @@ export function KanbanCard({
   columnId,
   isDragging = false,
   justDropped = false,
+  justAiAdded = false,
 }: KanbanCardProps) {
   const dueStatus = dueStatusOf(task.dueDate)
   const isHighPriority = task.priority === 'HIGH'
@@ -96,12 +98,13 @@ export function KanbanCard({
   return (
     <div
       data-kanban-card="true"
+      data-task-id={task.id}
       draggable
       onDragStart={() => onDragStart(task.id, columnId)}
       onDragEnd={onDragEnd}
       onClick={() => onEdit(task)}
       className={cn(
-        'group cursor-pointer rounded-lg border border-border border-l-2 bg-card p-2.5 shadow-sm transition-all duration-200 ease-out active:scale-[0.99] space-y-1.5',
+        'relative overflow-hidden group cursor-pointer rounded-lg border border-border border-l-2 bg-card p-2.5 shadow-sm transition-all duration-200 ease-out active:scale-[0.99] space-y-1.5',
         'hover:-translate-y-px hover:shadow-md hover:border-primary/35 hover:bg-primary/[0.02]',
         isHighPriority && 'border-l-4 shadow-lg',
         leftAccentClass,
@@ -109,6 +112,12 @@ export function KanbanCard({
         isDragging && 'opacity-60 scale-[1.02] shadow-lg border-primary/30'
       )}
     >
+      {justAiAdded && (
+        <div
+          className="absolute inset-0 rounded-lg bg-emerald-100/80 pointer-events-none"
+          style={{ animation: 'kanbanAiAddOverlay 750ms ease-out forwards' }}
+        />
+      )}
       <p
         className={cn(
           'text-[13px] font-medium text-foreground leading-snug group-hover:text-primary transition-colors',
@@ -190,6 +199,12 @@ export function KanbanCard({
           </Badge>
         )}
       </div>
+      <style jsx>{`
+        @keyframes kanbanAiAddOverlay {
+          0%   { opacity: 1; }
+          100% { opacity: 0; }
+        }
+      `}</style>
     </div>
   )
 }

@@ -119,6 +119,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   const [addSaving, setAddSaving] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
   const [candidates, setCandidates] = useState<TaskCandidate[]>([])
+  const [candidatesLoading, setCandidatesLoading] = useState(true)
   const [addedCandidateIds, setAddedCandidateIds] = useState<Set<string>>(new Set())
   const [projectMembers, setProjectMembers] = useState<ProjectMemberApiRecord[]>([])
   const [reportsFetchKey, setReportsFetchKey] = useState(0)
@@ -265,6 +266,8 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
         if (cancelled) return
         console.warn('[kanban] reports の取得に失敗したため demo 候補へフォールバックします', error)
         setCandidates(mockKanbanCandidates.map((c) => ({ ...c, extractionStatus: 'unknown' as const })))
+      } finally {
+        if (!cancelled) setCandidatesLoading(false)
       }
     })()
 
@@ -350,6 +353,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   const [draggedCard, setDraggedCard] = useState<{ taskId: string; sourceColumn: string } | null>(null)
   const [dropTargetColumn, setDropTargetColumn] = useState<string | null>(null)
   const [recentDrop, setRecentDrop] = useState<{ columnKey: string; taskId: string } | null>(null)
+  const [recentAiAdd, setRecentAiAdd] = useState<{ columnKey: string; taskId: string } | null>(null)
   const [filterAssignee, setFilterAssignee] = useState('all')
   const [isDialogOpen, setIsDialogOpen] = useState(false)
   const [editingTask, setEditingTask] = useState<KanbanTask | null>(null)
@@ -376,6 +380,12 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
     const t = window.setTimeout(() => setRecentDrop(null), 280)
     return () => window.clearTimeout(t)
   }, [recentDrop])
+
+  useEffect(() => {
+    if (!recentAiAdd) return
+    const t = window.setTimeout(() => setRecentAiAdd(null), 800)
+    return () => window.clearTimeout(t)
+  }, [recentAiAdd])
 
   const handleDrop = async (targetColumnKey: string, insertIndex?: number) => {
     if (!draggedCard) return
@@ -628,9 +638,22 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
       throw new Error(msg)
     }
 
+    const newTaskId =
+      resBody && typeof resBody === 'object' &&
+      'id' in resBody && typeof (resBody as { id: unknown }).id === 'string'
+        ? (resBody as { id: string }).id
+        : resBody && typeof resBody === 'object' &&
+          'task' in resBody && resBody.task && typeof resBody.task === 'object' &&
+          'id' in (resBody.task as object) && typeof (resBody.task as { id: unknown }).id === 'string'
+          ? (resBody.task as { id: string }).id
+          : null
+
     await loadTasks({ silent: true })
     setAddedCandidateIds((prev) => new Set([...prev, candidate.id]))
     toastSuccess('AI候補をバックログに追加しました')
+    if (newTaskId) {
+      setRecentAiAdd({ columnKey: backlogColumnKey, taskId: newTaskId })
+    }
   }
 
   const totalTasks = Object.values(cards).flat().length
@@ -690,6 +713,9 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
                 draggedTaskId={draggedCard?.taskId ?? null}
                 justDropped={recentDrop?.columnKey === col.key}
                 justDroppedTaskId={recentDrop?.columnKey === col.key ? recentDrop.taskId : null}
+                tasksLoading={tasksLoading}
+                justAiAdded={Boolean(recentAiAdd && recentAiAdd.columnKey === col.key)}
+                justAiAddedTaskId={recentAiAdd && recentAiAdd.columnKey === col.key ? recentAiAdd.taskId : null}
               />
             ))}
           </div>
@@ -699,6 +725,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
       <TaskCandidateSidePanel
         projectId={projectId}
         candidates={orderedAiCandidates}
+        candidatesLoading={candidatesLoading}
         projectMembers={projectMembers}
         addedCandidateIds={addedCandidateIds}
         backlogColumnName={backlogColumnName}

@@ -1,9 +1,9 @@
 'use client'
 
-import { Fragment, useEffect, useState, type DragEvent } from 'react'
+import { Fragment, useEffect, useRef, useState, type DragEvent } from 'react'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
-import { Plus } from 'lucide-react'
+import { Loader2, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { KanbanCard } from './kanban-card'
 import type { KanbanTask } from '@/lib/types'
@@ -22,6 +22,9 @@ interface KanbanColumnProps {
   draggedTaskId: string | null
   justDropped: boolean
   justDroppedTaskId: string | null
+  tasksLoading?: boolean
+  justAiAdded?: boolean
+  justAiAddedTaskId?: string | null
 }
 
 const columnColors: Record<string, string> = {
@@ -87,13 +90,26 @@ export function KanbanColumn({
   draggedTaskId,
   justDropped,
   justDroppedTaskId,
+  tasksLoading = false,
+  justAiAdded = false,
+  justAiAddedTaskId = null,
 }: KanbanColumnProps) {
   const theme = columnTheme[id]
   const [insertIndex, setInsertIndex] = useState<number>(tasks.length)
+  const colBodyRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     if (insertIndex > tasks.length) setInsertIndex(tasks.length)
   }, [insertIndex, tasks.length])
+
+  useEffect(() => {
+    if (!justAiAddedTaskId) return
+    const raf = requestAnimationFrame(() => {
+      const cardEl = colBodyRef.current?.querySelector<HTMLElement>(`[data-task-id="${justAiAddedTaskId}"]`)
+      cardEl?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+    })
+    return () => cancelAnimationFrame(raf)
+  }, [justAiAddedTaskId])
 
   const calcInsertIndex = (e: DragEvent<HTMLDivElement>) => {
     const cardNodes = Array.from(
@@ -114,9 +130,10 @@ export function KanbanColumn({
     <div
       id={`kanban-col-${id}`}
       className={cn(
-        'group/column flex w-72 shrink-0 flex-col rounded-xl border bg-muted/30 transition-all duration-200 ease-out',
+        'group/column flex w-72 shrink-0 flex-col rounded-xl overflow-hidden border bg-muted/30 transition-all duration-200 ease-out',
         theme?.hover,
         justDropped && 'ring-2 ring-primary/20 bg-primary/[0.04]',
+        justAiAdded && 'ring-2 ring-emerald-300/60 bg-emerald-50/30',
         isDropTarget
           ? 'border-primary/40 bg-primary/5 ring-1 ring-primary/20'
           : 'border-border hover:border-border/80'
@@ -129,7 +146,7 @@ export function KanbanColumn({
       }}
       onDrop={() => onDrop(id, insertIndex)}
     >
-      <div className={cn('h-0.5 w-full rounded-t-xl', theme?.topLine ?? 'bg-border')} />
+      <div className={cn('h-0.5 w-full', theme?.topLine ?? 'bg-border')} />
 
       {/* Column Header */}
       <div className="flex items-center justify-between px-3.5 pb-2.5 pt-3 border-b border-border/80">
@@ -156,7 +173,7 @@ export function KanbanColumn({
       </div>
 
       {/* Cards */}
-      <div className="flex flex-col gap-1 p-2.5 flex-1 min-h-[120px]">
+      <div ref={colBodyRef} className="flex flex-col gap-1 p-2.5 flex-1 min-h-[120px]">
         {tasks.map((task, idx) => (
           <Fragment key={task.id}>
             {showInsertGuide && insertIndex === idx && (
@@ -174,6 +191,7 @@ export function KanbanColumn({
                 onDragEnd={onDragEnd}
                 isDragging={draggedTaskId === task.id}
                 justDropped={justDroppedTaskId === task.id}
+                justAiAdded={justAiAddedTaskId === task.id}
               />
             </div>
           </Fragment>
@@ -191,18 +209,29 @@ export function KanbanColumn({
               theme?.emptyWrap ?? 'border-border/80 bg-background/50'
             )}
           >
-            <p className={cn('text-xs text-muted-foreground', theme?.emptyText)}>
-              {id === 'backlog' ? 'まずはここからタスクを追加しましょう' : 'タスクがありません'}
-            </p>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onAddCard}
-              className={cn('h-7 px-2.5 text-xs text-primary hover:text-primary', theme?.hover)}
-            >
-              <Plus className="mr-1 h-3.5 w-3.5" />
-              タスクを追加
-            </Button>
+            {tasksLoading ? (
+              <>
+                <Loader2 className={cn('h-4 w-4 animate-spin text-muted-foreground/50', theme?.emptyText)} />
+                <p className={cn('text-xs text-muted-foreground', theme?.emptyText)}>
+                  タスクを読み込んでいます...
+                </p>
+              </>
+            ) : (
+              <>
+                <p className={cn('text-xs text-muted-foreground', theme?.emptyText)}>
+                  {id === 'backlog' ? 'まずはここからタスクを追加しましょう' : 'タスクがありません'}
+                </p>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={onAddCard}
+                  className={cn('h-7 px-2.5 text-xs text-primary hover:text-primary', theme?.hover)}
+                >
+                  <Plus className="mr-1 h-3.5 w-3.5" />
+                  タスクを追加
+                </Button>
+              </>
+            )}
           </div>
         )}
       </div>

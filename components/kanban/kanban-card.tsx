@@ -104,9 +104,9 @@ export function KanbanCard({
       onDragEnd={onDragEnd}
       onClick={() => onEdit(task)}
       className={cn(
-        'relative overflow-hidden group cursor-pointer rounded-lg border border-border border-l-2 bg-card p-2.5 shadow-sm transition-all duration-200 ease-out active:scale-[0.99] space-y-1.5',
-        'hover:-translate-y-px hover:shadow-md hover:border-primary/35 hover:bg-primary/[0.02]',
-        isHighPriority && 'border-l-4 shadow-lg',
+        'relative overflow-hidden group cursor-pointer rounded-lg border border-border/60 border-l-2 bg-card p-2.5 transition-all duration-200 ease-out active:scale-[0.99] space-y-1.5',
+        'hover:-translate-y-px hover:shadow-md hover:border-primary/30 hover:bg-primary/[0.02]',
+        isHighPriority && 'border-l-4',
         leftAccentClass,
         justDropped && 'ring-2 ring-primary/25 bg-primary/[0.04]',
         isDragging && 'opacity-60 scale-[1.02] shadow-lg border-primary/30'

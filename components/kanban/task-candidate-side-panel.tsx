@@ -167,6 +167,9 @@ export function TaskCandidateSidePanel({
       else next.add(id)
       return next
     })
+    if (expandedDetailIds.has(id) && editingId === id) {
+      setEditingId(null)
+    }
   }
   const topRecommendation = useMemo(() => buildComparativeRecommendationReason(candidates), [candidates])
 
@@ -391,7 +394,7 @@ export function TaskCandidateSidePanel({
             const src = sourceConfig[c.source]
             const isTopCandidate = index === 0
             const isSubmitting = submittingId === c.id
-            const reasonSummary = summarizeCandidateReasons(c, { isTopCandidate: false, maxChips: 3 })
+            const reasonSummary = summarizeCandidateReasons(c, { isTopCandidate: false, maxChips: 2 })
             const scoreResult = scoreTaskCandidate(c)
             const priorityReason = buildTaskCandidatePriorityReason(c, scoreResult)
             const priority = priorityLabelConfig[scoreResult.confidenceLevel]
@@ -399,14 +402,7 @@ export function TaskCandidateSidePanel({
             const isWaiting = c.extractionStatus === 'waiting'
             const visibleReasons = (c.extractionReasons ?? []).slice(0, 3)
             const overflowCount = Math.max(0, (c.extractionReasons?.length ?? 0) - 3)
-            const hasDetail = Boolean(
-              reasonSummary.supportText ||
-              visibleReasons.length > 0 ||
-              c.suggestedAssignee ||
-              c.suggestedDueDate ||
-              isWaiting ||
-              (c.mergedCount ?? 1) > 1
-            )
+            const hasDetail = true
             const isDetailOpen = expandedDetailIds.has(c.id)
             return (
               <Card
@@ -441,7 +437,7 @@ export function TaskCandidateSidePanel({
                     {(isTopCandidate && topRecommendation.recommendationReason) || priorityReason}
                   </p>
 
-                  {/* ── Row 3: 重要タグ（最大3） ── */}
+                  {/* ── Row 3: 重要タグ（最大2） ── */}
                   {reasonSummary.chips.length > 0 && (
                     <div className="flex flex-wrap gap-1">
                       {reasonSummary.chips.map((chip, chipIndex) => (
@@ -464,13 +460,13 @@ export function TaskCandidateSidePanel({
                   {hasDetail && (
                     <button
                       type="button"
-                      className="flex items-center gap-0.5 text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors"
+                      className="flex items-center gap-0.5 text-[10px] text-muted-foreground/40 hover:text-muted-foreground/60 transition-colors"
                       onClick={() => toggleDetail(c.id)}
                     >
                       <ChevronDown
                         className={cn('h-3 w-3 transition-transform duration-150', isDetailOpen && 'rotate-180')}
                       />
-                      {isDetailOpen ? '詳細を閉じる' : '詳細を見る'}
+                      {isDetailOpen ? '閉じる' : '詳細'}
                     </button>
                   )}
 
@@ -519,92 +515,94 @@ export function TaskCandidateSidePanel({
                           {c.suggestedDueDate && <span>期限候補: {c.suggestedDueDate}</span>}
                         </div>
                       )}
+                      <p className="text-[10px] text-muted-foreground/70">
+                        → {backlogColumnName} に追加されます
+                      </p>
+                      {editingId !== c.id && (
+                        <div className="flex justify-start">
+                          <Button
+                            type="button"
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 px-2 text-[11px] text-muted-foreground"
+                            onClick={() => {
+                              ensureDraft(c)
+                              setEditingId(c.id)
+                            }}
+                          >
+                            <PencilLine className="h-3 w-3" />
+                            編集
+                          </Button>
+                        </div>
+                      )}
+                      {editingId === c.id && (
+                        <div className="relative space-y-2 rounded-md border border-border/80 bg-muted/40 p-2.5">
+                          <Button
+                            type="button"
+                            size="icon"
+                            variant="ghost"
+                            className="absolute right-1.5 top-1.5 h-6 w-6 text-muted-foreground"
+                            onClick={() => setEditingId(null)}
+                            title="編集を閉じる"
+                          >
+                            <X className="h-3.5 w-3.5" />
+                            <span className="sr-only">編集を閉じる</span>
+                          </Button>
+                          <p className="text-[11px] text-muted-foreground">編集してから追加できます</p>
+                          <div className="space-y-1">
+                            <Label htmlFor={`candidate-title-${c.id}`} className="text-[11px]">
+                              タイトル
+                            </Label>
+                            <Input
+                              id={`candidate-title-${c.id}`}
+                              value={getDraft(c).title}
+                              onChange={(e) => updateDraft(c.id, { title: e.target.value })}
+                              placeholder="タスクタイトル"
+                              className="h-8 text-xs"
+                            />
+                          </div>
+                          <div className="grid grid-cols-2 gap-2">
+                            <div className="space-y-1">
+                              <Label htmlFor={`candidate-due-${c.id}`} className="text-[11px]">
+                                期限
+                              </Label>
+                              <Input
+                                id={`candidate-due-${c.id}`}
+                                type="date"
+                                value={getDraft(c).dueDate}
+                                onChange={(e) => updateDraft(c.id, { dueDate: e.target.value })}
+                                className="h-8 text-xs"
+                              />
+                            </div>
+                            <div className="space-y-1">
+                              <Label htmlFor={`candidate-assignee-${c.id}`} className="text-[11px]">
+                                担当
+                              </Label>
+                              <Select
+                                value={getDraft(c).assigneeUserId.trim() ? getDraft(c).assigneeUserId : ASSIGNEE_NONE_VALUE}
+                                onValueChange={(value) =>
+                                  updateDraft(c.id, { assigneeUserId: value === ASSIGNEE_NONE_VALUE ? '' : value })
+                                }
+                              >
+                                <SelectTrigger id={`candidate-assignee-${c.id}`} className="h-8 text-xs">
+                                  <SelectValue placeholder="未設定" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                  <SelectItem value={ASSIGNEE_NONE_VALUE}>未設定</SelectItem>
+                                  {projectMembers.map((member) => (
+                                    <SelectItem key={member.userId} value={member.userId}>
+                                      {memberOptionLabel(member)}
+                                    </SelectItem>
+                                  ))}
+                                </SelectContent>
+                              </Select>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
 
-                  {/* ── 編集ボタン / フォーム ── */}
-                  {!isAdded && editingId !== c.id && (
-                    <div className="flex justify-start">
-                      <Button
-                        type="button"
-                        size="sm"
-                        variant="ghost"
-                        className="h-6 px-2 text-[11px] text-muted-foreground"
-                        onClick={() => {
-                          ensureDraft(c)
-                          setEditingId(c.id)
-                        }}
-                      >
-                        <PencilLine className="h-3 w-3" />
-                        編集
-                      </Button>
-                    </div>
-                  )}
-                  {!isAdded && editingId === c.id && (
-                    <div className="relative space-y-2 rounded-md border border-border/80 bg-muted/40 p-2.5">
-                      <Button
-                        type="button"
-                        size="icon"
-                        variant="ghost"
-                        className="absolute right-1.5 top-1.5 h-6 w-6 text-muted-foreground"
-                        onClick={() => setEditingId(null)}
-                        title="編集を閉じる"
-                      >
-                        <X className="h-3.5 w-3.5" />
-                        <span className="sr-only">編集を閉じる</span>
-                      </Button>
-                      <p className="text-[11px] text-muted-foreground">編集してから追加できます</p>
-                      <div className="space-y-1">
-                        <Label htmlFor={`candidate-title-${c.id}`} className="text-[11px]">
-                          タイトル
-                        </Label>
-                        <Input
-                          id={`candidate-title-${c.id}`}
-                          value={getDraft(c).title}
-                          onChange={(e) => updateDraft(c.id, { title: e.target.value })}
-                          placeholder="タスクタイトル"
-                          className="h-8 text-xs"
-                        />
-                      </div>
-                      <div className="grid grid-cols-2 gap-2">
-                        <div className="space-y-1">
-                          <Label htmlFor={`candidate-due-${c.id}`} className="text-[11px]">
-                            期限
-                          </Label>
-                          <Input
-                            id={`candidate-due-${c.id}`}
-                            type="date"
-                            value={getDraft(c).dueDate}
-                            onChange={(e) => updateDraft(c.id, { dueDate: e.target.value })}
-                            className="h-8 text-xs"
-                          />
-                        </div>
-                        <div className="space-y-1">
-                          <Label htmlFor={`candidate-assignee-${c.id}`} className="text-[11px]">
-                            担当
-                          </Label>
-                          <Select
-                            value={getDraft(c).assigneeUserId.trim() ? getDraft(c).assigneeUserId : ASSIGNEE_NONE_VALUE}
-                            onValueChange={(value) =>
-                              updateDraft(c.id, { assigneeUserId: value === ASSIGNEE_NONE_VALUE ? '' : value })
-                            }
-                          >
-                            <SelectTrigger id={`candidate-assignee-${c.id}`} className="h-8 text-xs">
-                              <SelectValue placeholder="未設定" />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value={ASSIGNEE_NONE_VALUE}>未設定</SelectItem>
-                              {projectMembers.map((member) => (
-                                <SelectItem key={member.userId} value={member.userId}>
-                                  {memberOptionLabel(member)}
-                                </SelectItem>
-                              ))}
-                            </SelectContent>
-                          </Select>
-                        </div>
-                      </div>
-                    </div>
-                  )}
                   {isAdded ? (
                     <div className="flex items-center gap-2 rounded-md bg-emerald-50 px-2.5 py-1.5 text-xs text-emerald-700 border border-emerald-200/60">
                       <span className="flex items-center gap-1.5 font-medium">
@@ -614,9 +612,6 @@ export function TaskCandidateSidePanel({
                     </div>
                   ) : (
                     <>
-                      <p className="text-[10px] text-muted-foreground">
-                        → {backlogColumnName} に追加されます
-                      </p>
                       <div className="flex items-center gap-2 pt-1 border-t border-border/40">
                         <Button
                           size="sm"

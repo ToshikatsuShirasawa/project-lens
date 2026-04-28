@@ -543,7 +543,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
     boardColumns.find((c) => c.key === backlogColumnKey)?.name ?? 'バックログ'
   const pendingCandidateCount = candidates.filter((c) => !addedCandidateIds.has(c.id)).length
 
-  const handleAddToKanban = (candidate: TaskCandidate, overrides?: CandidateApprovalOverrides) => {
+  const handleAddToKanban = async (candidate: TaskCandidate, overrides?: CandidateApprovalOverrides): Promise<void> => {
     const isTopCandidate = orderedAiCandidates[0]?.id === candidate.id
     const clientTaskId = `from-ai-${candidate.id}`
     logAiTaskCandidateEvent(
@@ -559,32 +559,50 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
 
     const title = overrides?.title?.trim() || candidate.displayTitle || candidate.title
     const selectedAssigneeUserId = overrides?.suggestedAssigneeUserId?.trim()
-    const selectedMember = selectedAssigneeUserId
-      ? projectMembers.find((member) => member.userId === selectedAssigneeUserId)
-      : undefined
-    const suggestedAssignee = overrides?.suggestedAssignee?.trim() || candidate.suggestedAssignee
     const suggestedDueDate = overrides?.suggestedDueDate?.trim() || candidate.suggestedDueDate
 
-    const task: KanbanTask = {
-      id: clientTaskId,
+    const createBody: Record<string, unknown> = {
+      projectId,
       title,
-      assigneeUserId: selectedMember?.userId,
-      assignee: selectedMember
-        ? {
-            id: selectedMember.userId,
-            name: memberOptionLabel(selectedMember),
-            email: selectedMember.email,
-          }
-        : suggestedAssignee
-          ? { name: suggestedAssignee }
-          : undefined,
-      dueDate: suggestedDueDate,
-      aiOrigin: candidate.source,
+      columnKey: backlogColumnKey,
     }
-    setCards((prev) => ({
-      ...prev,
-      [backlogColumnKey]: [...(prev[backlogColumnKey] ?? []), task],
-    }))
+
+    const descParts: string[] = []
+    if (candidate.reason?.trim()) descParts.push(candidate.reason.trim())
+    if (candidate.extractionReasons && candidate.extractionReasons.length > 0) {
+      descParts.push(`理由: ${candidate.extractionReasons.join(', ')}`)
+    }
+    const desc = descParts.join('\n')
+    if (desc) createBody.description = desc
+
+    const dueDateFormatted =
+      suggestedDueDate && /^\d{4}-\d{2}-\d{2}/.test(suggestedDueDate)
+        ? suggestedDueDate.slice(0, 10)
+        : null
+    if (dueDateFormatted) createBody.dueDate = dueDateFormatted
+
+    if (selectedAssigneeUserId) createBody.assigneeId = selectedAssigneeUserId
+
+    const res = await fetch('/api/kanban-tasks', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(createBody),
+    })
+    const resBody: unknown = await res.json().catch(() => null)
+    if (!res.ok) {
+      const msg =
+        resBody &&
+        typeof resBody === 'object' &&
+        'message' in resBody &&
+        typeof (resBody as { message: unknown }).message === 'string'
+          ? (resBody as { message: string }).message
+          : `HTTP ${res.status}`
+      console.error('[kanban] AI candidate add failed', msg)
+      toastError(msg)
+      throw new Error(msg)
+    }
+
+    await loadTasks({ silent: true })
     setAddedCandidateIds((prev) => new Set([...prev, candidate.id]))
     toastSuccess('AI候補をバックログに追加しました')
   }

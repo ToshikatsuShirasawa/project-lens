@@ -31,7 +31,7 @@ interface TaskCandidateSidePanelProps {
   projectMembers: ProjectMemberApiRecord[]
   addedCandidateIds: ReadonlySet<string>
   backlogColumnName: string
-  onAddToKanban: (candidate: TaskCandidate, overrides?: CandidateApprovalOverrides) => void
+  onAddToKanban: (candidate: TaskCandidate, overrides?: CandidateApprovalOverrides) => Promise<void>
   onHold: (id: string) => void
   onDismiss: (id: string) => void
 }
@@ -542,7 +542,9 @@ export function TaskCandidateSidePanel({
                           onClick={() => {
                             if (isAdded) return
                             setSubmittingId(c.id)
-                            onAddToKanban(c, getApprovalOverrides(c))
+                            void onAddToKanban(c, getApprovalOverrides(c)).finally(() =>
+                              setSubmittingId(null)
+                            )
                           }}
                           disabled={isSubmitting || isAdded}
                         >

@@ -48,7 +48,7 @@ export function buildAiTaskCandidateEventPayload(
     projectId,
     candidateId: candidate.id,
     eventType,
-    candidateTitle: candidate.title,
+    candidateTitle: candidate.displayTitle ?? candidate.title,
     candidateSource: SOURCE_LABEL[candidate.source],
     confidenceLevel: scored.confidenceLevel,
     recommendationReason: options.recommendationReasonOverride ?? scored.recommendationReason,

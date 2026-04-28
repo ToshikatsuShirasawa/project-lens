@@ -551,7 +551,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
       })
     )
 
-    const title = overrides?.title?.trim() || candidate.title
+    const title = overrides?.title?.trim() || candidate.displayTitle || candidate.title
     const selectedAssigneeUserId = overrides?.suggestedAssigneeUserId?.trim()
     const selectedMember = selectedAssigneeUserId
       ? projectMembers.find((member) => member.userId === selectedAssigneeUserId)

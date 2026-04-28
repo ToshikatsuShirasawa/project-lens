@@ -5,6 +5,7 @@ import {
   splitReportIntoClauses,
 } from '@/lib/ai/clause-extraction-judge'
 import type { ExtractionStatus } from '@/lib/ai/clause-extraction-judge'
+import { normalizeTaskCandidateTitle } from '@/lib/ai/normalize-task-candidate-title'
 
 type ReportLike = Pick<WorkReport, 'id' | 'submittedBy' | 'completed' | 'inProgress' | 'blockers' | 'nextActions'>
 
@@ -104,9 +105,11 @@ export function extractTaskCandidatesFromReports(reports: ReportLike[]): TaskCan
       const reasonBase = buildReason(clause, judgement.status)
       const reason = `${reasonBase}（抜粋: ${excerpt}）`
 
+      const displayTitle = normalizeTaskCandidateTitle(title)
       candidates.push({
         id: `report-${report.id}-${reportCandidateIndex}`,
         title,
+        displayTitle: displayTitle !== title ? displayTitle : undefined,
         reason,
         source: 'report',
         suggestedAssignee: assignee || undefined,

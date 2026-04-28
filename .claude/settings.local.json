@@ -8,7 +8,9 @@
       "Bash(git stash *)",
       "Bash(git diff *)",
       "Bash(npm install *)",
-      "Bash(npm test *)"
+      "Bash(npm test *)",
+      "Bash(grep -E \"\\\\.\\(ts|tsx|js\\)$\")",
+      "Bash(npx vitest *)"
     ],
     "additionalDirectories": [
       "c:\\work\\ai\\project-lens\\app\\projects\\[projectId]"

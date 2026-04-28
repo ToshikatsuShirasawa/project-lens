@@ -287,6 +287,8 @@ export type ExtractionStatus = 'todo' | 'done' | 'waiting' | 'memo' | 'unknown'
 export interface TaskCandidate {
   id: string
   title: string
+  /** UI 表示・ログ用の整形済みタイトル。スコアリングには使わず `title` を使う。 */
+  displayTitle?: string
   reason: string
   source: SourceType
   suggestedAssignee?: string

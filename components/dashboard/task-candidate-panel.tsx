@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button'
 import { Sparkles, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { TaskCandidate } from '@/lib/types'
+import { scoreTaskCandidate } from '@/lib/ai/task-candidate-score'
 
 interface TaskCandidatePanelProps {
   candidates: TaskCandidate[]
@@ -17,6 +18,12 @@ const sourceConfig = {
   meeting: { label: '議事録', class: 'bg-purple-100 text-purple-700' },
   ai: { label: 'AI検出', class: 'bg-primary/10 text-primary' },
 }
+
+const priorityLabelConfig = {
+  high: { label: '優先度 高', class: 'bg-rose-100 text-rose-700' },
+  medium: { label: '優先度 中', class: 'bg-amber-100 text-amber-700' },
+  review: { label: '優先度 低', class: 'bg-muted text-muted-foreground' },
+} as const
 
 export function TaskCandidatePanel({ candidates }: TaskCandidatePanelProps) {
   return (
@@ -31,14 +38,27 @@ export function TaskCandidatePanel({ candidates }: TaskCandidatePanelProps) {
       <CardContent className="space-y-3">
         {candidates.map((c) => {
           const src = sourceConfig[c.source]
+          const scoreResult = scoreTaskCandidate(c)
+          const priority = priorityLabelConfig[scoreResult.confidenceLevel]
+          const isWaiting = c.extractionStatus === 'waiting'
           return (
             <div key={c.id} className="rounded-lg border border-border bg-primary/5 p-3 space-y-2">
               <div className="flex items-start justify-between gap-2">
-                <p className="text-sm font-medium text-foreground">{c.title}</p>
-                <Badge className={cn('text-[10px] h-4 px-1.5 border-0 shrink-0', src.class)}>
-                  {src.label}
-                </Badge>
+                <p className="text-sm font-medium text-foreground">{c.displayTitle ?? c.title}</p>
+                <div className="flex shrink-0 flex-wrap justify-end items-center gap-1">
+                  <Badge className={cn('text-[10px] h-4 px-1.5 border-0', src.class)}>
+                    {src.label}
+                  </Badge>
+                  <Badge className={cn('text-[10px] h-4 px-1.5 border-0', priority.class)}>
+                    {priority.label}
+                  </Badge>
+                </div>
               </div>
+              {isWaiting && (
+                <Badge className="text-[10px] h-5 px-2 border-0 bg-sky-100 text-sky-700">
+                  回答待ち候補
+                </Badge>
+              )}
               <p className="text-xs text-muted-foreground leading-relaxed">{c.reason}</p>
               {(c.suggestedAssignee || c.suggestedDueDate) && (
                 <div className="flex gap-3 text-[11px] text-muted-foreground">

@@ -43,11 +43,50 @@ const sourceConfig = {
   ai: { label: 'AI検出', class: 'bg-primary/10 text-primary' },
 }
 
-const confidenceLabelConfig = {
-  high: { label: '強い候補', class: 'bg-primary/15 text-primary' },
-  medium: { label: '有望', class: 'bg-amber-100 text-amber-700' },
-  review: { label: '要確認', class: 'bg-muted text-muted-foreground' },
+const priorityLabelConfig = {
+  high: { label: '優先度 高', class: 'bg-rose-100 text-rose-700' },
+  medium: { label: '優先度 中', class: 'bg-amber-100 text-amber-700' },
+  review: { label: '優先度 低', class: 'bg-muted text-muted-foreground' },
 } as const
+
+/** "category: keyword" 形式の extractionReasons を表示用ラベルに変換する */
+const EXTRACTION_KEYWORD_DISPLAY: Record<string, string> = {
+  必要: '必要表現あり',
+  要確認: '要確認マーク',
+  要対応: '要対応マーク',
+  TODO: 'TODOタグあり',
+  未対応: '未対応あり',
+  次回: '次回対応の記載',
+  明日: '明日対応の記載',
+  残っている: '残タスクあり',
+  これから: '今後対応の記載',
+  修正する: '修正タスクあり',
+  確認する: '確認タスクあり',
+  作成する: '作成タスクあり',
+  準備する: '準備タスクあり',
+  調整する: '調整タスクあり',
+  回答待ち: '回答待ち',
+  確認待ち: '確認待ち',
+  返信待ち: '返信待ち',
+  レビュー待ち: 'レビュー待ち',
+  依頼済み: '依頼済みあり',
+  先方確認中: '先方確認中',
+  対応: '対応の記載',
+  手配: '手配の記載',
+  依頼: '依頼の記載',
+  課題: '課題の記載',
+  確認: '確認の記載',
+  修正: '修正の記載',
+  準備: '準備の記載',
+  調整: '調整の記載',
+}
+
+function formatExtractionReason(reason: string): string {
+  const colonIdx = reason.indexOf(': ')
+  if (colonIdx === -1) return reason
+  const keyword = reason.slice(colonIdx + 2)
+  return EXTRACTION_KEYWORD_DISPLAY[keyword] ?? `${keyword}あり`
+}
 
 interface CandidateDraft {
   title: string
@@ -152,7 +191,7 @@ export function TaskCandidateSidePanel({
       return {
         ...prev,
         [candidate.id]: {
-          title: candidate.title,
+          title: candidate.displayTitle ?? candidate.title,
           dueDate: toDateInputValue(candidate.suggestedDueDate),
           assigneeUserId: resolveInitialAssigneeUserId(candidate, projectMembers),
         },
@@ -163,7 +202,7 @@ export function TaskCandidateSidePanel({
   const getDraft = (candidate: TaskCandidate): CandidateDraft => {
     return (
       drafts[candidate.id] ?? {
-        title: candidate.title,
+        title: candidate.displayTitle ?? candidate.title,
         dueDate: toDateInputValue(candidate.suggestedDueDate),
         assigneeUserId: resolveInitialAssigneeUserId(candidate, projectMembers),
       }
@@ -194,7 +233,7 @@ export function TaskCandidateSidePanel({
       ? projectMembers.find((member) => member.userId === assigneeUserId)
       : undefined
     const assignee = selectedMember ? memberOptionLabel(selectedMember) : ''
-    const baseTitle = candidate.title.trim()
+    const baseTitle = (candidate.displayTitle ?? candidate.title).trim()
     const baseDueDate = toDateInputValue(candidate.suggestedDueDate)
     const baseAssignee = (candidate.suggestedAssignee ?? '').trim()
     const baseAssigneeUserId = resolveInitialAssigneeUserId(candidate, projectMembers)
@@ -282,7 +321,10 @@ export function TaskCandidateSidePanel({
             const isSubmitting = submittingId === c.id
             const reasonSummary = summarizeCandidateReasons(c, { isTopCandidate: false, maxChips: 4 })
             const scoreResult = scoreTaskCandidate(c)
-            const confidence = confidenceLabelConfig[scoreResult.confidenceLevel]
+            const priority = priorityLabelConfig[scoreResult.confidenceLevel]
+            const isWaiting = c.extractionStatus === 'waiting'
+            const visibleReasons = (c.extractionReasons ?? []).slice(0, 2)
+            const overflowCount = Math.max(0, (c.extractionReasons?.length ?? 0) - 2)
             return (
               <Card
                 key={c.id}
@@ -293,19 +335,24 @@ export function TaskCandidateSidePanel({
               >
                 <CardContent className="p-3 space-y-3">
                   <div className="flex items-start justify-between gap-2">
-                    <p className="text-sm font-medium text-foreground leading-snug">{c.title}</p>
-                    <div className="flex shrink-0 items-center gap-1">
+                    <p className="text-sm font-medium text-foreground leading-snug">{c.displayTitle ?? c.title}</p>
+                    <div className="flex shrink-0 flex-wrap justify-end items-center gap-1">
                       {isTopCandidate && (
                         <Badge className="text-[10px] h-4 px-1.5 border-0 bg-primary text-primary-foreground">
                           おすすめ
                         </Badge>
                       )}
                       <Badge className={cn('text-[10px] h-4 px-1.5 border-0', src.class)}>{src.label}</Badge>
-                      <Badge className={cn('text-[10px] h-4 px-1.5 border-0', confidence.class)}>
-                        {confidence.label}
+                      <Badge className={cn('text-[10px] h-4 px-1.5 border-0', priority.class)}>
+                        {priority.label}
                       </Badge>
                     </div>
                   </div>
+                  {isWaiting && (
+                    <Badge className="text-[10px] h-5 px-2 border-0 bg-sky-100 text-sky-700">
+                      回答待ち候補
+                    </Badge>
+                  )}
                   <div className="space-y-1.5">
                     {isTopCandidate && topRecommendation.recommendationReason ? (
                       <p className="text-[11px] font-medium text-primary">{topRecommendation.recommendationReason}</p>
@@ -326,6 +373,26 @@ export function TaskCandidateSidePanel({
                       ))}
                     </div>
                   </div>
+                  {visibleReasons.length > 0 && (
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/90">
+                        理由
+                      </p>
+                      <ul className="space-y-0.5">
+                        {visibleReasons.map((r) => (
+                          <li key={r} className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                            <span className="h-1 w-1 shrink-0 rounded-full bg-muted-foreground/40" aria-hidden />
+                            {formatExtractionReason(r)}
+                          </li>
+                        ))}
+                        {overflowCount > 0 && (
+                          <li className="text-xs text-muted-foreground/70 pl-2.5">
+                            ほか{overflowCount}件
+                          </li>
+                        )}
+                      </ul>
+                    </div>
+                  )}
                   <div className="space-y-1">
                     <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/90">
                       補足

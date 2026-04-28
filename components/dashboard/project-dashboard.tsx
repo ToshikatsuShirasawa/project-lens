@@ -2,19 +2,17 @@
 
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { CalendarDays, LayoutGrid, UserRound } from 'lucide-react'
-import { cn } from '@/lib/utils'
-import type { ProjectDashboardResponse, TaskPriority } from '@/lib/types'
+import { LayoutGrid } from 'lucide-react'
+import type { ProjectDashboardResponse } from '@/lib/types'
 import { AiAnalyticsPanel } from '@/components/dashboard/ai-analytics-panel'
+import { TopPriorityCard } from '@/components/dashboard/top-priority-card'
+import { ProjectStatusCard } from '@/components/dashboard/project-status-card'
+import { IssuesRisksCard } from '@/components/dashboard/issues-risks-card'
+import { DashboardTaskCandidatesCard } from '@/components/dashboard/dashboard-task-candidates-card'
+import { RecentActivityCard } from '@/components/dashboard/recent-activity-card'
 
-const priorityLabel: Record<TaskPriority, string> = {
-  LOW: '低',
-  MEDIUM: '中',
-  HIGH: '高',
-}
+// ── helpers ────────────────────────────────────────────────────────────────────
 
 function formatDateTime(iso: string): string {
   try {
@@ -30,17 +28,6 @@ function formatDateTime(iso: string): string {
   }
 }
 
-function formatDueShort(isoDate: string): string {
-  try {
-    return new Date(`${isoDate}T00:00:00`).toLocaleDateString('ja-JP', {
-      month: 'short',
-      day: 'numeric',
-    })
-  } catch {
-    return isoDate
-  }
-}
-
 function assigneeLabel(a: { name: string | null; email: string } | null): string | null {
   if (!a) return null
   const n = a.name?.trim()
@@ -48,51 +35,26 @@ function assigneeLabel(a: { name: string | null; email: string } | null): string
   return a.email.split('@')[0] ?? a.email
 }
 
-function summaryMetricCardClass(kind: 'total' | 'open' | 'done' | 'members' | 'overdue' | 'upcoming', value: number): string {
-  const base = 'overflow-hidden rounded-xl border border-border py-0 gap-0 shadow-none'
-  const muted = cn(base, 'border-l-2 border-l-border bg-card', '[&_.metric-value]:text-muted-foreground')
+// ── types ──────────────────────────────────────────────────────────────────────
 
-  if (kind === 'overdue') {
-    if (value > 0) {
-      return cn(
-        base,
-        'border-l-[3px] border-l-destructive bg-destructive/[0.06]',
-        '[&_.metric-value]:text-destructive [&_.metric-value]:font-semibold'
-      )
-    }
-    return muted
-  }
-  if (kind === 'upcoming') {
-    if (value > 0) {
-      return cn(
-        base,
-        'border-l-[3px] border-l-amber-500 bg-amber-500/[0.07] dark:bg-amber-500/10',
-        '[&_.metric-value]:text-amber-900 dark:[&_.metric-value]:text-amber-100 [&_.metric-value]:font-semibold'
-      )
-    }
-    return muted
-  }
-  if (kind === 'done') {
-    if (value > 0) {
-      return cn(
-        base,
-        'border-l-[3px] border-l-emerald-600/80 dark:border-l-emerald-500 bg-emerald-500/[0.06] dark:bg-emerald-500/10',
-        '[&_.metric-value]:text-emerald-800 dark:[&_.metric-value]:text-emerald-200 [&_.metric-value]:font-semibold'
-      )
-    }
-    return muted
-  }
-  return cn(base, 'border-l-2 border-l-border bg-card')
+interface AnalyticsSummary {
+  totalShown: number
+  totalAccepted: number
+  totalDismissed: number
+  overallAcceptanceRate: number
 }
 
 interface ProjectDashboardProps {
   projectId: string
 }
 
+// ── component ──────────────────────────────────────────────────────────────────
+
 export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
   const [data, setData] = useState<ProjectDashboardResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
+  const [analytics, setAnalytics] = useState<AnalyticsSummary | null>(null)
 
   const load = useCallback(async () => {
     setLoading(true)
@@ -126,38 +88,258 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
     void load()
   }, [load])
 
+  useEffect(() => {
+    void (async () => {
+      try {
+        const res = await fetch(
+          `/api/ai-task-candidates/analytics?projectId=${encodeURIComponent(projectId)}`
+        )
+        const body: unknown = await res.json().catch(() => null)
+        if (res.ok && body && typeof body === 'object' && 'totalShown' in body) {
+          const b = body as AnalyticsSummary
+          setAnalytics({
+            totalShown: b.totalShown,
+            totalAccepted: b.totalAccepted,
+            totalDismissed: b.totalDismissed,
+            overallAcceptanceRate: b.overallAcceptanceRate,
+          })
+        }
+      } catch {
+        // analytics is supplemental — silent fail
+      }
+    })()
+  }, [projectId])
+
   const s = data?.summary
+  const kanbanHref = `/projects/${encodeURIComponent(projectId)}/kanban`
 
-  const maxColumnTasks = useMemo(() => {
-    const cols = data?.columns
-    if (!cols?.length) return 1
-    return Math.max(1, ...cols.map((c) => c.taskCount))
-  }, [data?.columns])
+  const pendingAnalytics = analytics
+    ? Math.max(0, analytics.totalShown - analytics.totalAccepted - analytics.totalDismissed)
+    : null
 
-  const summaryItems = s
-    ? (
-        [
-          { kind: 'total' as const, label: '総タスク', value: s.totalTasks },
-          { kind: 'open' as const, label: '未完了', value: s.openTasks },
-          { kind: 'done' as const, label: '完了', value: s.doneTasks },
-          { kind: 'members' as const, label: 'メンバー', value: s.memberCount },
-          { kind: 'overdue' as const, label: '期限切れ', value: s.overdueTasks },
-          { kind: 'upcoming' as const, label: '7日以内', value: s.upcomingTasks },
-        ] as const
-      )
-    : []
+  // ── urgency (shared across cards) ─────────────────────────────────────────
+  const urgency = useMemo((): 'critical' | 'warning' | 'normal' => {
+    if (!s) return 'normal'
+    return s.overdueTasks > 0 ? 'critical' : s.upcomingTasks > 0 ? 'warning' : 'normal'
+  }, [s])
+
+  // ── TopPriorityCard props ──────────────────────────────────────────────────
+  const topPriorityProps = useMemo(() => {
+    if (!s) return null
+
+    const situation =
+      urgency === 'critical'
+        ? `${s.overdueTasks}件のタスクが期限を超過しています`
+        : urgency === 'warning'
+        ? `${s.upcomingTasks}件のタスクが7日以内に期限を迎えます`
+        : '期限面での緊急事項はありません'
+
+    const contextParts: string[] = []
+    if (s.overdueTasks > 0) contextParts.push(`期限超過タスクが${s.overdueTasks}件あります。`)
+    if (s.upcomingTasks > 0) contextParts.push(`今後7日以内に期限を迎えるタスクが${s.upcomingTasks}件あります。`)
+    if (pendingAnalytics !== null && pendingAnalytics > 0)
+      contextParts.push(`未確認のAI候補があります（${pendingAnalytics}件）。`)
+    const context =
+      contextParts.length > 0
+        ? contextParts.join(' ') + ' カンバンで確認・対応してください。'
+        : '期限面では落ち着いています。未確認のAI候補はカンバンで確認できます。'
+
+    const impactTimeline =
+      urgency === 'critical'
+        ? [
+            { days: 1, description: '未対応タスクがさらに遅延します', severity: 'critical' as const },
+            { days: 3, description: '関連タスクへの影響が広がります', severity: 'critical' as const },
+            { days: 7, description: 'プロジェクト全体の遅延リスクが増大します', severity: 'warning' as const },
+          ]
+        : urgency === 'warning'
+        ? [
+            { days: 3, description: '期限間近のタスクが積み残しになります', severity: 'warning' as const },
+            { days: 7, description: '期限超過タスクが発生します', severity: 'critical' as const },
+          ]
+        : []
+
+    const actionTimeline = [
+      { timing: '今日', action: 'カンバンで期限タスクを確認する', outcome: '対応が必要なタスクを把握' },
+      { timing: '今日中', action: '担当者に状況確認を取る', outcome: '遅延リスクを早期に低減' },
+      { timing: '今週中', action: 'バックログを整理する', outcome: '次の優先項目を明確化' },
+    ]
+
+    const aiDecision =
+      urgency === 'critical'
+        ? '本日中に期限超過タスクを確認し、対応方針を決める'
+        : urgency === 'warning'
+        ? '今週の期限タスクを優先的に対応する'
+        : '期限リスクは低い状態です'
+
+    const aiReason =
+      urgency === 'critical'
+        ? `期限を超過したタスクが${s.overdueTasks}件あります。早期に対応することで遅延の拡大を防げます。`
+        : urgency === 'warning'
+        ? `${s.upcomingTasks}件のタスクが7日以内に期限を迎えます。今週中に確認することを推奨します。`
+        : '期限面では落ち着いています。未確認のAI候補はカンバンで確認できます。'
+
+    return {
+      situation,
+      context,
+      urgency,
+      delayDays: s.overdueTasks > 0 ? s.overdueTasks : undefined,
+      daysUntilDeadline: s.upcomingTasks > 0 ? 7 : undefined,
+      impactTimeline,
+      actionTimeline,
+      aiDecision,
+      aiReason,
+      alternatives: [
+        { label: 'バックログに追加する', effort: 'low' as const, impact: 'medium' as const, href: kanbanHref },
+        { label: '担当者を変更する', effort: 'medium' as const, impact: 'medium' as const, href: kanbanHref },
+        { label: '期限を延長する', effort: 'low' as const, impact: 'low' as const, href: kanbanHref },
+      ],
+      primaryAction: {
+        label: 'カンバンで確認する',
+        href: kanbanHref,
+        purpose: '状況を把握する',
+        outcome: '対応が必要なタスクを特定し、優先順位をつける',
+        expectedTimeline: '本日中に確認・対応完了',
+      },
+    }
+  }, [s, urgency, pendingAnalytics, kanbanHref])
+
+  // ── ProjectStatusCard props ────────────────────────────────────────────────
+  const statusCardProps = useMemo(() => {
+    if (!s) return null
+
+    const progress = s.totalTasks > 0 ? Math.round((s.doneTasks / s.totalTasks) * 100) : 0
+
+    const summary =
+      urgency === 'critical'
+        ? `期限超過タスクが${s.overdueTasks}件あります。早急な対応が必要です。`
+        : urgency === 'warning'
+        ? `${s.upcomingTasks}件のタスクが7日以内に期限を迎えます。進捗を確認してください。`
+        : `全体の進捗は${progress}%です。現時点で緊急の課題はありません。`
+
+    const bottleneck =
+      s.overdueTasks > 0
+        ? `${s.overdueTasks}件のタスクが期限を超過しており、プロジェクト全体の進行に影響を与えています。`
+        : undefined
+
+    const aiRecommendation =
+      urgency === 'critical'
+        ? '本日中に期限超過タスクの担当者に連絡し、対応状況を確認する'
+        : urgency === 'warning'
+        ? '今週の期限タスクを優先的にカンバンで確認する'
+        : undefined
+
+    const aiRecommendationReason =
+      urgency === 'critical'
+        ? `期限超過タスクが${s.overdueTasks}件あり、早期対応で遅延の拡大を防げます`
+        : urgency === 'warning'
+        ? `${s.upcomingTasks}件のタスクが7日以内に期限を迎えます`
+        : undefined
+
+    return {
+      summary,
+      progress,
+      bottleneck,
+      bottleneckSource: 'ai' as const,
+      bottleneckDelayDays: s.overdueTasks > 0 ? s.overdueTasks : undefined,
+      overallUrgency: urgency,
+      nextAction:
+        urgency !== 'normal' ? 'カンバンで期限タスクを確認し、対応方針を決める' : undefined,
+      nextActionHref: kanbanHref,
+      aiRecommendation,
+      aiRecommendationReason,
+      actions:
+        urgency !== 'normal'
+          ? [{ label: 'カンバンで確認', href: kanbanHref, isRecommended: true }]
+          : undefined,
+    }
+  }, [s, urgency, kanbanHref])
+
+  // ── IssuesRisksCard issues ─────────────────────────────────────────────────
+  const issues = useMemo(() => {
+    if (!s) return []
+    const result: Array<{
+      id: string
+      title: string
+      description: string
+      severity: 'high' | 'medium' | 'low'
+      source: 'slack' | 'report' | 'ai' | 'meeting'
+      impact?: string
+      urgency?: 'critical' | 'warning' | 'normal'
+      delayDays?: number
+      daysUntilDeadline?: number
+      aiRecommendation?: string
+    }> = []
+
+    if (s.overdueTasks > 0) {
+      result.push({
+        id: 'overdue',
+        title: `${s.overdueTasks}件のタスクが期限超過`,
+        description: `期限を過ぎたタスクが${s.overdueTasks}件あります。担当者への確認と対応方針の決定が必要です。`,
+        severity: 'high',
+        source: 'ai',
+        impact: 'プロジェクト全体の遅延につながるリスクがあります',
+        urgency: 'critical',
+        delayDays: s.overdueTasks,
+        aiRecommendation: '本日中に担当者に連絡し、対応状況を確認してください',
+      })
+    }
+
+    if (s.upcomingTasks > 0) {
+      result.push({
+        id: 'upcoming',
+        title: `${s.upcomingTasks}件のタスクが7日以内に期限`,
+        description: `今後7日以内に期限を迎えるタスクが${s.upcomingTasks}件あります。進捗を確認してください。`,
+        severity: 'medium',
+        source: 'ai',
+        urgency: 'warning',
+        daysUntilDeadline: 7,
+        aiRecommendation: '今週中にカンバンで進捗を確認し、必要に応じて優先度を調整してください',
+      })
+    }
+
+    if (pendingAnalytics !== null && pendingAnalytics > 0) {
+      result.push({
+        id: 'pending-ai',
+        title: `${pendingAnalytics}件のAI候補が未確認`,
+        description: `AIが提案したタスク候補のうち${pendingAnalytics}件がまだ確認されていません。`,
+        severity: 'low',
+        source: 'ai',
+        urgency: 'normal',
+        aiRecommendation: 'カンバンのAI候補パネルで確認・承認してください',
+      })
+    }
+
+    return result
+  }, [s, pendingAnalytics])
+
+  // ── RecentActivityCard activities ─────────────────────────────────────────
+  const recentActivities = useMemo(() => {
+    if (!data?.recentTasks) return []
+    return data.recentTasks.map((t) => {
+      const who = assigneeLabel(t.assignee)
+      return {
+        id: t.id,
+        type: 'kanban' as const,
+        title: `「${t.title}」が更新されました`,
+        description: t.columnName,
+        user: who ? { name: who } : undefined,
+        timestamp: formatDateTime(t.updatedAt),
+      }
+    })
+  }, [data?.recentTasks])
 
   return (
-    <div className="mx-auto max-w-5xl space-y-7">
+    <div className="mx-auto max-w-7xl space-y-6">
+      {/* ── ヘッダー ── */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">ダッシュボード</h1>
           <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">
-            タスク数・列ごとの件数・期限まわりのざっくり把握用です。
+            今日の確認事項と、プロジェクトの現状をまとめています。
           </p>
         </div>
         <Button variant="outline" size="sm" className="shrink-0 gap-2 self-start" asChild>
-          <Link href={`/projects/${encodeURIComponent(projectId)}/kanban`}>
+          <Link href={kanbanHref}>
             <LayoutGrid className="h-4 w-4" />
             カンバンへ
           </Link>
@@ -171,133 +353,23 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
         </p>
       )}
 
-      {!loading && !error && s && data && (
+      {!loading && !error && s && data && topPriorityProps && statusCardProps && (
         <>
-          <section className="space-y-2.5">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">サマリ</h2>
-            <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-6">
-              {summaryItems.map(({ kind, label, value }) => (
-                <Card key={label} className={summaryMetricCardClass(kind, value)}>
-                  <CardHeader className="space-y-1 p-3.5 pb-3.5 pt-3.5">
-                    <CardDescription className="text-[11px] font-medium leading-none text-muted-foreground">
-                      {label}
-                    </CardDescription>
-                    <CardTitle className="metric-value text-2xl tabular-nums leading-none">{value}</CardTitle>
-                  </CardHeader>
-                </Card>
-              ))}
-            </div>
-          </section>
+          {/* ── 1. TopPriorityCard ── */}
+          <TopPriorityCard {...topPriorityProps} />
 
-          <section className="space-y-2.5">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">列ごとのタスク数</h2>
-            <Card className="border-border/80 bg-card shadow-sm">
-              <CardContent className="p-3 sm:p-4">
-                {data.columns.length === 0 ? (
-                  <p className="py-2 text-center text-sm text-muted-foreground">有効な列がありません。</p>
-                ) : (
-                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4">
-                    {data.columns.map((c) => {
-                      const ratio = c.taskCount / maxColumnTasks
-                      return (
-                        <div
-                          key={c.columnId}
-                          className="flex min-h-[4.25rem] flex-col rounded-md border border-border/80 bg-muted/15 px-2.5 py-2"
-                        >
-                          <div className="flex min-h-[2.25rem] items-start justify-between gap-1.5">
-                            <span className="line-clamp-2 text-xs font-medium leading-tight text-foreground">
-                              {c.columnName}
-                            </span>
-                            <span className="shrink-0 text-sm font-semibold tabular-nums leading-none text-foreground">
-                              {c.taskCount}
-                              <span className="ml-0.5 text-[10px] font-normal text-muted-foreground">件</span>
-                            </span>
-                          </div>
-                          <div
-                            className="mt-auto h-1 w-full overflow-hidden rounded-full bg-muted"
-                            aria-hidden
-                          >
-                            <div
-                              className={cn(
-                                'h-full rounded-full bg-primary/60 transition-[width]',
-                                c.taskCount > 0 && ratio >= 0.66 && 'bg-primary',
-                                c.taskCount > 0 && ratio < 0.25 && 'bg-muted-foreground/40'
-                              )}
-                              style={{ width: `${Math.round(Math.max(8, ratio * 100))}%` }}
-                            />
-                          </div>
-                        </div>
-                      )
-                    })}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          </section>
+          {/* ── 2. 3カラムグリッド ── */}
+          <div className="grid gap-6 lg:grid-cols-3">
+            <ProjectStatusCard {...statusCardProps} />
+            <IssuesRisksCard issues={issues} />
+            <DashboardTaskCandidatesCard projectId={projectId} />
+          </div>
 
-          <section className="space-y-2.5">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">AI候補 分析</h2>
+          {/* ── 3. 2カラムグリッド ── */}
+          <div className="grid gap-6 lg:grid-cols-2">
             <AiAnalyticsPanel projectId={projectId} />
-          </section>
-
-          <section className="space-y-2.5">
-            <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">最近更新したタスク</h2>
-            <Card className="border-border/80 bg-card shadow-sm">
-              <CardContent className="p-0">
-                {data.recentTasks.length === 0 ? (
-                  <div className="px-4 py-8 text-center">
-                    <p className="text-sm text-muted-foreground">まだ更新履歴がありません。</p>
-                    <p className="mt-1 text-xs text-muted-foreground/80">カンバンでタスクを動かすとここに表示されます。</p>
-                  </div>
-                ) : (
-                  <ul className="divide-y divide-border/80">
-                    {data.recentTasks.map((t) => {
-                      const who = assigneeLabel(t.assignee)
-                      return (
-                        <li key={t.id} className="px-4 py-3">
-                          <p className="text-sm font-medium leading-snug text-foreground">{t.title}</p>
-                          <div className="mt-1.5 flex flex-wrap items-center gap-x-1.5 gap-y-1">
-                            <Badge variant="outline" className="h-5 max-w-[9rem] truncate px-1.5 text-[10px] font-normal">
-                              {t.columnName}
-                            </Badge>
-                            <span className="text-[11px] text-muted-foreground tabular-nums">
-                              更新 {formatDateTime(t.updatedAt)}
-                            </span>
-                            {t.priority && (
-                              <Badge
-                                variant="secondary"
-                                className={cn(
-                                  'h-5 shrink-0 px-1.5 text-[10px] font-medium',
-                                  t.priority === 'HIGH' && 'border-0 bg-destructive/12 text-destructive',
-                                  t.priority === 'MEDIUM' &&
-                                    'border-0 bg-amber-500/12 text-amber-900 dark:text-amber-100',
-                                  t.priority === 'LOW' && 'border-0 bg-muted text-muted-foreground'
-                                )}
-                              >
-                                優先 {priorityLabel[t.priority]}
-                              </Badge>
-                            )}
-                            {t.dueDate && (
-                              <span className="inline-flex items-center gap-0.5 text-[11px] text-muted-foreground">
-                                <CalendarDays className="h-3 w-3 shrink-0 opacity-70" aria-hidden />
-                                期限 {formatDueShort(t.dueDate)}
-                              </span>
-                            )}
-                            {who && (
-                              <span className="inline-flex items-center gap-0.5 text-[11px] text-muted-foreground">
-                                <UserRound className="h-3 w-3 shrink-0 opacity-70" aria-hidden />
-                                {who}
-                              </span>
-                            )}
-                          </div>
-                        </li>
-                      )
-                    })}
-                  </ul>
-                )}
-              </CardContent>
-            </Card>
-          </section>
+            <RecentActivityCard activities={recentActivities} />
+          </div>
         </>
       )}
     </div>

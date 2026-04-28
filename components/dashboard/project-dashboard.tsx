@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button'
 import { CalendarDays, LayoutGrid, UserRound } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ProjectDashboardResponse, TaskPriority } from '@/lib/types'
+import { AiAnalyticsPanel } from '@/components/dashboard/ai-analytics-panel'
 
 const priorityLabel: Record<TaskPriority, string> = {
   LOW: '低',
@@ -232,6 +233,11 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
                 )}
               </CardContent>
             </Card>
+          </section>
+
+          <section className="space-y-2.5">
+            <h2 className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">AI候補 分析</h2>
+            <AiAnalyticsPanel projectId={projectId} />
           </section>
 
           <section className="space-y-2.5">

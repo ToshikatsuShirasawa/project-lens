@@ -119,6 +119,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   const [addSaving, setAddSaving] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
   const [candidates, setCandidates] = useState<TaskCandidate[]>([])
+  const [addedCandidateIds, setAddedCandidateIds] = useState<Set<string>>(new Set())
   const [projectMembers, setProjectMembers] = useState<ProjectMemberApiRecord[]>([])
   const [reportsFetchKey, setReportsFetchKey] = useState(0)
 
@@ -538,6 +539,9 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
 
   const backlogColumnKey =
     boardColumns.find((c) => c.key === 'backlog')?.key ?? boardColumns[0]?.key ?? 'backlog'
+  const backlogColumnName =
+    boardColumns.find((c) => c.key === backlogColumnKey)?.name ?? 'バックログ'
+  const pendingCandidateCount = candidates.filter((c) => !addedCandidateIds.has(c.id)).length
 
   const handleAddToKanban = (candidate: TaskCandidate, overrides?: CandidateApprovalOverrides) => {
     const isTopCandidate = orderedAiCandidates[0]?.id === candidate.id
@@ -581,7 +585,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
       ...prev,
       [backlogColumnKey]: [...(prev[backlogColumnKey] ?? []), task],
     }))
-    setCandidates((prev) => prev.filter((c) => c.id !== candidate.id))
+    setAddedCandidateIds((prev) => new Set([...prev, candidate.id]))
     toastSuccess('AI候補をバックログに追加しました')
   }
 
@@ -615,10 +619,10 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
             <Badge variant="secondary" className="text-xs">
               {tasksLoading ? 'タスク読み込み中…' : `確定タスク: ${totalTasks}件`}
             </Badge>
-            {candidates.length > 0 && (
+            {pendingCandidateCount > 0 && (
               <Badge variant="secondary" className="text-xs gap-1 bg-primary/10 text-primary border-0">
                 <Sparkles className="h-3 w-3" />
-                候補: {candidates.length}件
+                候補: {pendingCandidateCount}件
               </Badge>
             )}
           </div>
@@ -652,6 +656,8 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
         projectId={projectId}
         candidates={orderedAiCandidates}
         projectMembers={projectMembers}
+        addedCandidateIds={addedCandidateIds}
+        backlogColumnName={backlogColumnName}
         onAddToKanban={handleAddToKanban}
         onHold={(id) => {
           const target = candidates.find((c) => c.id === id)

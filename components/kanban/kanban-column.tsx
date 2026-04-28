@@ -112,6 +112,7 @@ export function KanbanColumn({
 
   return (
     <div
+      id={`kanban-col-${id}`}
       className={cn(
         'group/column flex w-72 shrink-0 flex-col rounded-xl border bg-muted/30 transition-all duration-200 ease-out',
         theme?.hover,

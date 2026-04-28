@@ -28,6 +28,8 @@ interface TaskCandidateSidePanelProps {
   projectId: string
   candidates: TaskCandidate[]
   projectMembers: ProjectMemberApiRecord[]
+  addedCandidateIds: ReadonlySet<string>
+  backlogColumnName: string
   onAddToKanban: (candidate: TaskCandidate, overrides?: CandidateApprovalOverrides) => void
   onHold: (id: string) => void
   onDismiss: (id: string) => void
@@ -114,14 +116,21 @@ function toDateInputValue(s: string | undefined): string {
   return ''
 }
 
+function scrollToBacklogColumn() {
+  document.getElementById('kanban-col-backlog')?.scrollIntoView({ behavior: 'smooth', block: 'nearest' })
+}
+
 export function TaskCandidateSidePanel({
   projectId,
   candidates,
   projectMembers,
+  addedCandidateIds,
+  backlogColumnName,
   onAddToKanban,
   onHold,
   onDismiss,
 }: TaskCandidateSidePanelProps) {
+  const pendingCount = candidates.filter((c) => !addedCandidateIds.has(c.id)).length
   const [open, setOpen] = useState(true)
   const [openStateLoaded, setOpenStateLoaded] = useState(false)
   const shownCandidateIdsRef = useRef<Set<string>>(new Set())
@@ -267,9 +276,9 @@ export function TaskCandidateSidePanel({
             <span className="sr-only">AIタスク候補を開く</span>
           </Button>
           <Sparkles className="h-4 w-4 text-primary shrink-0" aria-hidden />
-          {candidates.length > 0 ? (
+          {pendingCount > 0 ? (
             <Badge className="text-[10px] h-5 min-w-5 px-1 justify-center bg-primary/10 text-primary border-0">
-              {candidates.length}
+              {pendingCount}
             </Badge>
           ) : null}
         </div>
@@ -286,9 +295,9 @@ export function TaskCandidateSidePanel({
         <span className="h-4 w-0.5 rounded-full bg-primary/40" aria-hidden />
         <Sparkles className="h-4 w-4 shrink-0 text-primary" />
         <span className="min-w-0 flex-1 truncate text-sm font-semibold text-foreground">AI提案タスク</span>
-        {candidates.length > 0 && (
+        {pendingCount > 0 && (
           <Badge className="shrink-0 text-[10px] h-5 px-1.5 bg-primary/10 text-primary border-0">
-            {candidates.length}件
+            {pendingCount}件
           </Badge>
         )}
         <Button
@@ -322,6 +331,7 @@ export function TaskCandidateSidePanel({
             const reasonSummary = summarizeCandidateReasons(c, { isTopCandidate: false, maxChips: 4 })
             const scoreResult = scoreTaskCandidate(c)
             const priority = priorityLabelConfig[scoreResult.confidenceLevel]
+            const isAdded = addedCandidateIds.has(c.id)
             const isWaiting = c.extractionStatus === 'waiting'
             const visibleReasons = (c.extractionReasons ?? []).slice(0, 2)
             const overflowCount = Math.max(0, (c.extractionReasons?.length ?? 0) - 2)
@@ -414,7 +424,7 @@ export function TaskCandidateSidePanel({
                       {c.suggestedDueDate && <span>期限候補: {c.suggestedDueDate}</span>}
                     </div>
                   )}
-                  {editingId !== c.id && (
+                  {!isAdded && editingId !== c.id && (
                     <div className="flex justify-start">
                       <Button
                         type="button"
@@ -431,7 +441,7 @@ export function TaskCandidateSidePanel({
                       </Button>
                     </div>
                   )}
-                  {editingId === c.id && (
+                  {!isAdded && editingId === c.id && (
                     <div className="relative space-y-2 rounded-md border border-border/80 bg-muted/40 p-2.5">
                       <Button
                         type="button"
@@ -496,51 +506,75 @@ export function TaskCandidateSidePanel({
                       </div>
                     </div>
                   )}
-                  <div className="flex gap-1.5 pt-1">
-                    <Button
-                      size="sm"
-                      className={cn(
-                        'flex-1 gap-1 text-xs h-7 transition-all active:scale-[0.99]',
-                        'hover:shadow-sm hover:translate-y-[-1px]'
-                      )}
-                      onClick={() => {
-                        setSubmittingId(c.id)
-                        onAddToKanban(c, getApprovalOverrides(c))
-                      }}
-                      disabled={isSubmitting}
-                    >
-                      {isSubmitting ? (
-                        <>
-                          <CheckCircle2 className="h-3 w-3" />
-                          追加中...
-                        </>
-                      ) : (
-                        <>
-                          <Plus className="h-3 w-3" />+ 追加
-                        </>
-                      )}
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="outline"
-                      className="gap-1 text-xs h-7 px-2"
-                      onClick={() => onHold(c.id)}
-                      title="あとで"
-                    >
-                      <Pause className="h-3 w-3" />
-                      あとで
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="gap-1 text-xs h-7 px-2 text-muted-foreground"
-                      onClick={() => onDismiss(c.id)}
-                      title="却下"
-                    >
-                      <X className="h-3 w-3" />
-                      却下
-                    </Button>
-                  </div>
+                  {isAdded ? (
+                    <div className="flex items-center justify-between gap-2 rounded-md bg-emerald-50 px-2.5 py-1.5 text-xs text-emerald-700 border border-emerald-200/60">
+                      <span className="flex items-center gap-1.5 font-medium">
+                        <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                        {backlogColumnName} に追加済み
+                      </span>
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant="ghost"
+                        className="h-6 px-2 text-[11px] text-emerald-700 hover:bg-emerald-100"
+                        onClick={scrollToBacklogColumn}
+                      >
+                        カンバンで確認
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <p className="text-[10px] text-muted-foreground">
+                        → {backlogColumnName} に追加されます
+                      </p>
+                      <div className="flex gap-1.5">
+                        <Button
+                          size="sm"
+                          className={cn(
+                            'flex-1 gap-1 text-xs h-7 transition-all active:scale-[0.99]',
+                            'hover:shadow-sm hover:translate-y-[-1px]'
+                          )}
+                          onClick={() => {
+                            if (isAdded) return
+                            setSubmittingId(c.id)
+                            onAddToKanban(c, getApprovalOverrides(c))
+                          }}
+                          disabled={isSubmitting || isAdded}
+                        >
+                          {isSubmitting ? (
+                            <>
+                              <CheckCircle2 className="h-3 w-3" />
+                              追加中...
+                            </>
+                          ) : (
+                            <>
+                              <Plus className="h-3 w-3" />+ 追加
+                            </>
+                          )}
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="gap-1 text-xs h-7 px-2"
+                          onClick={() => onHold(c.id)}
+                          title="あとで"
+                        >
+                          <Pause className="h-3 w-3" />
+                          あとで
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          className="gap-1 text-xs h-7 px-2 text-muted-foreground"
+                          onClick={() => onDismiss(c.id)}
+                          title="却下"
+                        >
+                          <X className="h-3 w-3" />
+                          却下
+                        </Button>
+                      </div>
+                    </>
+                  )}
                 </CardContent>
               </Card>
             )

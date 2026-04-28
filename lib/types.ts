@@ -282,6 +282,8 @@ export interface MissingInfoItem {
 // Task Candidates (AI-extracted, pending review)
 // ============================================================
 
+export type ExtractionStatus = 'todo' | 'done' | 'waiting' | 'memo' | 'unknown'
+
 export interface TaskCandidate {
   id: string
   title: string
@@ -290,6 +292,12 @@ export interface TaskCandidate {
   suggestedAssignee?: string
   suggestedDueDate?: string
   held?: boolean
+  /** 抽出判定レイヤーによる分類 */
+  extractionStatus?: ExtractionStatus
+  /** 判定に寄与したキーワード一覧 */
+  extractionReasons?: string[]
+  /** 判定の確信度 0〜1 */
+  extractionConfidence?: number
 }
 
 // ============================================================

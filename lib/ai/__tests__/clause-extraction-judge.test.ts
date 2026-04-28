@@ -1,0 +1,271 @@
+import { describe, it, expect } from 'vitest'
+import {
+  judgeExtractionClause,
+  shouldCreateTaskCandidate,
+  splitReportIntoClauses,
+} from '../clause-extraction-judge'
+
+// ─── splitReportIntoClauses ────────────────────────────────────
+
+describe('splitReportIntoClauses', () => {
+  it('done + todo 混在文を節単位で分割する（しましたが）', () => {
+    const input = '一覧画面は修正しましたが、詳細画面の確認が必要です'
+    const result = splitReportIntoClauses(input)
+    expect(result).toHaveLength(2)
+    expect(result[0]).toBe('一覧画面は修正しました')
+    expect(result[1]).toBe('詳細画面の確認が必要です')
+  })
+
+  it('確認しましたが を分割する', () => {
+    const input = '確認しましたが、追加修正が必要です'
+    const result = splitReportIntoClauses(input)
+    expect(result).toHaveLength(2)
+    expect(result[0]).toBe('確認しました')
+    expect(result[1]).toBe('追加修正が必要です')
+  })
+
+  it('句点で文を分割する', () => {
+    const input = '先方に確認依頼済みです。回答待ちです'
+    const result = splitReportIntoClauses(input)
+    expect(result).toHaveLength(2)
+    expect(result[0]).toBe('先方に確認依頼済みです')
+    expect(result[1]).toBe('回答待ちです')
+  })
+
+  it('改行で分割する', () => {
+    const input = '完了しました\n次回対応予定です'
+    const result = splitReportIntoClauses(input)
+    expect(result).toHaveLength(2)
+    expect(result[0]).toBe('完了しました')
+    expect(result[1]).toBe('次回対応予定です')
+  })
+})
+
+// ─── judgeExtractionClause ───────────────────────────────────
+
+describe('judgeExtractionClause', () => {
+  // ─── done
+  it('ケース1: 「資料を修正しました」→ done、候補化しない', () => {
+    const j = judgeExtractionClause('資料を修正しました')
+    expect(j.status).toBe('done')
+    expect(j.shouldExtract).toBe(false)
+  })
+
+  it('完了を含む節 → done', () => {
+    const j = judgeExtractionClause('タスク完了')
+    expect(j.status).toBe('done')
+    expect(j.shouldExtract).toBe(false)
+  })
+
+  it('確認済みを含む節 → done', () => {
+    const j = judgeExtractionClause('内容は確認済みです')
+    expect(j.status).toBe('done')
+    expect(j.shouldExtract).toBe(false)
+  })
+
+  // ─── todo
+  it('ケース4: 「APIレスポンスの型定義を修正する必要があります」→ todo、候補化する', () => {
+    const j = judgeExtractionClause('APIレスポンスの型定義を修正する必要があります')
+    expect(j.status).toBe('todo')
+    expect(j.shouldExtract).toBe(true)
+    expect(j.reasons.some((r) => r.includes('todo'))).toBe(true)
+  })
+
+  it('ケース6: 「TODO: カンバンカードの並び順を保存する」→ todo', () => {
+    const j = judgeExtractionClause('TODO: カンバンカードの並び順を保存する')
+    expect(j.status).toBe('todo')
+    expect(j.shouldExtract).toBe(true)
+  })
+
+  it('要確認を含む節 → todo', () => {
+    const j = judgeExtractionClause('要確認: 設計書の承認')
+    expect(j.status).toBe('todo')
+    expect(j.shouldExtract).toBe(true)
+  })
+
+  it('必要を含む節 → todo', () => {
+    const j = judgeExtractionClause('追加修正が必要です')
+    expect(j.status).toBe('todo')
+    expect(j.shouldExtract).toBe(true)
+  })
+
+  it('次回を含む節 → todo', () => {
+    const j = judgeExtractionClause('次回確認予定')
+    expect(j.status).toBe('todo')
+    expect(j.shouldExtract).toBe(true)
+  })
+
+  // ─── waiting
+  it('ケース3a: 「先方に確認依頼済みです」→ waiting、候補化する', () => {
+    const j = judgeExtractionClause('先方に確認依頼済みです')
+    expect(j.status).toBe('waiting')
+    expect(j.shouldExtract).toBe(true)
+    expect(j.reasons.some((r) => r.includes('waiting'))).toBe(true)
+  })
+
+  it('ケース3b: 「回答待ちです」→ waiting', () => {
+    const j = judgeExtractionClause('回答待ちです')
+    expect(j.status).toBe('waiting')
+    expect(j.shouldExtract).toBe(true)
+  })
+
+  it('確認待ちを含む節 → waiting', () => {
+    const j = judgeExtractionClause('A社からの確認待ちです')
+    expect(j.status).toBe('waiting')
+    expect(j.shouldExtract).toBe(true)
+  })
+
+  // ─── memo
+  it('ケース5: 「共有のみです」→ memo、候補化しない', () => {
+    const j = judgeExtractionClause('共有のみです')
+    expect(j.status).toBe('memo')
+    expect(j.shouldExtract).toBe(false)
+  })
+
+  it('備考を含む節 → memo', () => {
+    const j = judgeExtractionClause('備考: 参考情報として')
+    expect(j.status).toBe('memo')
+    expect(j.shouldExtract).toBe(false)
+  })
+
+  // ─── 優先順位検証
+  it('memo と todo が混在する場合は memo 優先', () => {
+    const j = judgeExtractionClause('メモ: 次回確認する')
+    expect(j.status).toBe('memo')
+    expect(j.shouldExtract).toBe(false)
+  })
+
+  it('waiting と todo が混在する場合は waiting 優先', () => {
+    const j = judgeExtractionClause('回答待ちですが必要があれば対応する')
+    expect(j.status).toBe('waiting')
+    expect(j.shouldExtract).toBe(true)
+  })
+
+  // ─── 対応済み（done）が todo の短形式を上書きする
+  it('「対応済みです」→ done（"対応" が done の一部として吸収される）', () => {
+    const j = judgeExtractionClause('対応済みです')
+    expect(j.status).toBe('done')
+    expect(j.shouldExtract).toBe(false)
+  })
+
+  // ─── unknown
+  it('キーワードなし → unknown', () => {
+    const j = judgeExtractionClause('本日はありがとうございました')
+    expect(j.status).toBe('unknown')
+    expect(j.shouldExtract).toBe(false)
+  })
+})
+
+// ─── 統合: splitReportIntoClauses + judgeExtractionClause ─────
+
+describe('統合テスト', () => {
+  function extractCandidateClauses(text: string): string[] {
+    return splitReportIntoClauses(text).filter((clause) =>
+      shouldCreateTaskCandidate(judgeExtractionClause(clause)),
+    )
+  }
+
+  it('ケース1: 「資料を修正しました」→ 候補なし', () => {
+    expect(extractCandidateClauses('資料を修正しました')).toHaveLength(0)
+  })
+
+  it('ケース2: 混在文 → 「詳細画面の確認が必要です」のみ抽出', () => {
+    const result = extractCandidateClauses('一覧画面は修正しましたが、詳細画面の確認が必要です')
+    expect(result).toHaveLength(1)
+    expect(result[0]).toBe('詳細画面の確認が必要です')
+  })
+
+  it('ケース3: 待機文 → 両節とも waiting として抽出', () => {
+    const result = extractCandidateClauses('先方に確認依頼済みです。回答待ちです')
+    expect(result).toHaveLength(2)
+    expect(result.every((c) => judgeExtractionClause(c).status === 'waiting')).toBe(true)
+  })
+
+  it('ケース4: API 修正 → 候補あり', () => {
+    const result = extractCandidateClauses('APIレスポンスの型定義を修正する必要があります')
+    expect(result).toHaveLength(1)
+    expect(judgeExtractionClause(result[0]).status).toBe('todo')
+  })
+
+  it('ケース5: 「共有のみです」→ 候補なし', () => {
+    expect(extractCandidateClauses('共有のみです')).toHaveLength(0)
+  })
+
+  it('ケース6: TODO 文 → 候補あり', () => {
+    const result = extractCandidateClauses('TODO: カンバンカードの並び順を保存する')
+    expect(result).toHaveLength(1)
+    expect(judgeExtractionClause(result[0]).status).toBe('todo')
+  })
+
+  it('ケース7: 「確認しましたが、追加修正が必要です」→ 「追加修正が必要です」を抽出', () => {
+    const result = extractCandidateClauses('確認しましたが、追加修正が必要です')
+    expect(result).toHaveLength(1)
+    expect(result[0]).toBe('追加修正が必要です')
+    expect(judgeExtractionClause(result[0]).status).toBe('todo')
+  })
+})
+
+// ─── legacy-todo 後方互換テスト ───────────────────────────────
+
+describe('legacy-todo 後方互換（活用形・短形式ステム）', () => {
+  it('「修正を進める予定です」→ todo（"修正する" の活用形をカバー）', () => {
+    const j = judgeExtractionClause('修正を進める予定です')
+    expect(j.status).toBe('todo')
+    expect(j.shouldExtract).toBe(true)
+    expect(j.reasons.some((r) => r.includes('todo(legacy)'))).toBe(true)
+  })
+
+  it('「確認します」→ todo（"確認する" の活用形をカバー）', () => {
+    const j = judgeExtractionClause('確認します')
+    expect(j.status).toBe('todo')
+    expect(j.shouldExtract).toBe(true)
+  })
+
+  it('「準備中です」→ todo（"準備する" の活用形をカバー）', () => {
+    const j = judgeExtractionClause('準備中です')
+    expect(j.status).toBe('todo')
+    expect(j.shouldExtract).toBe(true)
+  })
+
+  it('「調整していきます」→ todo（"調整する" の活用形をカバー）', () => {
+    const j = judgeExtractionClause('調整していきます')
+    expect(j.status).toBe('todo')
+    expect(j.shouldExtract).toBe(true)
+  })
+
+  it('「修正しました」→ done（legacy "修正" が "しました" に負ける）', () => {
+    const j = judgeExtractionClause('修正しました')
+    expect(j.status).toBe('done')
+    expect(j.shouldExtract).toBe(false)
+  })
+
+  it('「確認しました」→ done（legacy "確認" が "しました" に負ける）', () => {
+    const j = judgeExtractionClause('確認しました')
+    expect(j.status).toBe('done')
+    expect(j.shouldExtract).toBe(false)
+  })
+
+  it('「確認済みです」→ done（legacy "確認" が "確認済み" に吸収される）', () => {
+    const j = judgeExtractionClause('確認済みです')
+    expect(j.status).toBe('done')
+    expect(j.shouldExtract).toBe(false)
+  })
+
+  it('「確認待ちです」→ waiting（legacy "確認" が "確認待ち" に吸収される）', () => {
+    const j = judgeExtractionClause('確認待ちです')
+    expect(j.status).toBe('waiting')
+    expect(j.shouldExtract).toBe(true)
+  })
+
+  it('「対応予定です」→ todo（legacy "対応"、"対応済み" は不在）', () => {
+    const j = judgeExtractionClause('対応予定です')
+    expect(j.status).toBe('todo')
+    expect(j.shouldExtract).toBe(true)
+  })
+
+  it('「対応済みです」→ done（legacy "対応" が "対応済み" に吸収される）', () => {
+    const j = judgeExtractionClause('対応済みです')
+    expect(j.status).toBe('done')
+    expect(j.shouldExtract).toBe(false)
+  })
+})

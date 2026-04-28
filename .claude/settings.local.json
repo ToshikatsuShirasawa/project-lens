@@ -6,7 +6,9 @@
       "Bash(npx prisma *)",
       "Bash(node -e ' *)",
       "Bash(git stash *)",
-      "Bash(git diff *)"
+      "Bash(git diff *)",
+      "Bash(npm install *)",
+      "Bash(npm test *)"
     ],
     "additionalDirectories": [
       "c:\\work\\ai\\project-lens\\app\\projects\\[projectId]"

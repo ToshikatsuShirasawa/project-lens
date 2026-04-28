@@ -1,24 +1,12 @@
 import type { TaskCandidate, WorkReport } from '@/lib/types'
+import {
+  judgeExtractionClause,
+  shouldCreateTaskCandidate,
+  splitReportIntoClauses,
+} from '@/lib/ai/clause-extraction-judge'
+import type { ExtractionStatus } from '@/lib/ai/clause-extraction-judge'
 
 type ReportLike = Pick<WorkReport, 'id' | 'submittedBy' | 'completed' | 'inProgress' | 'blockers' | 'nextActions'>
-
-const TASK_CANDIDATE_KEYWORDS = [
-  '必要',
-  '対応',
-  '確認',
-  '準備',
-  '手配',
-  '修正',
-  '調整',
-  '依頼',
-  '未対応',
-  '課題',
-  '次回',
-  'TODO',
-  '要確認',
-] as const
-
-const SENTENCE_SPLIT_PATTERN = /[\n。．！？!?]+/g
 
 function normalizeWhitespace(text: string): string {
   return text.replace(/\s+/g, ' ').trim()
@@ -26,18 +14,6 @@ function normalizeWhitespace(text: string): string {
 
 function normalizeForDedup(text: string): string {
   return normalizeWhitespace(text).toLowerCase()
-}
-
-function splitIntoCandidateSentences(text: string): string[] {
-  return text
-    .split(SENTENCE_SPLIT_PATTERN)
-    .map((part) => normalizeWhitespace(part))
-    .filter(Boolean)
-}
-
-function containsTaskKeyword(sentence: string): boolean {
-  const normalized = sentence.toLowerCase()
-  return TASK_CANDIDATE_KEYWORDS.some((kw) => normalized.includes(kw.toLowerCase()))
 }
 
 function trimToTitle(sentence: string, maxLength = 28): string {
@@ -90,7 +66,10 @@ function inferDueDate(sentence: string, baseDate = new Date()): string | undefin
   return undefined
 }
 
-function buildReason(sentence: string): string {
+function buildReason(sentence: string, status: ExtractionStatus): string {
+  if (status === 'waiting') {
+    return '作業報告に相手待ちの事項がありました'
+  }
   if (/要確認|確認/.test(sentence)) {
     return '作業報告に確認が必要な事項がありました'
   }
@@ -109,18 +88,20 @@ export function extractTaskCandidatesFromReports(reports: ReportLike[]): TaskCan
     const reportText = [report.completed, report.inProgress, report.blockers, report.nextActions]
       .map((part) => part ?? '')
       .join('\n')
-    const sentences = splitIntoCandidateSentences(reportText)
+    const clauses = splitReportIntoClauses(reportText)
     let reportCandidateIndex = 0
 
-    for (const sentence of sentences) {
-      if (!containsTaskKeyword(sentence)) continue
-      const title = trimToTitle(sentence)
+    for (const clause of clauses) {
+      const judgement = judgeExtractionClause(clause)
+      if (!shouldCreateTaskCandidate(judgement)) continue
+
+      const title = trimToTitle(clause)
       const normalizedTitle = normalizeForDedup(title)
       if (!normalizedTitle || seenTitles.has(normalizedTitle)) continue
       seenTitles.add(normalizedTitle)
 
-      const excerpt = trimToTitle(sentence, 36)
-      const reasonBase = buildReason(sentence)
+      const excerpt = trimToTitle(clause, 36)
+      const reasonBase = buildReason(clause, judgement.status)
       const reason = `${reasonBase}（抜粋: ${excerpt}）`
 
       candidates.push({
@@ -129,11 +110,20 @@ export function extractTaskCandidatesFromReports(reports: ReportLike[]): TaskCan
         reason,
         source: 'report',
         suggestedAssignee: assignee || undefined,
-        suggestedDueDate: inferDueDate(sentence),
+        suggestedDueDate: inferDueDate(clause),
+        extractionStatus: judgement.status,
+        extractionReasons: judgement.reasons,
+        extractionConfidence: judgement.confidence,
       })
       reportCandidateIndex += 1
     }
   }
 
+  console.info(
+    '[extract-reports] extracted',
+    candidates.length,
+    'candidates:',
+    candidates.map((c) => ({ id: c.id, title: c.title, extractionStatus: c.extractionStatus })),
+  )
   return candidates
 }

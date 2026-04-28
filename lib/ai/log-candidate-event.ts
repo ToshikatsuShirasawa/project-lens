@@ -63,6 +63,9 @@ export function buildAiTaskCandidateEventPayload(
       scoreDiffToNext: options.scoreDiffToNext ?? null,
       isComparativeRecommendation: Boolean(options.isComparativeRecommendation),
       legacyConfidenceLevel: scored.legacyConfidenceLevel,
+      extractionStatus: candidate.extractionStatus ?? null,
+      extractionReasons: candidate.extractionReasons ?? null,
+      extractionConfidence: candidate.extractionConfidence ?? null,
     },
   }
 }

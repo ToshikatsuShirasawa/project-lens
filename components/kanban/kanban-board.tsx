@@ -116,7 +116,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   const [tasksError, setTasksError] = useState<string | null>(null)
   const [addSaving, setAddSaving] = useState(false)
   const [createError, setCreateError] = useState<string | null>(null)
-  const [candidates, setCandidates] = useState<TaskCandidate[]>(() => mockKanbanCandidates)
+  const [candidates, setCandidates] = useState<TaskCandidate[]>([])
   const [projectMembers, setProjectMembers] = useState<ProjectMemberApiRecord[]>([])
   const [reportsFetchKey, setReportsFetchKey] = useState(0)
 
@@ -247,12 +247,21 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
           return
         }
 
-        console.info('[kanban] reports から候補を生成できなかったため demo 候補を利用します')
-        setCandidates(mockKanbanCandidates)
+        console.info(
+          '[kanban] reports から候補を生成できなかったため demo 候補を利用します',
+          'reports件数:', reports.length,
+          'reports抜粋:', reports.map((r) => ({
+            id: r.id,
+            completed: r.completed?.slice(0, 40),
+            inProgress: r.inProgress?.slice(0, 40),
+            nextActions: r.nextActions?.slice(0, 40),
+          })),
+        )
+        setCandidates(mockKanbanCandidates.map((c) => ({ ...c, extractionStatus: 'unknown' as const })))
       } catch (error) {
         if (cancelled) return
         console.warn('[kanban] reports の取得に失敗したため demo 候補へフォールバックします', error)
-        setCandidates(mockKanbanCandidates)
+        setCandidates(mockKanbanCandidates.map((c) => ({ ...c, extractionStatus: 'unknown' as const })))
       }
     })()
 
@@ -662,9 +671,9 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
             if (idx < 0) return prev
             const t = { ...prev[idx], held: true }
             const others = prev.filter((c) => c.id !== id)
-            toastSuccess('候補をあとで確認に回しました')
             return [...others, t]
           })
+          toastSuccess('候補をあとで確認に回しました')
         }}
         onDismiss={(id) => {
           const target = candidates.find((c) => c.id === id)
@@ -681,13 +690,9 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
               })
             )
           }
-          setCandidates((prev) => {
-            const next = prev.filter((c) => c.id !== id)
-            if (next.length !== prev.length) {
-              toastSuccess('候補を却下しました')
-            }
-            return next
-          })
+          const existed = candidates.some((c) => c.id === id)
+          setCandidates((prev) => prev.filter((c) => c.id !== id))
+          if (existed) toastSuccess('候補を却下しました')
         }}
       />
 

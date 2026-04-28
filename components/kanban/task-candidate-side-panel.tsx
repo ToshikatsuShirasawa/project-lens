@@ -121,6 +121,7 @@ export function TaskCandidateSidePanel({
     for (const c of candidates) {
       if (shownCandidateIdsRef.current.has(c.id)) continue
       shownCandidateIdsRef.current.add(c.id)
+      console.info('[ai-event] shown candidate', c.id, 'extractionStatus:', c.extractionStatus)
       logAiTaskCandidateEvent(
         buildAiTaskCandidateEventPayload(projectId, c, 'shown', {
           isTopCandidate: topId === c.id,

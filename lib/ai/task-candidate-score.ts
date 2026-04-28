@@ -15,14 +15,22 @@ export type TaskCandidateScoreResult = {
     assignee: number
     dueDate: number
     actionability: number
+    /** actionabilityの判定根拠 */
+    actionabilityReason: string
     urgency: number
+    /** urgencyの判定根拠 */
+    urgencyReason: string
     hasConfirmationSignal: boolean
     hasDecisionSignal: boolean
-    /** タイトル・理由・ラベルから見た具体性（-1〜+1） */
+    /** タイトル・理由・ラベルから見た具体性（-2〜+2） */
     specificity: number
     hasConcreteTaskSignal: boolean
     /** 具体語がなく、抽象語が目立つ（減点条件を満たす）とき true */
     hasAbstractOnlySignal: boolean
+    /** specificityの判定根拠 */
+    specificityReason: string
+    /** extractionStatus による加減算（waiting:-3 / unknown:-2 / other:0） */
+    extractionStatusAdjustment: number
   }
   /** summarizeCandidateReasons ベース（ログや調整用） */
   legacyConfidenceLevel: TaskCandidateScoreConfidence
@@ -34,71 +42,34 @@ export type ComparativeRecommendationResult = {
   isComparativeRecommendation: boolean
 }
 
-/** source 別の基礎点。ログ分析でここを主調整点にする。 */
+// ─── source ──────────────────────────────────────────────────────
+
+/** source 別の基礎点（0-2） */
 const SOURCE_WEIGHTS: Record<TaskCandidate['source'], number> = {
-  // 会話起点の依頼・確認が多く、即タスク化しやすい
   slack: 2,
-  // 決定事項は強いが、期限未確定のメモも混ざるため中程度
   meeting: 1,
-  // 状況共有・報告文脈が混ざるため現時点は控えめ
   report: 1,
-  // AI派生のみの候補は単体では加点しない
   ai: 0,
 }
 
-/** チップラベル（および近い表現）→ reason ブロックへの加点。未登録ラベルは 0 */
+// ─── reason labels ────────────────────────────────────────────────
+
+/**
+ * チップラベル → スコア加点。
+ * ・「決定事項に紐づく」は weight: 1 に抑える（reason 文の "必要" が誤マッチするため）
+ * ・「担当候補あり」は 0（actionability 側で評価するため二重計上しない）
+ */
 const REASON_LABEL_WEIGHTS: Record<string, number> = {
-  期限が近い: 3,
-  確認依頼あり: 3,
-  'Slackで確認依頼': 3,
-  決定事項に紐づく: 2,
-  担当候補あり: 1,
+  期限が近い: 2,
+  確認依頼あり: 2,
+  'Slackで確認依頼': 2,
+  決定事項に紐づく: 1,
+  担当候補あり: 0,
   言及あり: 1,
 }
 
-const MAX_REASON_SCORE = 5
-
-/** 長い語から先にマッチさせる（「確認が必要」と「確認」を分ける） */
-const SPECIFICITY_CONCRETE_KEYWORDS = [
-  '確認依頼',
-  '実装',
-  '準備',
-  '作成',
-  '修正',
-  '設定',
-  '対応',
-  '手配',
-  '依頼',
-  '更新',
-  '追加',
-  '調整',
-  '連絡',
-  '確認',
-] as const
-
-const SPECIFICITY_ABSTRACT_KEYWORDS = [
-  '確認が必要',
-  '検討',
-  '共有',
-  '議論',
-  '方針',
-  '課題',
-  'レビュー',
-] as const
-
-const ACTIONABILITY_WEIGHT = {
-  assignee: 1,
-  dueDate: 1,
-  meetingWithoutDueDate: -1,
-  reportWithoutConfirmation: -1,
-} as const
-
-type CandidateSignals = {
-  hasConfirmationSignal: boolean
-  hasDecisionSignal: boolean
-  hasDueDate: boolean
-  hasAssignee: boolean
-}
+/** reason バケットの上限（インフレ防止） */
+const MAX_REASON_SCORE = 2
 
 const REASON_LABEL_GROUPS = {
   confirmation: ['確認依頼あり', 'Slackで確認依頼'],
@@ -107,6 +78,73 @@ const REASON_LABEL_GROUPS = {
   assignee: ['担当候補あり'],
   mention: ['言及あり'],
 } as const
+
+// ─── urgency ─────────────────────────────────────────────────────
+
+/**
+ * タイトルに含まれていると urgency +2 になるキーワード。
+ * ラベルより先に判定し、実際のタスク文言を直接見る。
+ */
+const URGENCY_TITLE_KEYWORDS: readonly string[] = [
+  '必要',
+  '早め',
+  '至急',
+  '急ぎ',
+  '本日',
+  '明日',
+] as const
+
+// ─── specificity ─────────────────────────────────────────────────
+
+/**
+ * 単体で出現したとき抽象タスクと見なす語（具体対象物があれば打ち消し）。
+ * 「調査」「洗い出し」はとくに具体性が低い。
+ */
+const ABSTRACT_TASK_KEYWORDS: readonly string[] = [
+  '準備',
+  '対応',
+  '調整',
+  '確認',
+  '調査',
+  '洗い出し',
+  '検討',
+  '共有',
+  '議論',
+  '方針',
+  '課題',
+  'レビュー',
+] as const
+
+/**
+ * 具体対象物がなくても +1 を与える動詞/名詞。
+ * 長い語を先に書き、部分マッチ優先になるように管理する。
+ */
+const STRONG_CONCRETE_KEYWORDS: readonly string[] = [
+  '確認依頼',
+  '実装',
+  '作成',
+  '修正',
+  '設定',
+  '手配',
+  '依頼',
+  '更新',
+  '追加',
+  '連絡',
+] as const
+
+/** API/ファイル/画面名/数値/日付など具体的対象物のパターン → +2 */
+const CONCRETE_OBJECT_PATTERNS: readonly RegExp[] = [
+  /\/[a-zA-Z][\w/\-]+/, // API パス (/api/users など)
+  /\bAPI\b/i, // API キーワード
+  /\w+\.(ts|tsx|js|json|sql|css|html)\b/, // ファイル名
+  /[぀-鿿]+画面|[぀-鿿]+ページ|[぀-鿿]+フォーム/, // 画面名
+  /[Ee]rror|エラー|例外/, // エラー文
+  /\d{4}[/-]\d{1,2}[/-]\d{1,2}|\d{1,2}月\d{1,2}日/, // 日付
+  /[぀-鿿\w]+さん/, // 担当者名
+  /\d+件|\d+%|\d+万/, // 数値（件数・割合・金額）
+] as const
+
+// ─── helpers ─────────────────────────────────────────────────────
 
 const RANK: Record<TaskCandidateScoreConfidence, number> = {
   review: 0,
@@ -123,13 +161,37 @@ function collectReasonLabels(candidate: TaskCandidate): Set<string> {
   return new Set(summary.chips.map((chip) => chip.label))
 }
 
+type CandidateSignals = {
+  hasConfirmationSignal: boolean
+  hasDecisionSignal: boolean
+  hasDueDate: boolean
+  hasAssignee: boolean
+}
+
+function collectCandidateSignals(candidate: TaskCandidate, labels: Set<string>): CandidateSignals {
+  const hasConfirmationSignal =
+    labels.has('確認依頼あり') ||
+    labels.has('Slackで確認依頼') ||
+    /確認依頼|お願いします|対応お願い/.test(candidate.reason ?? '')
+  const hasDecisionSignal = labels.has('決定事項に紐づく')
+  const hasDueDate = hasNonEmpty(candidate.suggestedDueDate)
+  const hasAssignee = hasNonEmpty(candidate.suggestedAssignee)
+  return { hasConfirmationSignal, hasDecisionSignal, hasDueDate, hasAssignee }
+}
+
+// ─── score buckets ───────────────────────────────────────────────
+
+function scoreSourceBucket(candidate: TaskCandidate): number {
+  return SOURCE_WEIGHTS[candidate.source] ?? 0
+}
+
 function scoreReasonFromLabels(labels: Set<string>): number {
   let total = 0
   for (const groupLabels of Object.values(REASON_LABEL_GROUPS)) {
     const matchedLabel = groupLabels.find((label) => labels.has(label))
     if (!matchedLabel) continue
     const w = REASON_LABEL_WEIGHTS[matchedLabel]
-    if (w === undefined || w === 0) continue
+    if (!w) continue
     total += w
   }
   return total
@@ -141,45 +203,64 @@ function scoreReasonBucket(labels: Set<string>): { rawReason: number; reason: nu
   return { rawReason, reason }
 }
 
-function scoreSourceBucket(candidate: TaskCandidate): number {
-  return SOURCE_WEIGHTS[candidate.source] ?? 0
-}
-
-function collectCandidateSignals(candidate: TaskCandidate, labels: Set<string>): CandidateSignals {
-  const hasConfirmationSignal =
-    labels.has('確認依頼あり') || labels.has('Slackで確認依頼') || /確認依頼|お願いします|対応お願い/.test(candidate.reason ?? '')
-  const hasDecisionSignal = labels.has('決定事項に紐づく')
-  const hasDueDate = hasNonEmpty(candidate.suggestedDueDate)
-  const hasAssignee = hasNonEmpty(candidate.suggestedAssignee)
-
-  return { hasConfirmationSignal, hasDecisionSignal, hasDueDate, hasAssignee }
-}
-
-function scoreActionabilityBucket(candidate: TaskCandidate, signals: CandidateSignals): number {
-  let score = 0
-
-  if (signals.hasDueDate) score += ACTIONABILITY_WEIGHT.dueDate
-  if (signals.hasAssignee) score += ACTIONABILITY_WEIGHT.assignee
-
-  if (candidate.source === 'meeting' && !signals.hasDueDate) {
-    score += ACTIONABILITY_WEIGHT.meetingWithoutDueDate
+/**
+ * urgency (0 or 2)
+ *
+ * ラベルより先にタイトルを直接分析する。
+ * report 由来候補の reason 文（ボイラープレート）に依存しないようにするため。
+ */
+function scoreUrgencyBucket(
+  candidate: TaskCandidate,
+  labels: Set<string>
+): { urgency: number; urgencyReason: string } {
+  if (labels.has('期限が近い')) {
+    return { urgency: 2, urgencyReason: 'label:期限が近い' }
   }
-  if (candidate.source === 'report' && !signals.hasConfirmationSignal) {
-    score += ACTIONABILITY_WEIGHT.reportWithoutConfirmation
+  const titleText = candidate.title ?? ''
+  for (const kw of URGENCY_TITLE_KEYWORDS) {
+    if (titleText.includes(kw)) {
+      return { urgency: 2, urgencyReason: `title:${kw}` }
+    }
   }
-
-  // 減点が強くなりすぎないよう、最低値を -1 に制限
-  return Math.max(score, -1)
+  return { urgency: 0, urgencyReason: 'none(0)' }
 }
 
-function scoreUrgencyBucket(labels: Set<string>, signals: CandidateSignals): number {
-  if (labels.has('期限が近い')) return 1
-  if (signals.hasDueDate && signals.hasConfirmationSignal) return 1
+/**
+ * actionability (-2 to +2)
+ *
+ * - assignee + dueDate 両方あり → すぐ実行可能 (+2)
+ * - どちらか一方のみ           → 一定の行動可能性 (+1)
+ * - extractionStatus = waiting → 相手依存で実行不可 (-2)
+ * - それ以外                   → 中立 (0)
+ */
+function scoreActionabilityBucket(
+  candidate: TaskCandidate,
+  signals: CandidateSignals
+): { actionability: number; actionabilityReason: string } {
+  if (signals.hasAssignee && signals.hasDueDate) {
+    return { actionability: 2, actionabilityReason: 'assignee+dueDate(+2)' }
+  }
+  if (signals.hasAssignee) {
+    return { actionability: 1, actionabilityReason: 'assignee(+1)' }
+  }
+  if (signals.hasDueDate) {
+    return { actionability: 1, actionabilityReason: 'dueDate(+1)' }
+  }
+  if (candidate.extractionStatus === 'waiting') {
+    return { actionability: -2, actionabilityReason: 'waiting(-2)' }
+  }
+  return { actionability: 0, actionabilityReason: 'none(0)' }
+}
+
+/**
+ * extractionStatus による加減算。actionability とは独立したペナルティ。
+ * waiting: 相手依存で行動できない (-3)
+ * unknown: 判定不明 (-2)
+ */
+function getExtractionStatusAdjustment(status: TaskCandidate['extractionStatus']): number {
+  if (status === 'waiting') return -3
+  if (status === 'unknown') return -2
   return 0
-}
-
-function scoreNowTaskBucket(actionability: number, urgency: number): number {
-  return actionability + urgency
 }
 
 function buildSpecificityHaystack(candidate: TaskCandidate, labels: Set<string>): string {
@@ -187,35 +268,32 @@ function buildSpecificityHaystack(candidate: TaskCandidate, labels: Set<string>)
   return `${candidate.title ?? ''} ${candidate.reason ?? ''} ${labelText}`
 }
 
-function haystackHasConcreteKeyword(haystack: string): boolean {
-  for (const kw of SPECIFICITY_CONCRETE_KEYWORDS) {
-    if (kw === '確認') {
-      if (haystack.includes('確認が必要')) continue
-      if (/確認(?!が必要)/.test(haystack)) return true
-      continue
-    }
-    if (haystack.includes(kw)) return true
-  }
-  return false
+function hasConcreteObjectPattern(haystack: string): boolean {
+  return CONCRETE_OBJECT_PATTERNS.some((p) => p.test(haystack))
 }
 
-function collectAbstractKeywordHits(haystack: string): string[] {
-  const hits: string[] = []
-  for (const kw of SPECIFICITY_ABSTRACT_KEYWORDS) {
-    if (haystack.includes(kw)) hits.push(kw)
-  }
-  return hits
+function hasStrongConcreteKeyword(haystack: string): boolean {
+  return STRONG_CONCRETE_KEYWORDS.some((kw) => haystack.includes(kw))
+}
+
+function hasAbstractTaskKeyword(haystack: string): boolean {
+  return ABSTRACT_TASK_KEYWORDS.some((kw) => haystack.includes(kw))
 }
 
 /**
- * タイトル・理由・構造化ラベルから具体性を推定する（ルールベース）。
- * 加点は最大 +1、減点は最大 -1。確認依頼があるときは抽象のみ減点を付けない。
+ * specificity (-2 to +2)
+ *
+ * 優先順位:
+ *   1. CONCRETE_OBJECT_PATTERNS → +2
+ *   2. STRONG_CONCRETE_KEYWORDS → +1
+ *   3. ABSTRACT_TASK_KEYWORDS のみ（確認依頼シグナルなし）→ -2
+ *   4. それ以外 → 0
  */
 export function scoreSpecificityBucket(
   candidate: TaskCandidate,
   labels: Set<string>,
   _sourceKey: TaskCandidate['source']
-): { specificity: number; hasConcreteTaskSignal: boolean; hasAbstractOnlySignal: boolean } {
+): { specificity: number; hasConcreteTaskSignal: boolean; hasAbstractOnlySignal: boolean; specificityReason: string } {
   void _sourceKey
   const haystack = buildSpecificityHaystack(candidate, labels)
   const hasConfirmationSignal =
@@ -223,46 +301,52 @@ export function scoreSpecificityBucket(
     labels.has('Slackで確認依頼') ||
     /確認依頼|お願いします|対応お願い/.test(candidate.reason ?? '')
 
-  const hasConcreteTaskSignal = haystackHasConcreteKeyword(haystack)
-  const abstractHits = collectAbstractKeywordHits(haystack)
-
-  const onlyReviewAbstract =
-    abstractHits.length > 0 && abstractHits.every((h) => h === 'レビュー')
-
-  const hasAbstractOnlySignal =
-    !hasConcreteTaskSignal &&
-    abstractHits.length > 0 &&
-    !hasConfirmationSignal &&
-    !onlyReviewAbstract
+  const concreteObject = hasConcreteObjectPattern(haystack)
+  const strongConcrete = hasStrongConcreteKeyword(haystack)
+  const abstractOnly = hasAbstractTaskKeyword(haystack) && !hasConfirmationSignal
 
   let specificity = 0
-  if (hasConcreteTaskSignal) specificity += 1
-  else if (hasAbstractOnlySignal) specificity -= 1
+  let specificityReason = 'neutral(0)'
 
-  specificity = Math.max(-1, Math.min(1, specificity))
+  if (concreteObject) {
+    specificity = 2
+    specificityReason = 'concrete-object(+2)'
+  } else if (strongConcrete) {
+    specificity = 1
+    specificityReason = 'strong-concrete(+1)'
+  } else if (abstractOnly) {
+    specificity = -2
+    specificityReason = 'abstract-only(-2)'
+  }
 
-  return { specificity, hasConcreteTaskSignal, hasAbstractOnlySignal }
+  specificity = Math.max(-2, Math.min(2, specificity))
+
+  return {
+    specificity,
+    hasConcreteTaskSignal: concreteObject || strongConcrete,
+    hasAbstractOnlySignal: abstractOnly && !concreteObject,
+    specificityReason,
+  }
 }
 
+// ─── confidence / recommendation ─────────────────────────────────
+
+/**
+ * score 0-10 ベースの信頼度。
+ * high: ≥ 7 / medium: ≥ 4 / review: < 4
+ */
 function confidenceFromScore(score: number): TaskCandidateScoreConfidence {
-  // 閾値は現状維持。ログ分析を見て必要時のみ調整する。
-  if (score >= 6) return 'high'
-  if (score >= 3) return 'medium'
+  if (score >= 7) return 'high'
+  if (score >= 4) return 'medium'
   return 'review'
 }
 
-/**
- * スコア由来の段階と、チップ重み由来の段階が 2 段以上離れる場合にのみ調整する。
- * （「high なのに review だけ」などの極端な表示ズレを抑える）
- */
 function mergeConfidenceWithLegacy(
   fromScore: TaskCandidateScoreConfidence,
   legacy: TaskCandidateScoreConfidence
 ): TaskCandidateScoreConfidence {
   const d = RANK[fromScore] - RANK[legacy]
-  if (d >= 2 || d <= -2) {
-    return 'medium'
-  }
+  if (d >= 2 || d <= -2) return 'medium'
   return fromScore
 }
 
@@ -272,24 +356,12 @@ function buildRecommendationReason(candidate: TaskCandidate, labels: Set<string>
   const hasConfirm = signals.hasConfirmationSignal
   const hasDecision = labels.has('決定事項に紐づく')
 
-  if (hasDeadline && hasConfirm) {
-    return '期限が近く、確認依頼もあるため候補化しています'
-  }
-  if (candidate.source === 'slack' && hasConfirm) {
-    return '確認依頼があるため候補化しています'
-  }
-  if (hasDecision) {
-    return '決定事項に紐づくため候補化しています'
-  }
-  if (candidate.source === 'slack') {
-    return 'Slack由来の情報から候補化しています'
-  }
-  if (candidate.source === 'meeting') {
-    return '議事録の内容に基づき候補化しています'
-  }
-  if (candidate.source === 'report') {
-    return '作業報告の内容に基づき候補化しています'
-  }
+  if (hasDeadline && hasConfirm) return '期限が近く、確認依頼もあるため候補化しています'
+  if (candidate.source === 'slack' && hasConfirm) return '確認依頼があるため候補化しています'
+  if (hasDecision) return '決定事項に紐づくため候補化しています'
+  if (candidate.source === 'slack') return 'Slack由来の情報から候補化しています'
+  if (candidate.source === 'meeting') return '議事録の内容に基づき候補化しています'
+  if (candidate.source === 'report') return '作業報告の内容に基づき候補化しています'
   return '複数のシグナルから候補化しています'
 }
 
@@ -307,6 +379,15 @@ function buildPriorityEvidenceText(score: TaskCandidateScoreResult): string {
   return parts.slice(0, 2).join('、')
 }
 
+// ─── main ────────────────────────────────────────────────────────
+
+/**
+ * スコア計算。
+ *
+ * formula: source + urgency + specificity + actionability + extractionStatusAdjustment + reason
+ * max: 2 + 2 + 2 + 2 + 0 + 2 = 10
+ * min: 0 (clamp)
+ */
 export function scoreTaskCandidate(candidate: TaskCandidate): TaskCandidateScoreResult {
   const labels = collectReasonLabels(candidate)
   const legacy = summarizeCandidateReasons(candidate, { isTopCandidate: false, maxChips: 4 }).confidenceLevel
@@ -316,15 +397,18 @@ export function scoreTaskCandidate(candidate: TaskCandidate): TaskCandidateScore
   const { rawReason, reason } = scoreReasonBucket(labels)
   const assignee = signals.hasAssignee ? 1 : 0
   const dueDate = signals.hasDueDate ? 1 : 0
-  const actionability = scoreActionabilityBucket(candidate, signals)
-  const urgency = scoreUrgencyBucket(labels, signals)
-  const nowTask = scoreNowTaskBucket(actionability, urgency)
-  const { specificity, hasConcreteTaskSignal, hasAbstractOnlySignal } = scoreSpecificityBucket(
+  const { urgency, urgencyReason } = scoreUrgencyBucket(candidate, labels)
+  const { actionability, actionabilityReason } = scoreActionabilityBucket(candidate, signals)
+  const { specificity, hasConcreteTaskSignal, hasAbstractOnlySignal, specificityReason } = scoreSpecificityBucket(
     candidate,
     labels,
     candidate.source
   )
-  const score = source + reason + nowTask + specificity
+  const extractionStatusAdjustment = getExtractionStatusAdjustment(candidate.extractionStatus)
+
+  const rawScore = source + urgency + specificity + actionability + extractionStatusAdjustment + reason
+  // 0〜10 に正規化（NULL・負値・10超を排除）
+  const score = Math.max(0, Math.min(10, rawScore))
 
   const rawTier = confidenceFromScore(score)
   const confidenceLevel = mergeConfidenceWithLegacy(rawTier, legacy)
@@ -342,12 +426,16 @@ export function scoreTaskCandidate(candidate: TaskCandidate): TaskCandidateScore
       assignee,
       dueDate,
       actionability,
+      actionabilityReason,
       urgency,
+      urgencyReason,
       hasConfirmationSignal: signals.hasConfirmationSignal,
       hasDecisionSignal: signals.hasDecisionSignal,
       specificity,
       hasConcreteTaskSignal,
       hasAbstractOnlySignal,
+      specificityReason,
+      extractionStatusAdjustment,
     },
     legacyConfidenceLevel: legacy,
   }
@@ -397,7 +485,7 @@ export function buildComparativeRecommendationReason(candidates: TaskCandidate[]
 
 /**
  * score 降順。同点は元配列の順序を維持。
- * `held: true`（あとで）の候補は末尾にまとめる（スコアより優先度を下げる）。
+ * `held: true`（あとで）の候補は末尾にまとめる。
  */
 export function sortTaskCandidatesByScore(candidates: TaskCandidate[]): TaskCandidate[] {
   const decorated = candidates.map((c, originalIndex) => ({
@@ -407,12 +495,8 @@ export function sortTaskCandidatesByScore(candidates: TaskCandidate[]): TaskCand
     score: scoreTaskCandidate(c).score,
   }))
   decorated.sort((a, b) => {
-    if (a.held !== b.held) {
-      return a.held ? 1 : -1
-    }
-    if (!a.held && !b.held && b.score !== a.score) {
-      return b.score - a.score
-    }
+    if (a.held !== b.held) return a.held ? 1 : -1
+    if (!a.held && !b.held && b.score !== a.score) return b.score - a.score
     return a.originalIndex - b.originalIndex
   })
   return decorated.map((row) => row.c)

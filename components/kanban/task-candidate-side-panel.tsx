@@ -29,6 +29,7 @@ interface TaskCandidateSidePanelProps {
   projectId: string
   candidates: TaskCandidate[]
   candidatesLoading?: boolean
+  isMockCandidates?: boolean
   projectMembers: ProjectMemberApiRecord[]
   addedCandidateIds: ReadonlySet<string>
   dismissedCandidateIds: ReadonlySet<string>
@@ -126,6 +127,7 @@ export function TaskCandidateSidePanel({
   projectId,
   candidates,
   candidatesLoading = false,
+  isMockCandidates = false,
   projectMembers,
   addedCandidateIds,
   dismissedCandidateIds,
@@ -365,6 +367,11 @@ export function TaskCandidateSidePanel({
           <span className="sr-only">候補パネルを閉じる</span>
         </Button>
       </div>
+      {isMockCandidates && (
+        <div className="px-4 py-1.5 border-b border-amber-200 bg-amber-50 text-[10px] text-amber-700 font-medium">
+          開発用サンプル候補を表示中
+        </div>
+      )}
       <div className="px-4 py-2.5 border-b border-primary/15 bg-primary/10 space-y-1">
         <div className="flex items-center gap-2">
           <ArrowRight className="h-3.5 w-3.5 text-primary shrink-0" />
@@ -389,7 +396,12 @@ export function TaskCandidateSidePanel({
             ) : (
               <>
                 <Sparkles className="h-8 w-8 text-muted-foreground/40" />
-                <p className="text-sm text-muted-foreground">候補はありません</p>
+                <div className="space-y-1">
+                  <p className="text-sm text-muted-foreground">AI候補はありません</p>
+                  <p className="text-[11px] text-muted-foreground/60 leading-relaxed max-w-[200px]">
+                    作業報告に「確認が必要」「対応予定」「依頼中」などの内容があると候補として表示されます。
+                  </p>
+                </div>
               </>
             )}
           </div>

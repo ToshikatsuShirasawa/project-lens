@@ -122,6 +122,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   const [createError, setCreateError] = useState<string | null>(null)
   const [candidates, setCandidates] = useState<TaskCandidate[]>([])
   const [candidatesLoading, setCandidatesLoading] = useState(true)
+  const [isMockCandidates, setIsMockCandidates] = useState(false)
   const [addedCandidateIds, setAddedCandidateIds] = useState<Set<string>>(new Set())
   const [dismissedCandidateIds, setDismissedCandidateIds] = useState<Set<string>>(new Set())
   const [projectMembers, setProjectMembers] = useState<ProjectMemberApiRecord[]>([])
@@ -265,14 +266,13 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
               nextActions: r.nextActions?.slice(0, 40),
             })),
           )
+          setIsMockCandidates(true)
           setCandidates(mockKanbanCandidates.map((c) => ({ ...c, extractionStatus: 'unknown' as const })))
         }
       } catch (error) {
         if (cancelled) return
-        if (canUseMockCandidates) {
-          console.warn('[kanban] reports の取得に失敗したため demo 候補へフォールバックします', error)
-          setCandidates(mockKanbanCandidates.map((c) => ({ ...c, extractionStatus: 'unknown' as const })))
-        }
+        // API取得失敗: mock へのフォールバックは行わない（実エラーを隠さない）
+        console.warn('[kanban] reports の取得に失敗しました', error)
       } finally {
         if (!cancelled) setCandidatesLoading(false)
       }
@@ -778,6 +778,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
         projectId={projectId}
         candidates={orderedAiCandidates}
         candidatesLoading={candidatesLoading}
+        isMockCandidates={isMockCandidates}
         projectMembers={projectMembers}
         addedCandidateIds={addedCandidateIds}
         dismissedCandidateIds={dismissedCandidateIds}

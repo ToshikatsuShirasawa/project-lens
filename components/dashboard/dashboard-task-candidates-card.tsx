@@ -57,6 +57,7 @@ interface DashboardTaskCandidatesCardProps {
 export function DashboardTaskCandidatesCard({ projectId }: DashboardTaskCandidatesCardProps) {
   const [rawCandidates, setRawCandidates] = useState<TaskCandidate[]>([])
   const [loading, setLoading] = useState(true)
+  const [isMock, setIsMock] = useState(false)
   const [backlogColumnKey, setBacklogColumnKey] = useState('backlog')
 
   // レポートからAI候補を抽出（カンバンと同じロジック）
@@ -94,16 +95,13 @@ export function DashboardTaskCandidatesCard({ projectId }: DashboardTaskCandidat
         if (extracted.length > 0) {
           setRawCandidates(sortTaskCandidatesForDisplay(mergeTaskCandidates(extracted)))
         } else if (canUseMockCandidates) {
+          setIsMock(true)
           setRawCandidates(
             mockKanbanCandidates.map((c) => ({ ...c, extractionStatus: 'unknown' as const }))
           )
         }
       } catch {
-        if (!cancelled && canUseMockCandidates) {
-          setRawCandidates(
-            mockKanbanCandidates.map((c) => ({ ...c, extractionStatus: 'unknown' as const }))
-          )
-        }
+        // API取得失敗: mock へのフォールバックは行わない（実エラーを隠さない）
       } finally {
         if (!cancelled) setLoading(false)
       }
@@ -209,12 +207,17 @@ export function DashboardTaskCandidatesCard({ projectId }: DashboardTaskCandidat
   }
 
   return (
-    <TaskCandidatesCard
-      candidates={mappedCandidates}
-      kanbanHref={`/projects/${encodeURIComponent(projectId)}/kanban`}
-      onAddToKanban={handleAddToKanban}
-      onHold={handleHold}
-      onDismiss={handleDismiss}
-    />
+    <div className="space-y-1">
+      {isMock && (
+        <p className="text-[10px] text-amber-600 font-medium px-1">開発用サンプル候補を表示中</p>
+      )}
+      <TaskCandidatesCard
+        candidates={mappedCandidates}
+        kanbanHref={`/projects/${encodeURIComponent(projectId)}/kanban`}
+        onAddToKanban={handleAddToKanban}
+        onHold={handleHold}
+        onDismiss={handleDismiss}
+      />
+    </div>
   )
 }

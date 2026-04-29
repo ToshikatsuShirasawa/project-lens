@@ -13,7 +13,8 @@
       "Bash(npx vitest *)",
       "Bash(xargs grep *)",
       "Bash(npm run *)",
-      "Bash(npx eslint *)"
+      "Bash(npx eslint *)",
+      "Bash(npx next *)"
     ],
     "additionalDirectories": [
       "c:\\work\\ai\\project-lens\\app\\projects\\[projectId]"

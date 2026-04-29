@@ -145,6 +145,8 @@ function generatePreview(report: ReportFormData): WorkReportPreview {
   return { status: statusItems, issues: issueItems, risks: riskItems, todos: todoItems, missingInfo: missingItems, taskCandidates }
 }
 
+type CandidateAddState = 'idle' | 'adding' | 'added' | 'error'
+
 export function WorkReportForm({ projectId }: WorkReportFormProps) {
   const { toast } = useToast()
   const [report, setReport] = useState<ReportFormData>({
@@ -157,6 +159,7 @@ export function WorkReportForm({ projectId }: WorkReportFormProps) {
   const [analysis, setAnalysis] = useState<WorkReportPreview | null>(null)
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [candidateStates, setCandidateStates] = useState<Record<string, CandidateAddState>>({})
 
   const hasContent = Object.values(report).some((v) => v.trim().length > 0)
 
@@ -174,6 +177,39 @@ export function WorkReportForm({ projectId }: WorkReportFormProps) {
     }, 300)
     return () => clearTimeout(timer)
   }, [report])
+
+  const handleAddCandidate = async (title: string) => {
+    const state = candidateStates[title]
+    if (state === 'adding' || state === 'added') return
+    setCandidateStates((prev) => ({ ...prev, [title]: 'adding' }))
+    try {
+      const res = await fetch('/api/kanban-tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          projectId,
+          title,
+          description: `作業報告からAI候補として抽出されました。\n元の候補：${title}`,
+          columnKey: 'backlog',
+        }),
+      })
+      if (!res.ok) {
+        const body: unknown = await res.json().catch(() => null)
+        const message =
+          body && typeof body === 'object' && 'message' in body
+            ? String((body as { message: unknown }).message)
+            : 'タスクの追加に失敗しました'
+        toast({ title: 'エラー', description: message, variant: 'destructive' })
+        setCandidateStates((prev) => ({ ...prev, [title]: 'error' }))
+        return
+      }
+      setCandidateStates((prev) => ({ ...prev, [title]: 'added' }))
+      window.dispatchEvent(new CustomEvent('projectlens:kanban-updated', { detail: { projectId } }))
+    } catch {
+      toast({ title: 'エラー', description: 'ネットワークエラーが発生しました', variant: 'destructive' })
+      setCandidateStates((prev) => ({ ...prev, [title]: 'error' }))
+    }
+  }
 
   const handleSubmit = async () => {
     if (!hasContent || isSubmitting) return
@@ -362,21 +398,36 @@ export function WorkReportForm({ projectId }: WorkReportFormProps) {
                       <ListPlus className="h-3 w-3" />
                       タスク候補
                     </Badge>
-                    <span className="text-xs text-muted-foreground">カンバンに追加できます</span>
+                    <span className="text-xs text-muted-foreground">タスクとして追加できます</span>
                   </div>
                   <ul className="space-y-2">
-                    {analysis.taskCandidates.map((item, i) => (
-                      <li
-                        key={i}
-                        className="flex items-center justify-between text-sm text-foreground rounded-md bg-primary/5 px-3 py-2"
-                      >
-                        <span>{item}</span>
-                        <Button size="sm" variant="ghost" className="h-6 gap-1 text-xs text-primary hover:text-primary">
-                          <Plus className="h-3 w-3" />
-                          追加
-                        </Button>
-                      </li>
-                    ))}
+                    {analysis.taskCandidates.map((item, i) => {
+                      const cs = candidateStates[item] ?? 'idle'
+                      return (
+                        <li
+                          key={i}
+                          className="flex items-center justify-between text-sm text-foreground rounded-md bg-primary/5 px-3 py-2"
+                        >
+                          <span>{item}</span>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 gap-1 text-xs text-primary hover:text-primary shrink-0"
+                            onClick={() => handleAddCandidate(item)}
+                            disabled={cs === 'adding' || cs === 'added'}
+                          >
+                            {cs === 'adding' ? (
+                              <Loader2 className="h-3 w-3 animate-spin" />
+                            ) : cs === 'added' ? (
+                              <CheckCircle className="h-3 w-3" />
+                            ) : (
+                              <Plus className="h-3 w-3" />
+                            )}
+                            {cs === 'adding' ? '追加中...' : cs === 'added' ? '追加済み' : cs === 'error' ? '再試行' : '追加'}
+                          </Button>
+                        </li>
+                      )
+                    })}
                   </ul>
                 </div>
               )}

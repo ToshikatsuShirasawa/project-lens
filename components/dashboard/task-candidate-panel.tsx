@@ -34,7 +34,7 @@ export function TaskCandidatePanel({ candidates }: TaskCandidatePanelProps) {
           <Sparkles className="h-4 w-4 text-primary" />
           AIが見つけたタスク候補
         </CardTitle>
-        <p className="text-xs text-muted-foreground">承認するとカンバンに追加されます</p>
+        <p className="text-xs text-muted-foreground">カンバンに追加されます</p>
       </CardHeader>
       <CardContent className="space-y-3">
         {candidates.map((c) => {

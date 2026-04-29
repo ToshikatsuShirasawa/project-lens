@@ -4,7 +4,6 @@ import { useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import {
   Sparkles,
   MessageSquare,
@@ -16,10 +15,12 @@ import {
   Calendar,
   User,
   ChevronRight,
-  ArrowRight,
   Lightbulb,
 } from "lucide-react"
+
 import { cn } from "@/lib/utils"
+
+const INITIAL_DISPLAY_COUNT = 3
 
 type AISource = "slack" | "report" | "meeting"
 
@@ -34,6 +35,7 @@ interface TaskCandidate {
 
 interface TaskCandidatesCardProps {
   candidates: TaskCandidate[]
+  kanbanHref?: string
   onAddToKanban?: (id: string) => void
   onHold?: (id: string) => void
   onDismiss?: (id: string) => void
@@ -47,6 +49,7 @@ const sourceConfig: Record<AISource, { label: string; icon: typeof MessageSquare
 
 export function TaskCandidatesCard({
   candidates,
+  kanbanHref,
   onAddToKanban,
   onHold,
   onDismiss,
@@ -92,29 +95,55 @@ export function TaskCandidatesCard({
         </div>
         <div className="flex-1 min-w-0">
           <CardTitle className="text-base font-semibold">AIが見つけたタスク候補</CardTitle>
-          <div className="flex items-center gap-1.5 mt-1.5 text-xs text-primary">
-            <ArrowRight className="h-3 w-3 shrink-0" />
-            <span className="font-medium">承認するとカンバンに追加されます</span>
-          </div>
+          {localCandidates.length > INITIAL_DISPLAY_COUNT && (
+            <p className="text-xs font-medium text-primary mt-1">
+              まずはこの{INITIAL_DISPLAY_COUNT}件を確認してください
+            </p>
+          )}
+          <p className="text-[11px] text-muted-foreground mt-0.5 leading-relaxed">
+            作業報告などから見つけた「まだ確定していないタスク候補」です
+          </p>
         </div>
-        <Badge variant="secondary" className="text-xs h-6 px-2.5 shrink-0 bg-primary/10 text-primary">
+        <Badge variant="secondary" className="text-xs h-6 px-2.5 shrink-0 bg-primary/10 text-primary self-start">
           {localCandidates.length}件
         </Badge>
       </CardHeader>
       <CardContent className="space-y-4">
-        {localCandidates.map((candidate) => {
+        {localCandidates.flatMap((candidate, index) => {
           const sourceInfo = sourceConfig[candidate.source]
           const SourceIcon = sourceInfo.icon
+          const isTopCandidate = index === 0
+          const isTopThree = index < 3
 
-          return (
+          const card = (
             <div
               key={candidate.id}
-              className="relative rounded-lg border border-border/70 bg-card p-5 transition-all hover:shadow-md shadow-sm"
+              className={cn(
+                "relative rounded-lg border pl-6 pr-5 pt-4 pb-5 transition-all hover:shadow-md shadow-sm overflow-hidden",
+                isTopCandidate
+                  ? "border-primary/30 bg-primary/[0.04]"
+                  : isTopThree
+                  ? "border-border/70 bg-card"
+                  : "border-border/60 bg-card"
+              )}
             >
-              {/* Source Badge */}
-              <div className="flex items-center gap-2 mb-3">
-                <SourceIcon className={cn("h-3.5 w-3.5 shrink-0", sourceInfo.color)} />
-                <span className="text-xs text-muted-foreground">{sourceInfo.label}</span>
+              <div className={cn(
+                "absolute left-0 top-0 bottom-0 w-1.5",
+                isTopCandidate ? "bg-primary" : isTopThree ? "bg-primary/55" : "bg-primary/25"
+              )} />
+              {isTopCandidate ? (
+                <Badge className="text-[10px] h-4 px-1.5 border-0 bg-primary text-primary-foreground mb-2 inline-flex">
+                  まず確認
+                </Badge>
+              ) : isTopThree ? (
+                <Badge className="text-[10px] h-4 px-1.5 border-0 bg-primary/15 text-primary mb-2 inline-flex">
+                  上位候補
+                </Badge>
+              ) : null}
+              {/* Source */}
+              <div className="flex items-center gap-1.5 mb-3">
+                <SourceIcon className="h-3 w-3 shrink-0 text-muted-foreground/40" />
+                <span className="text-[10px] text-muted-foreground/50">{sourceInfo.label}</span>
               </div>
 
               {/* Title - What to do */}
@@ -125,14 +154,19 @@ export function TaskCandidatesCard({
                 </h4>
               </div>
 
-              {/* Reason - Why extracted */}
-              <div className="rounded-md bg-muted/50 border border-border/50 p-3 mb-4">
+              {/* Reason */}
+              <div className={cn(
+                "rounded-md border p-3 mb-4",
+                isTopCandidate ? "bg-primary/[0.04] border-primary/20" : "bg-muted/50 border-border/50"
+              )}>
                 <div className="flex items-start gap-2">
                   <Lightbulb className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
                   <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">抽出理由</p>
-                    <p className="text-xs text-foreground leading-relaxed">
-                      {candidate.reason}
+                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
+                      {isTopCandidate ? '優先理由' : '抽出理由'}
+                    </p>
+                    <p className="text-xs text-foreground leading-relaxed line-clamp-2">
+                      {candidate.reason || (isTopCandidate ? '未対応タスクとして優先度が高いと判断されました' : '')}
                     </p>
                   </div>
                 </div>
@@ -157,14 +191,14 @@ export function TaskCandidatesCard({
               )}
 
               {/* Actions */}
-              <div className="flex flex-wrap items-center gap-2 pt-2 border-t border-border/50">
+              <div className="flex flex-wrap items-center gap-3 pt-2 border-t border-border/50">
                 <Button
                   size="sm"
                   className="h-8 gap-1.5 text-xs shadow-sm"
                   onClick={() => handleAddToKanban(candidate.id)}
                 >
                   <Plus className="h-3 w-3" />
-                  カンバンに追加
+                  タスクに追加
                 </Button>
                 <Button
                   size="sm"
@@ -173,7 +207,7 @@ export function TaskCandidatesCard({
                   onClick={() => handleHold(candidate.id)}
                 >
                   <Clock className="h-3 w-3" />
-                  保留
+                  あとで
                 </Button>
                 <Button
                   size="sm"
@@ -182,16 +216,33 @@ export function TaskCandidatesCard({
                   onClick={() => handleDismiss(candidate.id)}
                 >
                   <X className="h-3 w-3" />
-                  不要
+                  却下
                 </Button>
               </div>
             </div>
           )
+          if (index === INITIAL_DISPLAY_COUNT && localCandidates.length > INITIAL_DISPLAY_COUNT) {
+            return [
+              <div key="other-section-header" className="px-1 pt-3 pb-2">
+                <p className="text-[11px] font-semibold text-muted-foreground/70 uppercase tracking-wide">
+                  優先度が低い候補
+                </p>
+              </div>,
+              card,
+            ]
+          }
+          return [card]
         })}
-
-        {localCandidates.length > 0 && (
+        {kanbanHref ? (
+          <a href={kanbanHref}>
+            <Button variant="ghost" className="w-full gap-1.5 text-xs h-8 text-muted-foreground">
+              AI候補を確認する
+              <ChevronRight className="h-3 w-3" />
+            </Button>
+          </a>
+        ) : (
           <Button variant="ghost" className="w-full gap-1.5 text-xs h-8 text-muted-foreground">
-            すべての候補を確認
+            AI候補を確認する
             <ChevronRight className="h-3 w-3" />
           </Button>
         )}

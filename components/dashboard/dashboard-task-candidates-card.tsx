@@ -211,6 +211,7 @@ export function DashboardTaskCandidatesCard({ projectId }: DashboardTaskCandidat
   return (
     <TaskCandidatesCard
       candidates={mappedCandidates}
+      kanbanHref={`/projects/${encodeURIComponent(projectId)}/kanban`}
       onAddToKanban={handleAddToKanban}
       onHold={handleHold}
       onDismiss={handleDismiss}

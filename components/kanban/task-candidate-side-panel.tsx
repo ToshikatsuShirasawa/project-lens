@@ -41,6 +41,7 @@ interface TaskCandidateSidePanelProps {
 }
 
 const KANBAN_AI_PANEL_OPEN_STORAGE_KEY = 'projectlens:kanban-ai-panel-open'
+const INITIAL_DISPLAY_COUNT = 3
 const ASSIGNEE_NONE_VALUE = '__none__'
 
 const sourceConfig = {
@@ -364,10 +365,13 @@ export function TaskCandidateSidePanel({
           <span className="sr-only">候補パネルを閉じる</span>
         </Button>
       </div>
-      <div className="flex items-center gap-2 px-4 py-2.5 border-b border-primary/15 bg-primary/10">
-        <ArrowRight className="h-3.5 w-3.5 text-primary shrink-0" />
-        <p className="text-xs font-medium text-primary">
-          承認すると{backlogColumnName}に追加されます
+      <div className="px-4 py-2.5 border-b border-primary/15 bg-primary/10 space-y-1">
+        <div className="flex items-center gap-2">
+          <ArrowRight className="h-3.5 w-3.5 text-primary shrink-0" />
+          <p className="text-xs font-medium text-primary">{backlogColumnName}に追加されます</p>
+        </div>
+        <p className="text-[11px] text-muted-foreground leading-relaxed">
+          作業報告などからAIが見つけた「まだ確定していないタスク候補」です。必要なものだけタスクに追加してください。
         </p>
       </div>
 
@@ -390,9 +394,20 @@ export function TaskCandidateSidePanel({
             )}
           </div>
         ) : (
-          unresolvedCandidates.map((c, index) => {
+          <>
+          {unresolvedCandidates.length > 0 && (
+            <div className="px-1 pb-2">
+              <p className="text-[11px] font-semibold text-muted-foreground/70 uppercase tracking-wide">
+                {unresolvedCandidates.length > INITIAL_DISPLAY_COUNT
+                  ? `まずはこの${INITIAL_DISPLAY_COUNT}件を確認してください`
+                  : 'まずここから確認してください'}
+              </p>
+            </div>
+          )}
+          {unresolvedCandidates.flatMap((c, index) => {
             const src = sourceConfig[c.source]
             const isTopCandidate = index === 0
+            const isTopThree = index < 3
             const isSubmitting = submittingId === c.id
             const reasonSummary = summarizeCandidateReasons(c, { isTopCandidate: false, maxChips: 2 })
             const scoreResult = scoreTaskCandidate(c)
@@ -404,38 +419,65 @@ export function TaskCandidateSidePanel({
             const overflowCount = Math.max(0, (c.extractionReasons?.length ?? 0) - 3)
             const hasDetail = true
             const isDetailOpen = expandedDetailIds.has(c.id)
-            return (
+            const card = (
               <Card
                 key={c.id}
                 className={cn(
-                  'relative overflow-hidden bg-card border-border/80 shadow-sm transition-colors hover:shadow-md',
-                  isTopCandidate && 'border-border'
+                  'relative overflow-hidden border shadow-sm transition-colors hover:shadow-md',
+                  isTopCandidate
+                    ? 'bg-primary/[0.05] border-primary/30'
+                    : isTopThree
+                    ? 'bg-card border-border/80'
+                    : 'bg-card border-border/60'
                 )}
               >
-                <div className="absolute left-0 top-0 bottom-0 w-1.5 bg-primary/70" />
+                <div className={cn(
+                  'absolute left-0 top-0 bottom-0 w-1.5',
+                  isTopCandidate ? 'bg-primary' : isTopThree ? 'bg-primary/60' : 'bg-primary/30'
+                )} />
                 <CardContent className="p-4 pl-5 space-y-3">
                   {/* ── Row 1: タイトル + バッジ ── */}
                   <div className="flex items-start justify-between gap-2">
                     <div className="min-w-0 flex-1">
-                      {isTopCandidate && (
+                      {isTopCandidate ? (
                         <Badge className="text-[10px] h-4 px-1.5 border-0 bg-primary text-primary-foreground mb-1 inline-flex">
-                          おすすめ
+                          まず確認
                         </Badge>
-                      )}
+                      ) : isTopThree ? (
+                        <Badge className="text-[10px] h-4 px-1.5 border-0 bg-primary/15 text-primary mb-1 inline-flex">
+                          上位候補
+                        </Badge>
+                      ) : null}
                       <p className="text-sm font-medium text-foreground leading-snug">{c.displayTitle ?? c.title}</p>
                     </div>
                     <div className="flex shrink-0 items-center gap-1 pt-0.5">
                       <Badge className={cn('text-[10px] h-4 px-1.5 border-0', priority.class)}>
                         {priority.label}
                       </Badge>
-                      <Badge className={cn('text-[10px] h-4 px-1.5 border-0', src.class)}>{src.label}</Badge>
+                      <span className="text-[10px] text-muted-foreground/50">{src.label}</span>
                     </div>
                   </div>
 
                   {/* ── Row 2: 優先理由 ── */}
-                  <p className="text-[11px] text-muted-foreground leading-relaxed truncate">
-                    {(isTopCandidate && topRecommendation.recommendationReason) || priorityReason}
-                  </p>
+                  {isTopCandidate ? (
+                    <div className="flex items-start gap-1">
+                      <span className="text-[10px] font-semibold text-primary/70 shrink-0 mt-0.5">優先理由：</span>
+                      <p className="text-[11px] text-primary/70 leading-relaxed truncate">
+                        {topRecommendation.recommendationReason || priorityReason || '未対応タスクとして優先度が高いと判断されました'}
+                      </p>
+                    </div>
+                  ) : isTopThree ? (
+                    <div className="flex items-start gap-1">
+                      <span className="text-[10px] text-muted-foreground/60 shrink-0 mt-0.5">理由：</span>
+                      <p className="text-[11px] text-muted-foreground leading-relaxed truncate">
+                        {priorityReason}
+                      </p>
+                    </div>
+                  ) : (
+                    <p className="text-[11px] text-muted-foreground leading-relaxed truncate">
+                      {priorityReason}
+                    </p>
+                  )}
 
                   {/* ── Row 3: 重要タグ（最大2） ── */}
                   {reasonSummary.chips.length > 0 && (
@@ -457,7 +499,7 @@ export function TaskCandidateSidePanel({
                   )}
 
                   {/* ── 詳細トグル ── */}
-                  {hasDetail && (
+                  {hasDetail && !isTopThree && (
                     <button
                       type="button"
                       className="flex items-center gap-0.5 text-[10px] text-muted-foreground/40 hover:text-muted-foreground/60 transition-colors"
@@ -612,7 +654,7 @@ export function TaskCandidateSidePanel({
                     </div>
                   ) : (
                     <>
-                      <div className="flex items-center gap-2 pt-1 border-t border-border/40">
+                      <div className="flex items-center gap-3 pt-1 border-t border-border/40">
                         <Button
                           size="sm"
                           className={cn(
@@ -635,7 +677,7 @@ export function TaskCandidateSidePanel({
                           ) : (
                             <>
                               <Plus className="h-3 w-3" />
-                              カンバンに追加
+                              タスクに追加
                             </>
                           )}
                         </Button>
@@ -664,7 +706,19 @@ export function TaskCandidateSidePanel({
                 </CardContent>
               </Card>
             )
-          })
+            if (index === INITIAL_DISPLAY_COUNT && unresolvedCandidates.length > INITIAL_DISPLAY_COUNT) {
+              return [
+                <div key="other-section-header" className="px-1 pt-3 pb-2">
+                  <p className="text-[11px] font-semibold text-muted-foreground/70 uppercase tracking-wide">
+                    優先度が低い候補
+                  </p>
+                </div>,
+                card,
+              ]
+            }
+            return [card]
+          })}
+          </>
         )}
 
         {processedCandidates.length > 0 && (

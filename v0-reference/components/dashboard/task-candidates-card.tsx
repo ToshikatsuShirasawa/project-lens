@@ -94,7 +94,7 @@ export function TaskCandidatesCard({
           <CardTitle className="text-base font-semibold">AIが見つけたタスク候補</CardTitle>
           <div className="flex items-center gap-1.5 mt-1.5 text-xs text-primary">
             <ArrowRight className="h-3 w-3 shrink-0" />
-            <span className="font-medium">承認するとカンバンに追加されます</span>
+            <span className="font-medium">カンバンに追加されます</span>
           </div>
         </div>
         <Badge variant="secondary" className="text-xs h-6 px-2.5 shrink-0 bg-primary/10 text-primary">

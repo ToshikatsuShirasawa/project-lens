@@ -138,11 +138,11 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
     if (s.overdueTasks > 0) contextParts.push(`期限超過タスクが${s.overdueTasks}件あります。`)
     if (s.upcomingTasks > 0) contextParts.push(`今後7日以内に期限を迎えるタスクが${s.upcomingTasks}件あります。`)
     if (pendingAnalytics !== null && pendingAnalytics > 0)
-      contextParts.push(`未確認のAI候補があります（${pendingAnalytics}件）。`)
+      contextParts.push(`AIが整理した候補が${pendingAnalytics}件あります。まず上位候補を確認してください。`)
     const context =
       contextParts.length > 0
         ? contextParts.join(' ') + ' カンバンで確認・対応してください。'
-        : '期限面では落ち着いています。未確認のAI候補はカンバンで確認できます。'
+        : 'AIが整理した候補をカンバンで確認・タスク化できます。'
 
     const impactTimeline =
       urgency === 'critical'
@@ -176,7 +176,7 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
         ? `期限を超過したタスクが${s.overdueTasks}件あります。早期に対応することで遅延の拡大を防げます。`
         : urgency === 'warning'
         ? `${s.upcomingTasks}件のタスクが7日以内に期限を迎えます。今週中に確認することを推奨します。`
-        : '期限面では落ち着いています。未確認のAI候補はカンバンで確認できます。'
+        : 'AIが整理した候補をカンバンで確認・タスク化できます。'
 
     return {
       situation,
@@ -300,12 +300,12 @@ export function ProjectDashboard({ projectId }: ProjectDashboardProps) {
     if (pendingAnalytics !== null && pendingAnalytics > 0) {
       result.push({
         id: 'pending-ai',
-        title: `${pendingAnalytics}件のAI候補が未確認`,
-        description: `AIが提案したタスク候補のうち${pendingAnalytics}件がまだ確認されていません。`,
+        title: `AIが整理した候補があります（${pendingAnalytics}件）`,
+        description: `まず確認すべきAI候補が${pendingAnalytics}件あります。カンバンのAI候補パネルから上位候補を確認・タスク化してください。`,
         severity: 'low',
         source: 'ai',
         urgency: 'normal',
-        aiRecommendation: 'カンバンのAI候補パネルで確認・承認してください',
+        aiRecommendation: 'カンバンのAI候補パネルで上位候補を確認し、必要なものをタスクに追加してください',
       })
     }
 

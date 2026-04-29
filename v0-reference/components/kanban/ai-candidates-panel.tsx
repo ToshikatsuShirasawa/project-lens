@@ -93,7 +93,7 @@ export function AICandidatesPanel({
         <div className="mt-4 flex items-center gap-2 rounded-lg bg-primary/10 border border-primary/20 px-3 py-2">
           <ArrowRight className="h-4 w-4 text-primary shrink-0" />
           <p className="text-xs font-medium text-primary">
-            承認するとカンバンに追加されます
+            カンバンに追加されます
           </p>
         </div>
       </div>

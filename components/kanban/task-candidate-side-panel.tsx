@@ -138,22 +138,22 @@ export function TaskCandidateSidePanel({
   onHold,
   onDismiss,
 }: TaskCandidateSidePanelProps) {
-  const unresolvedCandidates = useMemo(
-    () =>
-      candidates.filter(
-        (candidate) => !addedCandidateIds.has(candidate.id) && !dismissedCandidateIds.has(candidate.id) && !candidate.held
-      ),
-    [candidates, addedCandidateIds, dismissedCandidateIds]
-  )
+  const unresolvedCandidates = useMemo(() => {
+    const notResolved = (c: TaskCandidate) =>
+      !addedCandidateIds.has(c.id) && !dismissedCandidateIds.has(c.id)
+    const active = candidates.filter((c) => notResolved(c) && !c.held)
+    const held = candidates.filter((c) => notResolved(c) && c.held)
+    return [...active, ...held]
+  }, [candidates, addedCandidateIds, dismissedCandidateIds])
   const processedCandidates = useMemo(
     () =>
       candidates.filter(
-        (candidate) => addedCandidateIds.has(candidate.id) || dismissedCandidateIds.has(candidate.id) || candidate.held
+        (candidate) => addedCandidateIds.has(candidate.id) || dismissedCandidateIds.has(candidate.id)
       ),
     [candidates, addedCandidateIds, dismissedCandidateIds]
   )
-  const pendingCount = unresolvedCandidates.length
-  const shouldAutoCollapse = pendingCount === 0
+  const pendingCount = unresolvedCandidates.filter((c) => !c.held).length
+  const shouldAutoCollapse = unresolvedCandidates.length === 0
   const [open, setOpen] = useState(true)
   const [openStateLoaded, setOpenStateLoaded] = useState(false)
   const shownCandidateIdsRef = useRef<Set<string>>(new Set())
@@ -426,6 +426,7 @@ export function TaskCandidateSidePanel({
             const priorityReason = buildTaskCandidatePriorityReason(c, scoreResult)
             const priority = priorityLabelConfig[scoreResult.confidenceLevel]
             const isAdded = false
+            const isHeld = c.held ?? false
             const isWaiting = c.extractionStatus === 'waiting'
             const visibleReasons = (c.extractionReasons ?? []).slice(0, 3)
             const overflowCount = Math.max(0, (c.extractionReasons?.length ?? 0) - 3)
@@ -693,16 +694,23 @@ export function TaskCandidateSidePanel({
                             </>
                           )}
                         </Button>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          className="gap-1 text-xs h-8 px-3"
-                          onClick={() => onHold(c.id)}
-                          title="あとで"
-                        >
-                          <Pause className="h-3 w-3" />
-                          あとで
-                        </Button>
+                        {isHeld ? (
+                          <span className="inline-flex items-center gap-1 text-[11px] text-sky-600 shrink-0 font-medium">
+                            <Pause className="h-3 w-3" />
+                            あとで確認
+                          </span>
+                        ) : (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            className="gap-1 text-xs h-8 px-3"
+                            onClick={() => onHold(c.id)}
+                            title="あとで確認に移動（このセッションのみ）"
+                          >
+                            <Pause className="h-3 w-3" />
+                            あとで
+                          </Button>
+                        )}
                         <Button
                           size="sm"
                           variant="ghost"

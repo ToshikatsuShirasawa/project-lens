@@ -207,6 +207,7 @@ export function TaskCandidatesCard({
                   variant="outline"
                   className="h-8 gap-1.5 text-xs"
                   onClick={() => handleHold(candidate.id)}
+                  title="このセッションのみ非表示（再読み込みで復活します）"
                 >
                   <Clock className="h-3 w-3" />
                   あとで
@@ -216,6 +217,7 @@ export function TaskCandidatesCard({
                   variant="ghost"
                   className="h-8 gap-1.5 text-xs text-muted-foreground hover:text-destructive"
                   onClick={() => handleDismiss(candidate.id)}
+                  title="このセッションのみ非表示（再読み込みで復活します）"
                 >
                   <X className="h-3 w-3" />
                   却下

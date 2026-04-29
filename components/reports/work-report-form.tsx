@@ -18,6 +18,10 @@ import {
   Plus,
 } from 'lucide-react'
 import { useToast } from '@/components/ui/use-toast'
+import {
+  splitReportIntoClauses,
+  judgeExtractionClause,
+} from '@/lib/ai/clause-extraction-judge'
 import type { WorkReportPreview } from '@/lib/types'
 
 interface ReportFormData {
@@ -29,6 +33,116 @@ interface ReportFormData {
 
 interface WorkReportFormProps {
   projectId: string
+}
+
+// blockers 全体が「問題なし」系のみの場合にマッチ
+const NOTHING_RE = /^(なし|特になし|ありません|問題なし|問題ありません|問題なかった|順調|異常なし|支障なし|特に問題ない|特に問題はない)[。！？!?\s]*$/
+
+// 明示的なリスク表現
+const RISK_KEYWORDS = [
+  'スケジュールに影響',
+  '期限に間に合わない',
+  '間に合わない',
+  '仕様が未確定',
+  '作業が停滞',
+  '停滞してい',
+  '遅延',
+  '影響する可能性',
+  '遅れが生じ',
+]
+
+// 不足情報・未定の表現
+const MISSING_KEYWORDS = [
+  '未定',
+  '不明',
+  '未確定',
+  '分から',
+  '決まっていない',
+  '不足している',
+  '分かっていない',
+]
+
+function trimLine(s: string, max = 32): string {
+  const c = s.replace(/\s+/g, ' ').trim()
+  return c.length > max ? `${c.slice(0, max - 1)}…` : c
+}
+
+function generatePreview(report: ReportFormData): WorkReportPreview {
+  const { completed, inProgress, blockers, nextActions } = report
+
+  // ── 状況整理: completed + inProgress の各節を表示 ──
+  const statusItems: string[] = []
+  for (const field of [completed, inProgress]) {
+    if (!field.trim()) continue
+    for (const clause of splitReportIntoClauses(field)) {
+      if (clause.length >= 2 && !judgeExtractionClause(clause).shouldExtract) {
+        statusItems.push(trimLine(clause))
+      }
+    }
+  }
+
+  // ── 課題: blockers から抽出（問題なし系・done/in-progress は除外または状況整理へ）──
+  const issueItems: string[] = []
+  if (blockers.trim() && !NOTHING_RE.test(blockers.trim())) {
+    for (const clause of splitReportIntoClauses(blockers)) {
+      const j = judgeExtractionClause(clause)
+      if (j.status === 'memo') continue
+      if (j.status === 'done') {
+        // in-progress / 完了報告は課題ではなく状況整理へ
+        statusItems.push(trimLine(clause))
+        continue
+      }
+      issueItems.push(trimLine(clause))
+    }
+  }
+
+  // ── リスク: 全フィールドから明示的なリスク表現のみ ──
+  const riskItems: string[] = []
+  const allClauses = splitReportIntoClauses(
+    [completed, inProgress, blockers, nextActions].join('\n'),
+  )
+  for (const clause of allClauses) {
+    if (RISK_KEYWORDS.some((k) => clause.includes(k))) {
+      riskItems.push(trimLine(clause))
+    }
+  }
+
+  // ── 次にやること: nextActions から done/memo を除いた節 ──
+  const todoItems: string[] = []
+  if (nextActions.trim()) {
+    for (const clause of splitReportIntoClauses(nextActions)) {
+      const j = judgeExtractionClause(clause)
+      if (j.status === 'done' || j.status === 'memo') continue
+      todoItems.push(trimLine(clause))
+    }
+  }
+
+  // ── 不足情報: 明示的な未定・不明表現のみ ──
+  const missingItems: string[] = []
+  for (const clause of allClauses) {
+    if (MISSING_KEYWORDS.some((k) => clause.includes(k))) {
+      missingItems.push(trimLine(clause))
+    }
+  }
+
+  // ── タスク候補: 全フィールドから shouldExtract=true の節 ──
+  const taskCandidates: string[] = []
+  const seenKeys = new Set<string>()
+  for (const field of [completed, inProgress, blockers, nextActions]) {
+    if (!field.trim()) continue
+    for (const clause of splitReportIntoClauses(field)) {
+      const j = judgeExtractionClause(clause)
+      if (!j.shouldExtract) continue
+      const title = trimLine(clause, 28)
+      const key = title.toLowerCase()
+      if (!seenKeys.has(key)) {
+        seenKeys.add(key)
+        taskCandidates.push(title)
+      }
+    }
+  }
+
+  return { status: statusItems, issues: issueItems, risks: riskItems, todos: todoItems, missingInfo: missingItems, taskCandidates }
 }
 
 export function WorkReportForm({ projectId }: WorkReportFormProps) {
@@ -48,26 +162,17 @@ export function WorkReportForm({ projectId }: WorkReportFormProps) {
 
   useEffect(() => {
     const totalLength = Object.values(report).join('').length
-    if (totalLength > 15) {
-      setIsAnalyzing(true)
-      const timer = setTimeout(() => {
-        setAnalysis({
-          status: report.completed ? ['商品詳細ページの実装を完了', 'テストコードの追加を実施'] : [],
-          issues: report.blockers ? ['API仕様の確定待ちで作業が停滞'] : [],
-          risks: report.blockers ? ['スケジュールに影響する可能性あり'] : [],
-          todos: report.nextActions ? ['レビュー依頼を送信', 'テスト環境で動作確認'] : [],
-          missingInfo: ['セキュリティレビューの担当者が未定'],
-          taskCandidates:
-            report.blockers || report.nextActions
-              ? ['API仕様の確認依頼', 'テスト環境の準備']
-              : [],
-        })
-        setIsAnalyzing(false)
-      }, 400)
-      return () => clearTimeout(timer)
-    } else {
+    if (totalLength <= 5) {
       setAnalysis(null)
+      setIsAnalyzing(false)
+      return
     }
+    setIsAnalyzing(true)
+    const timer = setTimeout(() => {
+      setAnalysis(generatePreview(report))
+      setIsAnalyzing(false)
+    }, 300)
+    return () => clearTimeout(timer)
   }, [report])
 
   const handleSubmit = async () => {
@@ -100,6 +205,12 @@ export function WorkReportForm({ projectId }: WorkReportFormProps) {
       setIsSubmitting(false)
     }
   }
+
+  const showStatus = report.completed.trim() || report.inProgress.trim()
+  const showIssues = analysis !== null && issuesShouldShow(report, analysis)
+  const showRisks = analysis !== null && analysis.risks.length > 0
+  const showTodos = report.nextActions.trim()
+  const showMissing = analysis !== null && analysis.missingInfo.length > 0
 
   return (
     <div className="grid gap-6 lg:grid-cols-2">
@@ -183,69 +294,68 @@ export function WorkReportForm({ projectId }: WorkReportFormProps) {
           {isAnalyzing && <Loader2 className="h-4 w-4 animate-spin text-primary" />}
         </CardHeader>
         <CardContent>
-          {!hasContent ? (
-            <div className="space-y-4 opacity-60">
-              <p className="text-sm text-muted-foreground mb-4">報告を入力すると、AIが以下のように自動整理します:</p>
-              {[
-                { icon: TrendingUp, color: 'text-success', label: '状況整理', text: '商品詳細ページのレスポンシブ対応を完了' },
-                { icon: AlertTriangle, color: 'text-warning', label: '課題', text: 'API仕様の確定待ちで作業が停滞中' },
-                { icon: AlertTriangle, color: 'text-destructive', label: 'リスク', text: 'スケジュールへの影響あり（1週間程度）' },
-                { icon: ArrowRight, color: 'text-primary', label: '次にやること', text: 'ベンダーへフォローアップ連絡' },
-                { icon: HelpCircle, color: 'text-muted-foreground', label: '不足情報', text: 'セキュリティレビューの担当者が未定' },
-              ].map(({ icon: Icon, color, label, text }, i) => (
-                <div key={i} className="space-y-1.5">
-                  <div className="flex items-center gap-2">
-                    <Icon className={`h-3.5 w-3.5 ${color}`} />
-                    <span className={`text-xs font-medium ${color}`}>{label}</span>
-                  </div>
-                  <p className="text-xs text-muted-foreground pl-5">{text}</p>
-                </div>
-              ))}
+          {!hasContent || analysis === null ? (
+            <div className="flex flex-col items-center justify-center py-10 text-center gap-2">
+              <Sparkles className="h-8 w-8 text-muted-foreground/30" />
+              <p className="text-sm text-muted-foreground">入力すると分析結果が表示されます</p>
+              <p className="text-xs text-muted-foreground/60 max-w-[220px] leading-relaxed">
+                状況整理・課題・次にやること・タスク候補などをリアルタイムで抽出します
+              </p>
             </div>
           ) : (
             <div className="space-y-4">
-              <AnalysisSection
-                icon={<TrendingUp className="h-3 w-3" />}
-                label="状況整理"
-                labelClass="bg-success/20 text-success"
-                items={analysis?.status}
-                emptyText="「今日やったこと」から抽出されます"
-                itemClass="text-success"
-                ItemIcon={<CheckCircle className="h-4 w-4 text-success shrink-0 mt-0.5" />}
-              />
-              <AnalysisSection
-                icon={<AlertTriangle className="h-3 w-3" />}
-                label="課題"
-                labelClass="bg-warning/20 text-warning"
-                items={analysis?.issues}
-                emptyText="ブロッカーから抽出されます"
-                borderColor="border-warning/50"
-              />
-              <AnalysisSection
-                icon={<AlertTriangle className="h-3 w-3" />}
-                label="リスク"
-                labelClass="bg-destructive/20 text-destructive"
-                items={analysis?.risks}
-                emptyText="AIが潜在リスクを検出します"
-                borderColor="border-destructive/50"
-              />
-              <AnalysisSection
-                icon={<ArrowRight className="h-3 w-3" />}
-                label="次にやること"
-                labelClass="bg-primary/20 text-primary"
-                items={analysis?.todos}
-                emptyText="「次にやること」から抽出されます"
-                borderColor="border-primary/50"
-              />
-              <AnalysisSection
-                icon={<HelpCircle className="h-3 w-3" />}
-                label="不足情報"
-                labelClass=""
-                items={analysis?.missingInfo}
-                emptyText="AIが確認すべき点を検出します"
-                borderColor="border-muted-foreground/30"
-              />
-              {analysis?.taskCandidates && analysis.taskCandidates.length > 0 && (
+              {showStatus && (
+                <AnalysisSection
+                  icon={<TrendingUp className="h-3 w-3" />}
+                  label="状況整理"
+                  labelClass="bg-success/20 text-success"
+                  items={analysis.status}
+                  emptyText="内容から状況を読み取れませんでした"
+                  itemClass="text-success"
+                  ItemIcon={<CheckCircle className="h-4 w-4 text-success shrink-0 mt-0.5" />}
+                />
+              )}
+              {showIssues && (
+                <AnalysisSection
+                  icon={<AlertTriangle className="h-3 w-3" />}
+                  label="課題"
+                  labelClass="bg-warning/20 text-warning"
+                  items={analysis.issues}
+                  emptyText=""
+                  borderColor="border-warning/50"
+                />
+              )}
+              {showRisks && (
+                <AnalysisSection
+                  icon={<AlertTriangle className="h-3 w-3" />}
+                  label="リスク"
+                  labelClass="bg-destructive/20 text-destructive"
+                  items={analysis.risks}
+                  emptyText=""
+                  borderColor="border-destructive/50"
+                />
+              )}
+              {showTodos && (
+                <AnalysisSection
+                  icon={<ArrowRight className="h-3 w-3" />}
+                  label="次にやること"
+                  labelClass="bg-primary/20 text-primary"
+                  items={analysis.todos}
+                  emptyText="内容から次のアクションを読み取れませんでした"
+                  borderColor="border-primary/50"
+                />
+              )}
+              {showMissing && (
+                <AnalysisSection
+                  icon={<HelpCircle className="h-3 w-3" />}
+                  label="不足情報"
+                  labelClass=""
+                  items={analysis.missingInfo}
+                  emptyText=""
+                  borderColor="border-muted-foreground/30"
+                />
+              )}
+              {analysis.taskCandidates.length > 0 && (
                 <div className="space-y-2 pt-3 border-t border-border">
                   <div className="flex items-center gap-2">
                     <Badge className="gap-1 bg-primary/20 text-primary border-0">
@@ -256,7 +366,10 @@ export function WorkReportForm({ projectId }: WorkReportFormProps) {
                   </div>
                   <ul className="space-y-2">
                     {analysis.taskCandidates.map((item, i) => (
-                      <li key={i} className="flex items-center justify-between text-sm text-foreground rounded-md bg-primary/5 px-3 py-2">
+                      <li
+                        key={i}
+                        className="flex items-center justify-between text-sm text-foreground rounded-md bg-primary/5 px-3 py-2"
+                      >
                         <span>{item}</span>
                         <Button size="sm" variant="ghost" className="h-6 gap-1 text-xs text-primary hover:text-primary">
                           <Plus className="h-3 w-3" />
@@ -267,6 +380,11 @@ export function WorkReportForm({ projectId }: WorkReportFormProps) {
                   </ul>
                 </div>
               )}
+              {!showStatus && !showIssues && !showRisks && !showTodos && !showMissing && analysis.taskCandidates.length === 0 && (
+                <p className="text-sm text-muted-foreground italic text-center py-4">
+                  入力内容から分析できる内容がありませんでした
+                </p>
+              )}
             </div>
           )}
         </CardContent>
@@ -275,7 +393,15 @@ export function WorkReportForm({ projectId }: WorkReportFormProps) {
   )
 }
 
-// ── helper sub-component ──────────────────────────────────
+// ── helpers ──────────────────────────────────────────────────
+
+function issuesShouldShow(report: ReportFormData, analysis: WorkReportPreview): boolean {
+  if (!report.blockers.trim()) return false
+  if (NOTHING_RE.test(report.blockers.trim())) return false
+  return analysis.issues.length > 0
+}
+
+// ── sub-component ─────────────────────────────────────────────
 interface AnalysisSectionProps {
   icon: React.ReactNode
   label: string
@@ -288,7 +414,14 @@ interface AnalysisSectionProps {
 }
 
 function AnalysisSection({
-  icon, label, labelClass, items, emptyText, itemClass, ItemIcon, borderColor,
+  icon,
+  label,
+  labelClass,
+  items,
+  emptyText,
+  itemClass,
+  ItemIcon,
+  borderColor,
 }: AnalysisSectionProps) {
   return (
     <div className="space-y-2">
@@ -301,15 +434,18 @@ function AnalysisSection({
       {items && items.length > 0 ? (
         <ul className="space-y-1.5">
           {items.map((item, i) => (
-            <li key={i} className={`text-sm text-foreground flex items-start gap-2 ${borderColor ? `pl-4 border-l-2 ${borderColor}` : ''}`}>
+            <li
+              key={i}
+              className={`text-sm text-foreground flex items-start gap-2 ${borderColor ? `pl-4 border-l-2 ${borderColor}` : ''}`}
+            >
               {ItemIcon}
               {item}
             </li>
           ))}
         </ul>
-      ) : (
+      ) : emptyText ? (
         <p className="text-sm text-muted-foreground italic">{emptyText}</p>
-      )}
+      ) : null}
     </div>
   )
 }

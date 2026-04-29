@@ -189,6 +189,24 @@ describe('judgeExtractionClause', () => {
     expect(j.shouldExtract).toBe(false)
   })
 
+  it('「一覧画面の調整中です」→ done、候補化しない（調整中 in-progress）', () => {
+    const j = judgeExtractionClause('一覧画面の調整中です')
+    expect(j.status).toBe('done')
+    expect(j.shouldExtract).toBe(false)
+  })
+
+  it('「修正中です」→ done、候補化しない（修正中 in-progress）', () => {
+    const j = judgeExtractionClause('修正中です')
+    expect(j.status).toBe('done')
+    expect(j.shouldExtract).toBe(false)
+  })
+
+  it('「実装中です」→ done、候補化しない（実装中 in-progress）', () => {
+    const j = judgeExtractionClause('実装中です')
+    expect(j.status).toBe('done')
+    expect(j.shouldExtract).toBe(false)
+  })
+
   it('in-progress + spec-todo 混在 → spec-todo 優先で候補化する', () => {
     const j = judgeExtractionClause('対応中ですが確認が必要です')
     expect(j.status).toBe('todo')

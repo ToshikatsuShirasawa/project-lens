@@ -2,7 +2,7 @@
 
 import { Badge } from '@/components/ui/badge'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Calendar, Sparkles } from 'lucide-react'
+import { Calendar, GripVertical, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { KanbanTask, TaskPriority } from '@/lib/types'
 
@@ -104,12 +104,12 @@ export function KanbanCard({
       onDragEnd={onDragEnd}
       onClick={() => onEdit(task)}
       className={cn(
-        'relative overflow-hidden group cursor-pointer rounded-lg border border-border/60 border-l-2 bg-card p-2.5 transition-all duration-200 ease-out active:scale-[0.99] space-y-1.5',
+        'relative overflow-hidden group cursor-grab active:cursor-grabbing rounded-lg border border-border/60 border-l-2 bg-card p-2.5 transition-all duration-200 ease-out active:scale-[0.99] space-y-1.5',
         'hover:-translate-y-px hover:shadow-md hover:border-primary/30 hover:bg-primary/[0.02]',
         isHighPriority && 'border-l-4',
         leftAccentClass,
         justDropped && 'ring-2 ring-primary/25 bg-primary/[0.04]',
-        isDragging && 'opacity-60 scale-[1.02] shadow-lg border-primary/30'
+        isDragging && 'opacity-50 rotate-2 scale-105 shadow-lg'
       )}
     >
       {justAiAdded && (
@@ -118,9 +118,12 @@ export function KanbanCard({
           style={{ animation: 'kanbanAiAddOverlay 750ms ease-out forwards' }}
         />
       )}
+      <div className="absolute right-3 top-3 opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+        <GripVertical className="h-4 w-4 text-muted-foreground" />
+      </div>
       <p
         className={cn(
-          'text-[13px] font-medium text-foreground leading-snug group-hover:text-primary transition-colors',
+          'text-[13px] font-medium text-foreground leading-snug group-hover:text-primary transition-colors pr-5',
           isHighPriority && 'font-bold'
         )}
       >

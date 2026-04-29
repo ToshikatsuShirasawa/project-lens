@@ -2,7 +2,7 @@
 
 import { Fragment, useEffect, useRef, useState, type DragEvent } from 'react'
 import { Button } from '@/components/ui/button'
-import { Loader2, Plus } from 'lucide-react'
+import { GripVertical, Loader2, Plus } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { KanbanCard } from './kanban-card'
 import type { KanbanTask } from '@/lib/types'
@@ -93,7 +93,7 @@ export function KanbanColumn({
         justDropped && 'ring-2 ring-primary/20 bg-primary/[0.04]',
         justAiAdded && 'ring-2 ring-emerald-300/60 bg-emerald-50/30',
         isDropTarget
-          ? 'border-primary/40 bg-primary/5 ring-1 ring-primary/20'
+          ? 'border-primary/50 bg-primary/10 ring-2 ring-primary/30'
           : 'border-border hover:border-border/80'
       )}
       onDragOver={(e) => {
@@ -152,6 +152,12 @@ export function KanbanColumn({
             className="h-1 rounded-full bg-primary/60 shadow-sm transition-transform duration-120 ease-out scale-x-105 opacity-0"
             style={insertGuideStyle}
           />
+        )}
+        {tasks.length > 0 && tasks.length <= 2 && !draggedTaskId && (
+          <div className="flex items-center justify-center gap-1.5 py-2 text-xs text-muted-foreground/60">
+            <GripVertical className="h-3 w-3" />
+            <span>ドラッグで移動</span>
+          </div>
         )}
         {tasks.length === 0 && (
           <div className="flex flex-1 flex-col items-center justify-center gap-2 rounded-lg border border-dashed border-muted py-5 text-center">

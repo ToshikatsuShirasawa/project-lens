@@ -358,4 +358,38 @@ describe('legacy-todo 後方互換（活用形・短形式ステム）', () => {
     expect(j.status).toBe('done')
     expect(j.shouldExtract).toBe(false)
   })
+
+  // ─── 今週 ───
+  it('「今週中にダッシュボードの表示を見直します」→ todo（今週 legacy todo）', () => {
+    const j = judgeExtractionClause('今週中にダッシュボードの表示を見直します')
+    expect(j.status).toBe('todo')
+    expect(j.shouldExtract).toBe(true)
+    expect(j.reasons.some((r) => r.includes('todo(legacy)'))).toBe(true)
+  })
+
+  it('「今週は対応済みです」→ done（今週 legacy が対応済み done に負ける）', () => {
+    const j = judgeExtractionClause('今週は対応済みです')
+    expect(j.status).toBe('done')
+    expect(j.shouldExtract).toBe(false)
+  })
+
+  // ─── 残タスク / 残作業 ───
+  it('「デザイン反映の残タスクがあります」→ todo（残タスク legacy todo）', () => {
+    const j = judgeExtractionClause('デザイン反映の残タスクがあります')
+    expect(j.status).toBe('todo')
+    expect(j.shouldExtract).toBe(true)
+    expect(j.reasons.some((r) => r.includes('todo(legacy)'))).toBe(true)
+  })
+
+  it('「残作業がある」→ todo（残作業 legacy todo）', () => {
+    const j = judgeExtractionClause('残作業がある')
+    expect(j.status).toBe('todo')
+    expect(j.shouldExtract).toBe(true)
+  })
+
+  it('「残タスクは完了しました」→ done（残タスク legacy が done に負ける）', () => {
+    const j = judgeExtractionClause('残タスクは完了しました')
+    expect(j.status).toBe('done')
+    expect(j.shouldExtract).toBe(false)
+  })
 })

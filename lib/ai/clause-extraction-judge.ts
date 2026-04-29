@@ -63,6 +63,9 @@ const LEGACY_TODO_KEYWORDS: readonly string[] = [
   '修正',
   '準備',
   '調整',
+  '今週',
+  '残タスク',
+  '残作業',
 ]
 
 const WAITING_KEYWORDS: readonly string[] = [

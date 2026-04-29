@@ -11,7 +11,9 @@
       "Bash(npm test *)",
       "Bash(grep -E \"\\\\.\\(ts|tsx|js\\)$\")",
       "Bash(npx vitest *)",
-      "Bash(xargs grep *)"
+      "Bash(xargs grep *)",
+      "Bash(npm run *)",
+      "Bash(npx eslint *)"
     ],
     "additionalDirectories": [
       "c:\\work\\ai\\project-lens\\app\\projects\\[projectId]"

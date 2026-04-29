@@ -21,8 +21,11 @@ export function buildTaskCandidatePriorityReason(
   const waitingSignal =
     candidate.extractionStatus === 'waiting' ||
     /回答待ち|確認待ち|返信待ち|レビュー待ち|先方確認中/.test(extractionKeywords)
-  if (waitingSignal || score.scoreBreakdown.actionability < 0 || score.scoreBreakdown.extractionStatusAdjustment < 0) {
-    return truncateSingleLine('確認待ちのため優先度は低め')
+  if (waitingSignal) {
+    return truncateSingleLine('返答・確認待ちのためフォローが必要')
+  }
+  if (score.scoreBreakdown.actionability < 0 || score.scoreBreakdown.extractionStatusAdjustment < 0) {
+    return truncateSingleLine('直接着手が難しいため優先度は低め')
   }
 
   if (score.scoreBreakdown.urgency >= 2 && score.scoreBreakdown.assignee >= 1) {

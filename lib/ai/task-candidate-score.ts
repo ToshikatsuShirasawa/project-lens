@@ -92,6 +92,7 @@ const URGENCY_TITLE_KEYWORDS: readonly string[] = [
   '急ぎ',
   '本日',
   '明日',
+  '今週',
 ] as const
 
 // ─── specificity ─────────────────────────────────────────────────
@@ -253,12 +254,12 @@ function scoreActionabilityBucket(
 }
 
 /**
- * extractionStatus による加減算。actionability とは独立したペナルティ。
- * waiting: 相手依存で行動できない (-3)
+ * extractionStatus による加減算。actionability とは独立した調整値。
+ * waiting: 追跡すべき有効なタスク（フォローアップ目的）→ ペナルティなし
  * unknown: 判定不明 (-2)
  */
 function getExtractionStatusAdjustment(status: TaskCandidate['extractionStatus']): number {
-  if (status === 'waiting') return -3
+  if (status === 'waiting') return 0
   if (status === 'unknown') return -2
   return 0
 }

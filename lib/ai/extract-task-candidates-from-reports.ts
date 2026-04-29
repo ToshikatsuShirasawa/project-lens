@@ -67,17 +67,28 @@ function inferDueDate(sentence: string, baseDate = new Date()): string | undefin
   return undefined
 }
 
+/**
+ * 節の末尾にある述語部分（が必要です / します / です など）を除去し、
+ * 理由文に自然に連結できるフレーズを返す。
+ * 例: "API仕様の確認が必要です" → "API仕様の確認"
+ */
+function buildExcerpt(sentence: string, maxLength = 16): string {
+  const compact = normalizeWhitespace(sentence)
+  const stripped = compact
+    .replace(/が必要(?:な事項|です?|な)?$/, '')
+    .replace(/(?:します|しました|です|ます|でした|ました)$/, '')
+    .trim()
+  const text = stripped.length >= 2 ? stripped : compact
+  if (text.length <= maxLength) return text
+  return `${text.slice(0, maxLength - 1)}…`
+}
+
 function buildReason(sentence: string, status: ExtractionStatus): string {
+  const excerpt = buildExcerpt(sentence)
   if (status === 'waiting') {
-    return '作業報告に相手待ちの事項がありました'
+    return `${excerpt}のため要フォロー`
   }
-  if (/要確認|確認/.test(sentence)) {
-    return '作業報告に確認が必要な事項がありました'
-  }
-  if (/対応|修正|調整/.test(sentence)) {
-    return '作業報告に対応が必要な事項がありました'
-  }
-  return '作業報告にタスク化候補の表現がありました'
+  return `${excerpt}が必要なため`
 }
 
 export function extractTaskCandidatesFromReports(reports: ReportLike[]): TaskCandidate[] {
@@ -101,9 +112,7 @@ export function extractTaskCandidatesFromReports(reports: ReportLike[]): TaskCan
       if (!normalizedTitle || seenTitles.has(normalizedTitle)) continue
       seenTitles.add(normalizedTitle)
 
-      const excerpt = trimToTitle(clause, 36)
-      const reasonBase = buildReason(clause, judgement.status)
-      const reason = `${reasonBase}（抜粋: ${excerpt}）`
+      const reason = buildReason(clause, judgement.status)
 
       const displayTitle = normalizeTaskCandidateTitle(title)
       candidates.push({

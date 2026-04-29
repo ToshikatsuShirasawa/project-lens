@@ -16,6 +16,22 @@ describe('splitReportIntoClauses', () => {
     expect(result[1]).toBe('詳細画面の確認が必要です')
   })
 
+  it('ただし、を文境界として分割する', () => {
+    const input = '現在対応中ですただし、確認が必要な点が残っています'
+    const result = splitReportIntoClauses(input)
+    expect(result).toHaveLength(2)
+    expect(result[0]).toBe('現在対応中です')
+    expect(result[1]).toBe('確認が必要な点が残っています')
+  })
+
+  it('なお、を文境界として分割する', () => {
+    const input = '対応は完了しましたなお、ログ出力の修正が必要です'
+    const result = splitReportIntoClauses(input)
+    expect(result).toHaveLength(2)
+    expect(result[0]).toBe('対応は完了しました')
+    expect(result[1]).toBe('ログ出力の修正が必要です')
+  })
+
   it('確認しましたが を分割する', () => {
     const input = '確認しましたが、追加修正が必要です'
     const result = splitReportIntoClauses(input)
@@ -148,6 +164,62 @@ describe('judgeExtractionClause', () => {
     expect(j.shouldExtract).toBe(false)
   })
 
+  // ─── in-progress（新規除外ルール）
+  it('「対応中です」→ done、候補化しない', () => {
+    const j = judgeExtractionClause('対応中です')
+    expect(j.status).toBe('done')
+    expect(j.shouldExtract).toBe(false)
+  })
+
+  it('「実施中です」→ done、候補化しない', () => {
+    const j = judgeExtractionClause('実施中です')
+    expect(j.status).toBe('done')
+    expect(j.shouldExtract).toBe(false)
+  })
+
+  it('「確認しています」→ done、候補化しない', () => {
+    const j = judgeExtractionClause('確認しています')
+    expect(j.status).toBe('done')
+    expect(j.shouldExtract).toBe(false)
+  })
+
+  it('「対応しています」→ done、候補化しない', () => {
+    const j = judgeExtractionClause('対応しています')
+    expect(j.status).toBe('done')
+    expect(j.shouldExtract).toBe(false)
+  })
+
+  it('in-progress + spec-todo 混在 → spec-todo 優先で候補化する', () => {
+    const j = judgeExtractionClause('対応中ですが確認が必要です')
+    expect(j.status).toBe('todo')
+    expect(j.shouldExtract).toBe(true)
+  })
+
+  // ─── status-only（新規除外ルール）
+  it('「問題ありません」→ memo、候補化しない', () => {
+    const j = judgeExtractionClause('問題ありません')
+    expect(j.status).toBe('memo')
+    expect(j.shouldExtract).toBe(false)
+  })
+
+  it('「順調に進んでいます」→ memo、候補化しない', () => {
+    const j = judgeExtractionClause('順調に進んでいます')
+    expect(j.status).toBe('memo')
+    expect(j.shouldExtract).toBe(false)
+  })
+
+  it('「特に問題なし」→ memo、候補化しない', () => {
+    const j = judgeExtractionClause('特に問題なし')
+    expect(j.status).toBe('memo')
+    expect(j.shouldExtract).toBe(false)
+  })
+
+  it('status-only + spec-todo 混在 → spec-todo 優先で候補化する', () => {
+    const j = judgeExtractionClause('問題なく対応できましたが確認が必要な点があります')
+    expect(j.status).toBe('todo')
+    expect(j.shouldExtract).toBe(true)
+  })
+
   // ─── unknown
   it('キーワードなし → unknown', () => {
     const j = judgeExtractionClause('本日はありがとうございました')
@@ -189,6 +261,24 @@ describe('統合テスト', () => {
 
   it('ケース5: 「共有のみです」→ 候補なし', () => {
     expect(extractCandidateClauses('共有のみです')).toHaveLength(0)
+  })
+
+  it('ケース8: 「API修正を実施しました」→ 候補なし（完了報告）', () => {
+    expect(extractCandidateClauses('API修正を実施しました')).toHaveLength(0)
+  })
+
+  it('ケース9: 「現在対応中です」→ 候補なし（進行中）', () => {
+    expect(extractCandidateClauses('現在対応中です')).toHaveLength(0)
+  })
+
+  it('ケース10: 「特に問題はありません」→ 候補なし（状況説明）', () => {
+    expect(extractCandidateClauses('特に問題はありません')).toHaveLength(0)
+  })
+
+  it('ケース11: ただし で分割し todo 節のみ抽出する', () => {
+    const result = extractCandidateClauses('現在対応中ですただし、確認が必要な点が残っています')
+    expect(result).toHaveLength(1)
+    expect(result[0]).toBe('確認が必要な点が残っています')
   })
 
   it('ケース6: TODO 文 → 候補あり', () => {

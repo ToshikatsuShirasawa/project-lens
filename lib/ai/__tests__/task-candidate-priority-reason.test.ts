@@ -23,7 +23,7 @@ describe('buildTaskCandidatePriorityReason', () => {
     })
     const score = scoreTaskCandidate(candidate)
 
-    expect(buildTaskCandidatePriorityReason(candidate, score)).toBe('確認待ちのため優先度は低め')
+    expect(buildTaskCandidatePriorityReason(candidate, score)).toBe('返答・確認待ちのためフォローが必要')
   })
 
   it('緊急かつ担当候補ありで緊急メッセージを返す', () => {

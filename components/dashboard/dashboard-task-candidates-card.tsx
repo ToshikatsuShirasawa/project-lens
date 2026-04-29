@@ -8,6 +8,7 @@ import { extractTaskCandidatesFromReports } from '@/lib/ai/extract-task-candidat
 import { mergeTaskCandidates } from '@/lib/ai/merge-task-candidates'
 import { sortTaskCandidatesForDisplay } from '@/lib/ai/sort-task-candidates'
 import { mockKanbanCandidates } from '@/lib/mock/kanban'
+import { canUseMockCandidates } from '@/lib/mock/can-use-mock-candidates'
 import { toastError, toastSuccess } from '@/lib/operation-toast'
 import type { TaskCandidate, WorkReport } from '@/lib/types'
 
@@ -92,13 +93,13 @@ export function DashboardTaskCandidatesCard({ projectId }: DashboardTaskCandidat
 
         if (extracted.length > 0) {
           setRawCandidates(sortTaskCandidatesForDisplay(mergeTaskCandidates(extracted)))
-        } else {
+        } else if (canUseMockCandidates) {
           setRawCandidates(
             mockKanbanCandidates.map((c) => ({ ...c, extractionStatus: 'unknown' as const }))
           )
         }
       } catch {
-        if (!cancelled) {
+        if (!cancelled && canUseMockCandidates) {
           setRawCandidates(
             mockKanbanCandidates.map((c) => ({ ...c, extractionStatus: 'unknown' as const }))
           )

@@ -27,6 +27,7 @@ import { Filter, Loader2, User, Sparkles } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import { toastError, toastSuccess } from '@/lib/operation-toast'
 import { mockKanbanCandidates } from '@/lib/mock/kanban'
+import { canUseMockCandidates } from '@/lib/mock/can-use-mock-candidates'
 import {
   DEFAULT_KANBAN_TEMPLATE_KEY,
   getAllKanbanColumnKeysForEmptyBoard,
@@ -253,21 +254,25 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
           return
         }
 
-        console.info(
-          '[kanban] reports から候補を生成できなかったため demo 候補を利用します',
-          'reports件数:', reports.length,
-          'reports抜粋:', reports.map((r) => ({
-            id: r.id,
-            completed: r.completed?.slice(0, 40),
-            inProgress: r.inProgress?.slice(0, 40),
-            nextActions: r.nextActions?.slice(0, 40),
-          })),
-        )
-        setCandidates(mockKanbanCandidates.map((c) => ({ ...c, extractionStatus: 'unknown' as const })))
+        if (canUseMockCandidates) {
+          console.info(
+            '[kanban] reports から候補を生成できなかったため demo 候補を利用します',
+            'reports件数:', reports.length,
+            'reports抜粋:', reports.map((r) => ({
+              id: r.id,
+              completed: r.completed?.slice(0, 40),
+              inProgress: r.inProgress?.slice(0, 40),
+              nextActions: r.nextActions?.slice(0, 40),
+            })),
+          )
+          setCandidates(mockKanbanCandidates.map((c) => ({ ...c, extractionStatus: 'unknown' as const })))
+        }
       } catch (error) {
         if (cancelled) return
-        console.warn('[kanban] reports の取得に失敗したため demo 候補へフォールバックします', error)
-        setCandidates(mockKanbanCandidates.map((c) => ({ ...c, extractionStatus: 'unknown' as const })))
+        if (canUseMockCandidates) {
+          console.warn('[kanban] reports の取得に失敗したため demo 候補へフォールバックします', error)
+          setCandidates(mockKanbanCandidates.map((c) => ({ ...c, extractionStatus: 'unknown' as const })))
+        }
       } finally {
         if (!cancelled) setCandidatesLoading(false)
       }

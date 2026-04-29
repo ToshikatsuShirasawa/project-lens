@@ -59,6 +59,18 @@ export function DashboardTaskCandidatesCard({ projectId }: DashboardTaskCandidat
   const [loading, setLoading] = useState(true)
   const [isMock, setIsMock] = useState(false)
   const [backlogColumnKey, setBacklogColumnKey] = useState('backlog')
+  const [reportsFetchKey, setReportsFetchKey] = useState(0)
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent<{ projectId?: string }>).detail
+      if (!detail?.projectId || detail.projectId === projectId) {
+        setReportsFetchKey((k) => k + 1)
+      }
+    }
+    window.addEventListener('projectlens:reports-updated', handler)
+    return () => window.removeEventListener('projectlens:reports-updated', handler)
+  }, [projectId])
 
   // レポートからAI候補を抽出（カンバンと同じロジック）
   useEffect(() => {
@@ -109,7 +121,7 @@ export function DashboardTaskCandidatesCard({ projectId }: DashboardTaskCandidat
     return () => {
       cancelled = true
     }
-  }, [projectId])
+  }, [projectId, reportsFetchKey])
 
   // バックログ列キーを取得
   useEffect(() => {

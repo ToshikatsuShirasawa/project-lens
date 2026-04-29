@@ -6,6 +6,7 @@ import {
 } from '@/lib/ai/clause-extraction-judge'
 import type { ExtractionStatus } from '@/lib/ai/clause-extraction-judge'
 import { normalizeTaskCandidateTitle } from '@/lib/ai/normalize-task-candidate-title'
+import { generateCandidateKey } from '@/lib/ai/candidate-key'
 
 type ReportLike = Pick<WorkReport, 'id' | 'submittedBy' | 'completed' | 'inProgress' | 'blockers' | 'nextActions'>
 
@@ -91,7 +92,7 @@ function buildReason(sentence: string, status: ExtractionStatus): string {
   return `${excerpt}が必要なため`
 }
 
-export function extractTaskCandidatesFromReports(reports: ReportLike[]): TaskCandidate[] {
+export function extractTaskCandidatesFromReports(reports: ReportLike[], projectId = ''): TaskCandidate[] {
   const candidates: TaskCandidate[] = []
   const seenTitles = new Set<string>()
 
@@ -117,6 +118,7 @@ export function extractTaskCandidatesFromReports(reports: ReportLike[]): TaskCan
       const displayTitle = normalizeTaskCandidateTitle(title)
       candidates.push({
         id: `report-${report.id}-${reportCandidateIndex}`,
+        candidateKey: generateCandidateKey(projectId, title),
         title,
         displayTitle: displayTitle !== title ? displayTitle : undefined,
         reason,

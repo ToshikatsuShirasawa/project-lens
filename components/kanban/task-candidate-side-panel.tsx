@@ -139,17 +139,19 @@ export function TaskCandidateSidePanel({
   onDismiss,
 }: TaskCandidateSidePanelProps) {
   const unresolvedCandidates = useMemo(() => {
+    const ck = (c: TaskCandidate) => c.candidateKey ?? c.id
     const notResolved = (c: TaskCandidate) =>
-      !addedCandidateIds.has(c.id) && !dismissedCandidateIds.has(c.id)
+      !addedCandidateIds.has(ck(c)) && !dismissedCandidateIds.has(ck(c))
     const active = candidates.filter((c) => notResolved(c) && !c.held)
     const held = candidates.filter((c) => notResolved(c) && c.held)
     return [...active, ...held]
   }, [candidates, addedCandidateIds, dismissedCandidateIds])
   const processedCandidates = useMemo(
     () =>
-      candidates.filter(
-        (candidate) => addedCandidateIds.has(candidate.id) || dismissedCandidateIds.has(candidate.id)
-      ),
+      candidates.filter((candidate) => {
+        const ck = candidate.candidateKey ?? candidate.id
+        return addedCandidateIds.has(ck) || dismissedCandidateIds.has(ck)
+      }),
     [candidates, addedCandidateIds, dismissedCandidateIds]
   )
   const pendingCount = unresolvedCandidates.filter((c) => !c.held).length
@@ -704,7 +706,7 @@ export function TaskCandidateSidePanel({
                             size="sm"
                             variant="outline"
                             className="gap-1 text-xs h-8 px-3"
-                            onClick={() => onHold(c.id)}
+                            onClick={() => onHold(c.candidateKey ?? c.id)}
                             title="あとで確認に移動（このセッションのみ）"
                           >
                             <Pause className="h-3 w-3" />
@@ -715,7 +717,7 @@ export function TaskCandidateSidePanel({
                           size="sm"
                           variant="ghost"
                           className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-                          onClick={() => onDismiss(c.id)}
+                          onClick={() => onDismiss(c.candidateKey ?? c.id)}
                           title="却下"
                         >
                           <X className="h-4 w-4" />
@@ -755,8 +757,9 @@ export function TaskCandidateSidePanel({
             {showProcessed && (
               <div className="mt-2 space-y-2">
                 {processedCandidates.map((c) => {
-                  const isAdded = addedCandidateIds.has(c.id)
-                  const isDismissed = dismissedCandidateIds.has(c.id)
+                  const ck = c.candidateKey ?? c.id
+                  const isAdded = addedCandidateIds.has(ck)
+                  const isDismissed = dismissedCandidateIds.has(ck)
                   const statusText = isAdded
                     ? `${backlogColumnName} に追加済み`
                     : isDismissed

@@ -248,7 +248,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
               item.nextActions.trim()
           )
 
-        const extracted = extractTaskCandidatesFromReports(reports)
+        const extracted = extractTaskCandidatesFromReports(reports, projectId)
         if (cancelled) return
         if (extracted.length > 0) {
           setCandidates(sortTaskCandidatesForDisplay(mergeTaskCandidates(extracted)))
@@ -594,7 +594,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
   const backlogColumnName =
     boardColumns.find((c) => c.key === backlogColumnKey)?.name ?? 'バックログ'
   const pendingCandidateCount = candidates.filter(
-    (c) => !addedCandidateIds.has(c.id) && !dismissedCandidateIds.has(c.id) && !c.held
+    (c) => !addedCandidateIds.has(c.candidateKey ?? c.id) && !dismissedCandidateIds.has(c.candidateKey ?? c.id) && !c.held
   ).length
 
   const handleAddToKanban = async (candidate: TaskCandidate, overrides?: CandidateApprovalOverrides): Promise<void> => {
@@ -667,7 +667,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
           : null
 
     await loadTasks({ silent: true })
-    setAddedCandidateIds((prev) => new Set([...prev, candidate.id]))
+    setAddedCandidateIds((prev) => new Set([...prev, candidate.candidateKey ?? candidate.id]))
     toastSuccess('AI候補をバックログに追加しました')
     if (newTaskId) {
       setRecentAiAdd({ columnKey: backlogColumnKey, taskId: newTaskId })
@@ -787,7 +787,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
         onMobileClose={() => setMobileAiOpen(false)}
         onAddToKanban={handleAddToKanban}
         onHold={(id) => {
-          const target = candidates.find((c) => c.id === id)
+          const target = candidates.find((c) => (c.candidateKey ?? c.id) === id)
           if (target) {
             logAiTaskCandidateEvent(
               buildAiTaskCandidateEventPayload(projectId, target, 'snoozed', {
@@ -802,16 +802,16 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
             )
           }
           setCandidates((prev) => {
-            const idx = prev.findIndex((c) => c.id === id)
+            const idx = prev.findIndex((c) => (c.candidateKey ?? c.id) === id)
             if (idx < 0) return prev
             const t = { ...prev[idx], held: true }
-            const others = prev.filter((c) => c.id !== id)
+            const others = prev.filter((c) => (c.candidateKey ?? c.id) !== id)
             return [...others, t]
           })
           toastSuccess('候補をあとで確認に回しました')
         }}
         onDismiss={(id) => {
-          const target = candidates.find((c) => c.id === id)
+          const target = candidates.find((c) => (c.candidateKey ?? c.id) === id)
           if (target) {
             logAiTaskCandidateEvent(
               buildAiTaskCandidateEventPayload(projectId, target, 'dismissed', {
@@ -825,7 +825,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
               })
             )
           }
-          const existed = candidates.some((c) => c.id === id)
+          const existed = candidates.some((c) => (c.candidateKey ?? c.id) === id)
           if (existed) {
             setDismissedCandidateIds((prev) => new Set([...prev, id]))
           }

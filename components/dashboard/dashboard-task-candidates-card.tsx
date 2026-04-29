@@ -101,7 +101,7 @@ export function DashboardTaskCandidatesCard({ projectId }: DashboardTaskCandidat
               item.nextActions.trim()
           )
 
-        const extracted = extractTaskCandidatesFromReports(reports)
+        const extracted = extractTaskCandidatesFromReports(reports, projectId)
         if (cancelled) return
 
         if (extracted.length > 0) {
@@ -146,7 +146,7 @@ export function DashboardTaskCandidatesCard({ projectId }: DashboardTaskCandidat
   }, [projectId])
 
   const mappedCandidates = rawCandidates.map((c) => ({
-    id: c.id,
+    id: c.candidateKey ?? c.id,
     title: c.displayTitle ?? c.title,
     reason: c.reason,
     source: toCardSource(c.source),

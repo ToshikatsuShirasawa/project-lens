@@ -286,6 +286,8 @@ export type ExtractionStatus = 'todo' | 'done' | 'waiting' | 'memo' | 'unknown'
 
 export interface TaskCandidate {
   id: string
+  /** 安定した同一判定キー。generateCandidateKey(projectId, title) で生成。 */
+  candidateKey?: string
   title: string
   /** UI 表示・ログ用の整形済みタイトル。スコアリングには使わず `title` を使う。 */
   displayTitle?: string

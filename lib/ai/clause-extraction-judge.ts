@@ -23,6 +23,7 @@ const DONE_KEYWORDS: readonly string[] = [
   '共有済み',
   'しました',
   '済ませた',
+  '終わっています', // 「修正終わっています」「終わっています」などの完了形をカバー
 ]
 
 /**
@@ -71,10 +72,13 @@ const LEGACY_TODO_KEYWORDS: readonly string[] = [
 const WAITING_KEYWORDS: readonly string[] = [
   '確認待ち',
   '返信待ち',
+  '返答待ち',
   'レビュー待ち',
   '依頼済み',
   '先方確認中',
   '回答待ち',
+  '対応待ち',
+  '承認待ち',
 ]
 
 const MEMO_KEYWORDS: readonly string[] = ['共有のみ', 'メモ', '参考', '備考', '記録として']
@@ -198,7 +202,7 @@ export function judgeExtractionClause(clause: string): ExtractionJudgement {
     return { status: 'memo', shouldExtract: false, confidence: 0.9, reasons }
   }
   if (waitingMatches.length > 0) {
-    return { status: 'waiting', shouldExtract: true, confidence: 0.8, reasons }
+    return { status: 'waiting', shouldExtract: false, confidence: 0.8, reasons }
   }
   // spec-todo は done より優先（節分割済みの純粋 todo 節）
   if (specTodoMatches.length > 0) {

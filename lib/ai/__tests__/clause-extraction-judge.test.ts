@@ -79,6 +79,30 @@ describe('judgeExtractionClause', () => {
     expect(j.shouldExtract).toBe(false)
   })
 
+  it('「修正終わっています」→ done、候補化しない', () => {
+    const j = judgeExtractionClause('修正終わっています')
+    expect(j.status).toBe('done')
+    expect(j.shouldExtract).toBe(false)
+  })
+
+  it('「対応完了しました」→ done、候補化しない', () => {
+    const j = judgeExtractionClause('対応完了しました')
+    expect(j.status).toBe('done')
+    expect(j.shouldExtract).toBe(false)
+  })
+
+  it('「終わっています」→ done、候補化しない', () => {
+    const j = judgeExtractionClause('終わっています')
+    expect(j.status).toBe('done')
+    expect(j.shouldExtract).toBe(false)
+  })
+
+  it('「対応しました」→ done、候補化しない', () => {
+    const j = judgeExtractionClause('対応しました')
+    expect(j.status).toBe('done')
+    expect(j.shouldExtract).toBe(false)
+  })
+
   // ─── todo
   it('ケース4: 「APIレスポンスの型定義を修正する必要があります」→ todo、候補化する', () => {
     const j = judgeExtractionClause('APIレスポンスの型定義を修正する必要があります')
@@ -111,24 +135,42 @@ describe('judgeExtractionClause', () => {
     expect(j.shouldExtract).toBe(true)
   })
 
-  // ─── waiting
-  it('ケース3a: 「先方に確認依頼済みです」→ waiting、候補化する', () => {
+  // ─── waiting（待ち状態はタスク候補から除外）
+  it('ケース3a: 「先方に確認依頼済みです」→ waiting、候補化しない', () => {
     const j = judgeExtractionClause('先方に確認依頼済みです')
     expect(j.status).toBe('waiting')
-    expect(j.shouldExtract).toBe(true)
+    expect(j.shouldExtract).toBe(false)
     expect(j.reasons.some((r) => r.includes('waiting'))).toBe(true)
   })
 
-  it('ケース3b: 「回答待ちです」→ waiting', () => {
+  it('ケース3b: 「回答待ちです」→ waiting、候補化しない', () => {
     const j = judgeExtractionClause('回答待ちです')
     expect(j.status).toBe('waiting')
-    expect(j.shouldExtract).toBe(true)
+    expect(j.shouldExtract).toBe(false)
   })
 
-  it('確認待ちを含む節 → waiting', () => {
+  it('確認待ちを含む節 → waiting、候補化しない', () => {
     const j = judgeExtractionClause('A社からの確認待ちです')
     expect(j.status).toBe('waiting')
-    expect(j.shouldExtract).toBe(true)
+    expect(j.shouldExtract).toBe(false)
+  })
+
+  it('返答待ちを含む節 → waiting、候補化しない', () => {
+    const j = judgeExtractionClause('顧客からの返答待ちです')
+    expect(j.status).toBe('waiting')
+    expect(j.shouldExtract).toBe(false)
+  })
+
+  it('対応待ちを含む節 → waiting、候補化しない', () => {
+    const j = judgeExtractionClause('○○さんの対応待ちです')
+    expect(j.status).toBe('waiting')
+    expect(j.shouldExtract).toBe(false)
+  })
+
+  it('承認待ちを含む節 → waiting、候補化しない', () => {
+    const j = judgeExtractionClause('上長の承認待ちです')
+    expect(j.status).toBe('waiting')
+    expect(j.shouldExtract).toBe(false)
   })
 
   // ─── memo
@@ -151,10 +193,10 @@ describe('judgeExtractionClause', () => {
     expect(j.shouldExtract).toBe(false)
   })
 
-  it('waiting と todo が混在する場合は waiting 優先', () => {
+  it('waiting と todo が混在する場合は waiting 優先（候補化しない）', () => {
     const j = judgeExtractionClause('回答待ちですが必要があれば対応する')
     expect(j.status).toBe('waiting')
-    expect(j.shouldExtract).toBe(true)
+    expect(j.shouldExtract).toBe(false)
   })
 
   // ─── 対応済み（done）が todo の短形式を上書きする
@@ -265,10 +307,9 @@ describe('統合テスト', () => {
     expect(result[0]).toBe('詳細画面の確認が必要です')
   })
 
-  it('ケース3: 待機文 → 両節とも waiting として抽出', () => {
+  it('ケース3: 待機文 → waiting は候補化しないため抽出なし', () => {
     const result = extractCandidateClauses('先方に確認依頼済みです。回答待ちです')
-    expect(result).toHaveLength(2)
-    expect(result.every((c) => judgeExtractionClause(c).status === 'waiting')).toBe(true)
+    expect(result).toHaveLength(0)
   })
 
   it('ケース4: API 修正 → 候補あり', () => {
@@ -359,10 +400,10 @@ describe('legacy-todo 後方互換（活用形・短形式ステム）', () => {
     expect(j.shouldExtract).toBe(false)
   })
 
-  it('「確認待ちです」→ waiting（legacy "確認" が "確認待ち" に吸収される）', () => {
+  it('「確認待ちです」→ waiting、候補化しない（legacy "確認" が "確認待ち" に吸収される）', () => {
     const j = judgeExtractionClause('確認待ちです')
     expect(j.status).toBe('waiting')
-    expect(j.shouldExtract).toBe(true)
+    expect(j.shouldExtract).toBe(false)
   })
 
   it('「対応予定です」→ todo（legacy "対応"、"対応済み" は不在）', () => {
@@ -409,5 +450,74 @@ describe('legacy-todo 後方互換（活用形・短形式ステム）', () => {
     const j = judgeExtractionClause('残タスクは完了しました')
     expect(j.status).toBe('done')
     expect(j.shouldExtract).toBe(false)
+  })
+})
+
+// ─── 過抽出除去の実データ検証 ─────────────────────────────────
+
+describe('過抽出除去: 実データ入力での期待候補', () => {
+  function extractCandidateClauses(text: string): string[] {
+    return splitReportIntoClauses(text).filter((clause) =>
+      shouldCreateTaskCandidate(judgeExtractionClause(clause)),
+    )
+  }
+
+  const reportInput = [
+    '対応完了しました',
+    '修正終わっています',
+    'API仕様の確認が必要です',
+    'ログ出力の修正が必要です',
+    '田中さんの確認待ちです',
+    '顧客からの返答待ちです',
+    '明日までにエラー画面の文言を修正します',
+    'エラー修正しましたが、追加確認が必要です',
+  ].join('\n')
+
+  it('抽出される: API仕様の確認が必要です', () => {
+    expect(extractCandidateClauses('API仕様の確認が必要です')).toContain('API仕様の確認が必要です')
+  })
+
+  it('抽出される: ログ出力の修正が必要です', () => {
+    expect(extractCandidateClauses('ログ出力の修正が必要です')).toContain('ログ出力の修正が必要です')
+  })
+
+  it('抽出される: 明日までにエラー画面の文言を修正します', () => {
+    const result = extractCandidateClauses('明日までにエラー画面の文言を修正します')
+    expect(result).toContain('明日までにエラー画面の文言を修正します')
+  })
+
+  it('抽出される: 追加確認が必要です（エラー修正しましたが〜 から分割）', () => {
+    const result = extractCandidateClauses('エラー修正しましたが、追加確認が必要です')
+    expect(result).toContain('追加確認が必要です')
+    expect(result).not.toContain('エラー修正しました')
+  })
+
+  it('抽出されない: 対応完了しました（完了系）', () => {
+    expect(extractCandidateClauses('対応完了しました')).toHaveLength(0)
+  })
+
+  it('抽出されない: 修正終わっています（完了系）', () => {
+    expect(extractCandidateClauses('修正終わっています')).toHaveLength(0)
+  })
+
+  it('抽出されない: 田中さんの確認待ちです（待ち状態）', () => {
+    expect(extractCandidateClauses('田中さんの確認待ちです')).toHaveLength(0)
+  })
+
+  it('抽出されない: 顧客からの返答待ちです（待ち状態）', () => {
+    expect(extractCandidateClauses('顧客からの返答待ちです')).toHaveLength(0)
+  })
+
+  it('全体入力: 期待する4候補のみ抽出', () => {
+    const result = extractCandidateClauses(reportInput)
+    expect(result).toContain('API仕様の確認が必要です')
+    expect(result).toContain('ログ出力の修正が必要です')
+    expect(result).toContain('明日までにエラー画面の文言を修正します')
+    expect(result).toContain('追加確認が必要です')
+    expect(result).not.toContain('対応完了しました')
+    expect(result).not.toContain('修正終わっています')
+    expect(result).not.toContain('田中さんの確認待ちです')
+    expect(result).not.toContain('顧客からの返答待ちです')
+    expect(result).toHaveLength(4)
   })
 })

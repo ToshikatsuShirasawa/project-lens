@@ -389,6 +389,40 @@ export type JsonNullableWithAggregatesFilterBase<$PrismaModel = never> = {
   _max?: Prisma.NestedJsonNullableFilter<$PrismaModel>
 }
 
+export type EnumAiTaskCandidateStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.AiTaskCandidateStatus | Prisma.EnumAiTaskCandidateStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.AiTaskCandidateStatus[] | Prisma.ListEnumAiTaskCandidateStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AiTaskCandidateStatus[] | Prisma.ListEnumAiTaskCandidateStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAiTaskCandidateStatusFilter<$PrismaModel> | $Enums.AiTaskCandidateStatus
+}
+
+export type EnumAiTaskCandidateSourceFilter<$PrismaModel = never> = {
+  equals?: $Enums.AiTaskCandidateSource | Prisma.EnumAiTaskCandidateSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.AiTaskCandidateSource[] | Prisma.ListEnumAiTaskCandidateSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AiTaskCandidateSource[] | Prisma.ListEnumAiTaskCandidateSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAiTaskCandidateSourceFilter<$PrismaModel> | $Enums.AiTaskCandidateSource
+}
+
+export type EnumAiTaskCandidateStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AiTaskCandidateStatus | Prisma.EnumAiTaskCandidateStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.AiTaskCandidateStatus[] | Prisma.ListEnumAiTaskCandidateStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AiTaskCandidateStatus[] | Prisma.ListEnumAiTaskCandidateStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAiTaskCandidateStatusWithAggregatesFilter<$PrismaModel> | $Enums.AiTaskCandidateStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAiTaskCandidateStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAiTaskCandidateStatusFilter<$PrismaModel>
+}
+
+export type EnumAiTaskCandidateSourceWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AiTaskCandidateSource | Prisma.EnumAiTaskCandidateSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.AiTaskCandidateSource[] | Prisma.ListEnumAiTaskCandidateSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AiTaskCandidateSource[] | Prisma.ListEnumAiTaskCandidateSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAiTaskCandidateSourceWithAggregatesFilter<$PrismaModel> | $Enums.AiTaskCandidateSource
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAiTaskCandidateSourceFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAiTaskCandidateSourceFilter<$PrismaModel>
+}
+
 export type NestedStringFilter<$PrismaModel = never> = {
   equals?: string | Prisma.StringFieldRefInput<$PrismaModel>
   in?: string[] | Prisma.ListStringFieldRefInput<$PrismaModel>
@@ -721,6 +755,40 @@ export type NestedJsonNullableFilterBase<$PrismaModel = never> = {
   gt?: runtime.InputJsonValue | Prisma.JsonFieldRefInput<$PrismaModel>
   gte?: runtime.InputJsonValue | Prisma.JsonFieldRefInput<$PrismaModel>
   not?: runtime.InputJsonValue | Prisma.JsonFieldRefInput<$PrismaModel> | Prisma.JsonNullValueFilter
+}
+
+export type NestedEnumAiTaskCandidateStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.AiTaskCandidateStatus | Prisma.EnumAiTaskCandidateStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.AiTaskCandidateStatus[] | Prisma.ListEnumAiTaskCandidateStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AiTaskCandidateStatus[] | Prisma.ListEnumAiTaskCandidateStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAiTaskCandidateStatusFilter<$PrismaModel> | $Enums.AiTaskCandidateStatus
+}
+
+export type NestedEnumAiTaskCandidateSourceFilter<$PrismaModel = never> = {
+  equals?: $Enums.AiTaskCandidateSource | Prisma.EnumAiTaskCandidateSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.AiTaskCandidateSource[] | Prisma.ListEnumAiTaskCandidateSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AiTaskCandidateSource[] | Prisma.ListEnumAiTaskCandidateSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAiTaskCandidateSourceFilter<$PrismaModel> | $Enums.AiTaskCandidateSource
+}
+
+export type NestedEnumAiTaskCandidateStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AiTaskCandidateStatus | Prisma.EnumAiTaskCandidateStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.AiTaskCandidateStatus[] | Prisma.ListEnumAiTaskCandidateStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AiTaskCandidateStatus[] | Prisma.ListEnumAiTaskCandidateStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAiTaskCandidateStatusWithAggregatesFilter<$PrismaModel> | $Enums.AiTaskCandidateStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAiTaskCandidateStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAiTaskCandidateStatusFilter<$PrismaModel>
+}
+
+export type NestedEnumAiTaskCandidateSourceWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.AiTaskCandidateSource | Prisma.EnumAiTaskCandidateSourceFieldRefInput<$PrismaModel>
+  in?: $Enums.AiTaskCandidateSource[] | Prisma.ListEnumAiTaskCandidateSourceFieldRefInput<$PrismaModel>
+  notIn?: $Enums.AiTaskCandidateSource[] | Prisma.ListEnumAiTaskCandidateSourceFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumAiTaskCandidateSourceWithAggregatesFilter<$PrismaModel> | $Enums.AiTaskCandidateSource
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumAiTaskCandidateSourceFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumAiTaskCandidateSourceFilter<$PrismaModel>
 }
 
 

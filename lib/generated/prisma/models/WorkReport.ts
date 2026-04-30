@@ -231,6 +231,7 @@ export type WorkReportWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"WorkReport"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"WorkReport"> | Date | string
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateListRelationFilter
 }
 
 export type WorkReportOrderByWithRelationInput = {
@@ -246,6 +247,7 @@ export type WorkReportOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   project?: Prisma.ProjectOrderByWithRelationInput
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateOrderByRelationAggregateInput
 }
 
 export type WorkReportWhereUniqueInput = Prisma.AtLeast<{
@@ -264,6 +266,7 @@ export type WorkReportWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"WorkReport"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"WorkReport"> | Date | string
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateListRelationFilter
 }, "id">
 
 export type WorkReportOrderByWithAggregationInput = {
@@ -312,6 +315,7 @@ export type WorkReportCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutWorkReportsInput
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateCreateNestedManyWithoutSourceReportInput
 }
 
 export type WorkReportUncheckedCreateInput = {
@@ -326,6 +330,7 @@ export type WorkReportUncheckedCreateInput = {
   reportDate?: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedCreateNestedManyWithoutSourceReportInput
 }
 
 export type WorkReportUpdateInput = {
@@ -340,6 +345,7 @@ export type WorkReportUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutWorkReportsNestedInput
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUpdateManyWithoutSourceReportNestedInput
 }
 
 export type WorkReportUncheckedUpdateInput = {
@@ -354,6 +360,7 @@ export type WorkReportUncheckedUpdateInput = {
   reportDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedUpdateManyWithoutSourceReportNestedInput
 }
 
 export type WorkReportCreateManyInput = {
@@ -449,6 +456,11 @@ export type WorkReportMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
+export type WorkReportNullableScalarRelationFilter = {
+  is?: Prisma.WorkReportWhereInput | null
+  isNot?: Prisma.WorkReportWhereInput | null
+}
+
 export type WorkReportCreateNestedManyWithoutProjectInput = {
   create?: Prisma.XOR<Prisma.WorkReportCreateWithoutProjectInput, Prisma.WorkReportUncheckedCreateWithoutProjectInput> | Prisma.WorkReportCreateWithoutProjectInput[] | Prisma.WorkReportUncheckedCreateWithoutProjectInput[]
   connectOrCreate?: Prisma.WorkReportCreateOrConnectWithoutProjectInput | Prisma.WorkReportCreateOrConnectWithoutProjectInput[]
@@ -491,6 +503,22 @@ export type WorkReportUncheckedUpdateManyWithoutProjectNestedInput = {
   deleteMany?: Prisma.WorkReportScalarWhereInput | Prisma.WorkReportScalarWhereInput[]
 }
 
+export type WorkReportCreateNestedOneWithoutAiTaskCandidateStatesInput = {
+  create?: Prisma.XOR<Prisma.WorkReportCreateWithoutAiTaskCandidateStatesInput, Prisma.WorkReportUncheckedCreateWithoutAiTaskCandidateStatesInput>
+  connectOrCreate?: Prisma.WorkReportCreateOrConnectWithoutAiTaskCandidateStatesInput
+  connect?: Prisma.WorkReportWhereUniqueInput
+}
+
+export type WorkReportUpdateOneWithoutAiTaskCandidateStatesNestedInput = {
+  create?: Prisma.XOR<Prisma.WorkReportCreateWithoutAiTaskCandidateStatesInput, Prisma.WorkReportUncheckedCreateWithoutAiTaskCandidateStatesInput>
+  connectOrCreate?: Prisma.WorkReportCreateOrConnectWithoutAiTaskCandidateStatesInput
+  upsert?: Prisma.WorkReportUpsertWithoutAiTaskCandidateStatesInput
+  disconnect?: Prisma.WorkReportWhereInput | boolean
+  delete?: Prisma.WorkReportWhereInput | boolean
+  connect?: Prisma.WorkReportWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.WorkReportUpdateToOneWithWhereWithoutAiTaskCandidateStatesInput, Prisma.WorkReportUpdateWithoutAiTaskCandidateStatesInput>, Prisma.WorkReportUncheckedUpdateWithoutAiTaskCandidateStatesInput>
+}
+
 export type WorkReportCreateWithoutProjectInput = {
   id?: string
   submittedByUserId?: string | null
@@ -502,6 +530,7 @@ export type WorkReportCreateWithoutProjectInput = {
   reportDate?: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateCreateNestedManyWithoutSourceReportInput
 }
 
 export type WorkReportUncheckedCreateWithoutProjectInput = {
@@ -515,6 +544,7 @@ export type WorkReportUncheckedCreateWithoutProjectInput = {
   reportDate?: Date | string
   createdAt?: Date | string
   updatedAt?: Date | string
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedCreateNestedManyWithoutSourceReportInput
 }
 
 export type WorkReportCreateOrConnectWithoutProjectInput = {
@@ -560,6 +590,78 @@ export type WorkReportScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"WorkReport"> | Date | string
 }
 
+export type WorkReportCreateWithoutAiTaskCandidateStatesInput = {
+  id?: string
+  submittedByUserId?: string | null
+  submittedBy: string
+  completed?: string
+  inProgress?: string
+  blockers?: string
+  nextActions?: string
+  reportDate?: Date | string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  project: Prisma.ProjectCreateNestedOneWithoutWorkReportsInput
+}
+
+export type WorkReportUncheckedCreateWithoutAiTaskCandidateStatesInput = {
+  id?: string
+  projectId: string
+  submittedByUserId?: string | null
+  submittedBy: string
+  completed?: string
+  inProgress?: string
+  blockers?: string
+  nextActions?: string
+  reportDate?: Date | string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type WorkReportCreateOrConnectWithoutAiTaskCandidateStatesInput = {
+  where: Prisma.WorkReportWhereUniqueInput
+  create: Prisma.XOR<Prisma.WorkReportCreateWithoutAiTaskCandidateStatesInput, Prisma.WorkReportUncheckedCreateWithoutAiTaskCandidateStatesInput>
+}
+
+export type WorkReportUpsertWithoutAiTaskCandidateStatesInput = {
+  update: Prisma.XOR<Prisma.WorkReportUpdateWithoutAiTaskCandidateStatesInput, Prisma.WorkReportUncheckedUpdateWithoutAiTaskCandidateStatesInput>
+  create: Prisma.XOR<Prisma.WorkReportCreateWithoutAiTaskCandidateStatesInput, Prisma.WorkReportUncheckedCreateWithoutAiTaskCandidateStatesInput>
+  where?: Prisma.WorkReportWhereInput
+}
+
+export type WorkReportUpdateToOneWithWhereWithoutAiTaskCandidateStatesInput = {
+  where?: Prisma.WorkReportWhereInput
+  data: Prisma.XOR<Prisma.WorkReportUpdateWithoutAiTaskCandidateStatesInput, Prisma.WorkReportUncheckedUpdateWithoutAiTaskCandidateStatesInput>
+}
+
+export type WorkReportUpdateWithoutAiTaskCandidateStatesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  submittedByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  submittedBy?: Prisma.StringFieldUpdateOperationsInput | string
+  completed?: Prisma.StringFieldUpdateOperationsInput | string
+  inProgress?: Prisma.StringFieldUpdateOperationsInput | string
+  blockers?: Prisma.StringFieldUpdateOperationsInput | string
+  nextActions?: Prisma.StringFieldUpdateOperationsInput | string
+  reportDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  project?: Prisma.ProjectUpdateOneRequiredWithoutWorkReportsNestedInput
+}
+
+export type WorkReportUncheckedUpdateWithoutAiTaskCandidateStatesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  submittedByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  submittedBy?: Prisma.StringFieldUpdateOperationsInput | string
+  completed?: Prisma.StringFieldUpdateOperationsInput | string
+  inProgress?: Prisma.StringFieldUpdateOperationsInput | string
+  blockers?: Prisma.StringFieldUpdateOperationsInput | string
+  nextActions?: Prisma.StringFieldUpdateOperationsInput | string
+  reportDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type WorkReportCreateManyProjectInput = {
   id?: string
   submittedByUserId?: string | null
@@ -584,6 +686,7 @@ export type WorkReportUpdateWithoutProjectInput = {
   reportDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUpdateManyWithoutSourceReportNestedInput
 }
 
 export type WorkReportUncheckedUpdateWithoutProjectInput = {
@@ -597,6 +700,7 @@ export type WorkReportUncheckedUpdateWithoutProjectInput = {
   reportDate?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedUpdateManyWithoutSourceReportNestedInput
 }
 
 export type WorkReportUncheckedUpdateManyWithoutProjectInput = {
@@ -613,6 +717,35 @@ export type WorkReportUncheckedUpdateManyWithoutProjectInput = {
 }
 
 
+/**
+ * Count Type WorkReportCountOutputType
+ */
+
+export type WorkReportCountOutputType = {
+  aiTaskCandidateStates: number
+}
+
+export type WorkReportCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  aiTaskCandidateStates?: boolean | WorkReportCountOutputTypeCountAiTaskCandidateStatesArgs
+}
+
+/**
+ * WorkReportCountOutputType without action
+ */
+export type WorkReportCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the WorkReportCountOutputType
+   */
+  select?: Prisma.WorkReportCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * WorkReportCountOutputType without action
+ */
+export type WorkReportCountOutputTypeCountAiTaskCandidateStatesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AiTaskCandidateStateWhereInput
+}
+
 
 export type WorkReportSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -627,6 +760,8 @@ export type WorkReportSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   createdAt?: boolean
   updatedAt?: boolean
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
+  aiTaskCandidateStates?: boolean | Prisma.WorkReport$aiTaskCandidateStatesArgs<ExtArgs>
+  _count?: boolean | Prisma.WorkReportCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["workReport"]>
 
 export type WorkReportSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -676,6 +811,8 @@ export type WorkReportSelectScalar = {
 export type WorkReportOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "submittedByUserId" | "submittedBy" | "completed" | "inProgress" | "blockers" | "nextActions" | "reportDate" | "createdAt" | "updatedAt", ExtArgs["result"]["workReport"]>
 export type WorkReportInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
+  aiTaskCandidateStates?: boolean | Prisma.WorkReport$aiTaskCandidateStatesArgs<ExtArgs>
+  _count?: boolean | Prisma.WorkReportCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type WorkReportIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
@@ -688,6 +825,7 @@ export type $WorkReportPayload<ExtArgs extends runtime.Types.Extensions.Internal
   name: "WorkReport"
   objects: {
     project: Prisma.$ProjectPayload<ExtArgs>
+    aiTaskCandidateStates: Prisma.$AiTaskCandidateStatePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1105,6 +1243,7 @@ readonly fields: WorkReportFieldRefs;
 export interface Prisma__WorkReportClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   project<T extends Prisma.ProjectDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProjectDefaultArgs<ExtArgs>>): Prisma.Prisma__ProjectClient<runtime.Types.Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  aiTaskCandidateStates<T extends Prisma.WorkReport$aiTaskCandidateStatesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.WorkReport$aiTaskCandidateStatesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AiTaskCandidateStatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1543,6 +1682,30 @@ export type WorkReportDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.In
    * Limit how many WorkReports to delete.
    */
   limit?: number
+}
+
+/**
+ * WorkReport.aiTaskCandidateStates
+ */
+export type WorkReport$aiTaskCandidateStatesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AiTaskCandidateState
+   */
+  select?: Prisma.AiTaskCandidateStateSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AiTaskCandidateState
+   */
+  omit?: Prisma.AiTaskCandidateStateOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AiTaskCandidateStateInclude<ExtArgs> | null
+  where?: Prisma.AiTaskCandidateStateWhereInput
+  orderBy?: Prisma.AiTaskCandidateStateOrderByWithRelationInput | Prisma.AiTaskCandidateStateOrderByWithRelationInput[]
+  cursor?: Prisma.AiTaskCandidateStateWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AiTaskCandidateStateScalarFieldEnum | Prisma.AiTaskCandidateStateScalarFieldEnum[]
 }
 
 /**

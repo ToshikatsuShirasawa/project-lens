@@ -60,7 +60,8 @@ export const ModelName = {
   ProjectMember: 'ProjectMember',
   KanbanTask: 'KanbanTask',
   WorkReport: 'WorkReport',
-  AiTaskCandidateEvent: 'AiTaskCandidateEvent'
+  AiTaskCandidateEvent: 'AiTaskCandidateEvent',
+  AiTaskCandidateState: 'AiTaskCandidateState'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -222,6 +223,23 @@ export const AiTaskCandidateEventScalarFieldEnum = {
 } as const
 
 export type AiTaskCandidateEventScalarFieldEnum = (typeof AiTaskCandidateEventScalarFieldEnum)[keyof typeof AiTaskCandidateEventScalarFieldEnum]
+
+
+export const AiTaskCandidateStateScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  candidateKey: 'candidateKey',
+  candidateTitle: 'candidateTitle',
+  status: 'status',
+  sourceType: 'sourceType',
+  sourceReportId: 'sourceReportId',
+  createdTaskId: 'createdTaskId',
+  updatedByUserId: 'updatedByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AiTaskCandidateStateScalarFieldEnum = (typeof AiTaskCandidateStateScalarFieldEnum)[keyof typeof AiTaskCandidateStateScalarFieldEnum]
 
 
 export const SortOrder = {

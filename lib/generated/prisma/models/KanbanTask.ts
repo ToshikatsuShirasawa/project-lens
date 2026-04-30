@@ -267,6 +267,7 @@ export type KanbanTaskWhereInput = {
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
   kanbanColumn?: Prisma.XOR<Prisma.ProjectKanbanColumnScalarRelationFilter, Prisma.ProjectKanbanColumnWhereInput>
   assignee?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateListRelationFilter
 }
 
 export type KanbanTaskOrderByWithRelationInput = {
@@ -284,6 +285,7 @@ export type KanbanTaskOrderByWithRelationInput = {
   project?: Prisma.ProjectOrderByWithRelationInput
   kanbanColumn?: Prisma.ProjectKanbanColumnOrderByWithRelationInput
   assignee?: Prisma.UserOrderByWithRelationInput
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateOrderByRelationAggregateInput
 }
 
 export type KanbanTaskWhereUniqueInput = Prisma.AtLeast<{
@@ -304,6 +306,7 @@ export type KanbanTaskWhereUniqueInput = Prisma.AtLeast<{
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
   kanbanColumn?: Prisma.XOR<Prisma.ProjectKanbanColumnScalarRelationFilter, Prisma.ProjectKanbanColumnWhereInput>
   assignee?: Prisma.XOR<Prisma.UserNullableScalarRelationFilter, Prisma.UserWhereInput> | null
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateListRelationFilter
 }, "id">
 
 export type KanbanTaskOrderByWithAggregationInput = {
@@ -354,6 +357,7 @@ export type KanbanTaskCreateInput = {
   project: Prisma.ProjectCreateNestedOneWithoutTasksInput
   kanbanColumn: Prisma.ProjectKanbanColumnCreateNestedOneWithoutTasksInput
   assignee?: Prisma.UserCreateNestedOneWithoutAssignedTasksInput
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateCreateNestedManyWithoutCreatedTaskInput
 }
 
 export type KanbanTaskUncheckedCreateInput = {
@@ -368,6 +372,7 @@ export type KanbanTaskUncheckedCreateInput = {
   projectId: string
   columnId: string
   assigneeId?: string | null
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedCreateNestedManyWithoutCreatedTaskInput
 }
 
 export type KanbanTaskUpdateInput = {
@@ -382,6 +387,7 @@ export type KanbanTaskUpdateInput = {
   project?: Prisma.ProjectUpdateOneRequiredWithoutTasksNestedInput
   kanbanColumn?: Prisma.ProjectKanbanColumnUpdateOneRequiredWithoutTasksNestedInput
   assignee?: Prisma.UserUpdateOneWithoutAssignedTasksNestedInput
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUpdateManyWithoutCreatedTaskNestedInput
 }
 
 export type KanbanTaskUncheckedUpdateInput = {
@@ -396,6 +402,7 @@ export type KanbanTaskUncheckedUpdateInput = {
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
   columnId?: Prisma.StringFieldUpdateOperationsInput | string
   assigneeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedUpdateManyWithoutCreatedTaskNestedInput
 }
 
 export type KanbanTaskCreateManyInput = {
@@ -495,6 +502,11 @@ export type KanbanTaskMinOrderByAggregateInput = {
 
 export type KanbanTaskSumOrderByAggregateInput = {
   sortOrder?: Prisma.SortOrder
+}
+
+export type KanbanTaskNullableScalarRelationFilter = {
+  is?: Prisma.KanbanTaskWhereInput | null
+  isNot?: Prisma.KanbanTaskWhereInput | null
 }
 
 export type KanbanTaskCreateNestedManyWithoutAssigneeInput = {
@@ -627,6 +639,22 @@ export type NullableEnumTaskPriorityFieldUpdateOperationsInput = {
   set?: $Enums.TaskPriority | null
 }
 
+export type KanbanTaskCreateNestedOneWithoutAiTaskCandidateStatesInput = {
+  create?: Prisma.XOR<Prisma.KanbanTaskCreateWithoutAiTaskCandidateStatesInput, Prisma.KanbanTaskUncheckedCreateWithoutAiTaskCandidateStatesInput>
+  connectOrCreate?: Prisma.KanbanTaskCreateOrConnectWithoutAiTaskCandidateStatesInput
+  connect?: Prisma.KanbanTaskWhereUniqueInput
+}
+
+export type KanbanTaskUpdateOneWithoutAiTaskCandidateStatesNestedInput = {
+  create?: Prisma.XOR<Prisma.KanbanTaskCreateWithoutAiTaskCandidateStatesInput, Prisma.KanbanTaskUncheckedCreateWithoutAiTaskCandidateStatesInput>
+  connectOrCreate?: Prisma.KanbanTaskCreateOrConnectWithoutAiTaskCandidateStatesInput
+  upsert?: Prisma.KanbanTaskUpsertWithoutAiTaskCandidateStatesInput
+  disconnect?: Prisma.KanbanTaskWhereInput | boolean
+  delete?: Prisma.KanbanTaskWhereInput | boolean
+  connect?: Prisma.KanbanTaskWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.KanbanTaskUpdateToOneWithWhereWithoutAiTaskCandidateStatesInput, Prisma.KanbanTaskUpdateWithoutAiTaskCandidateStatesInput>, Prisma.KanbanTaskUncheckedUpdateWithoutAiTaskCandidateStatesInput>
+}
+
 export type KanbanTaskCreateWithoutAssigneeInput = {
   id?: string
   title: string
@@ -638,6 +666,7 @@ export type KanbanTaskCreateWithoutAssigneeInput = {
   updatedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutTasksInput
   kanbanColumn: Prisma.ProjectKanbanColumnCreateNestedOneWithoutTasksInput
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateCreateNestedManyWithoutCreatedTaskInput
 }
 
 export type KanbanTaskUncheckedCreateWithoutAssigneeInput = {
@@ -651,6 +680,7 @@ export type KanbanTaskUncheckedCreateWithoutAssigneeInput = {
   updatedAt?: Date | string
   projectId: string
   columnId: string
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedCreateNestedManyWithoutCreatedTaskInput
 }
 
 export type KanbanTaskCreateOrConnectWithoutAssigneeInput = {
@@ -707,6 +737,7 @@ export type KanbanTaskCreateWithoutProjectInput = {
   updatedAt?: Date | string
   kanbanColumn: Prisma.ProjectKanbanColumnCreateNestedOneWithoutTasksInput
   assignee?: Prisma.UserCreateNestedOneWithoutAssignedTasksInput
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateCreateNestedManyWithoutCreatedTaskInput
 }
 
 export type KanbanTaskUncheckedCreateWithoutProjectInput = {
@@ -720,6 +751,7 @@ export type KanbanTaskUncheckedCreateWithoutProjectInput = {
   updatedAt?: Date | string
   columnId: string
   assigneeId?: string | null
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedCreateNestedManyWithoutCreatedTaskInput
 }
 
 export type KanbanTaskCreateOrConnectWithoutProjectInput = {
@@ -759,6 +791,7 @@ export type KanbanTaskCreateWithoutKanbanColumnInput = {
   updatedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutTasksInput
   assignee?: Prisma.UserCreateNestedOneWithoutAssignedTasksInput
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateCreateNestedManyWithoutCreatedTaskInput
 }
 
 export type KanbanTaskUncheckedCreateWithoutKanbanColumnInput = {
@@ -772,6 +805,7 @@ export type KanbanTaskUncheckedCreateWithoutKanbanColumnInput = {
   updatedAt?: Date | string
   projectId: string
   assigneeId?: string | null
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedCreateNestedManyWithoutCreatedTaskInput
 }
 
 export type KanbanTaskCreateOrConnectWithoutKanbanColumnInput = {
@@ -800,6 +834,78 @@ export type KanbanTaskUpdateManyWithWhereWithoutKanbanColumnInput = {
   data: Prisma.XOR<Prisma.KanbanTaskUpdateManyMutationInput, Prisma.KanbanTaskUncheckedUpdateManyWithoutKanbanColumnInput>
 }
 
+export type KanbanTaskCreateWithoutAiTaskCandidateStatesInput = {
+  id?: string
+  title: string
+  description?: string | null
+  dueDate?: Date | string | null
+  priority?: $Enums.TaskPriority | null
+  sortOrder?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  project: Prisma.ProjectCreateNestedOneWithoutTasksInput
+  kanbanColumn: Prisma.ProjectKanbanColumnCreateNestedOneWithoutTasksInput
+  assignee?: Prisma.UserCreateNestedOneWithoutAssignedTasksInput
+}
+
+export type KanbanTaskUncheckedCreateWithoutAiTaskCandidateStatesInput = {
+  id?: string
+  title: string
+  description?: string | null
+  dueDate?: Date | string | null
+  priority?: $Enums.TaskPriority | null
+  sortOrder?: number
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  projectId: string
+  columnId: string
+  assigneeId?: string | null
+}
+
+export type KanbanTaskCreateOrConnectWithoutAiTaskCandidateStatesInput = {
+  where: Prisma.KanbanTaskWhereUniqueInput
+  create: Prisma.XOR<Prisma.KanbanTaskCreateWithoutAiTaskCandidateStatesInput, Prisma.KanbanTaskUncheckedCreateWithoutAiTaskCandidateStatesInput>
+}
+
+export type KanbanTaskUpsertWithoutAiTaskCandidateStatesInput = {
+  update: Prisma.XOR<Prisma.KanbanTaskUpdateWithoutAiTaskCandidateStatesInput, Prisma.KanbanTaskUncheckedUpdateWithoutAiTaskCandidateStatesInput>
+  create: Prisma.XOR<Prisma.KanbanTaskCreateWithoutAiTaskCandidateStatesInput, Prisma.KanbanTaskUncheckedCreateWithoutAiTaskCandidateStatesInput>
+  where?: Prisma.KanbanTaskWhereInput
+}
+
+export type KanbanTaskUpdateToOneWithWhereWithoutAiTaskCandidateStatesInput = {
+  where?: Prisma.KanbanTaskWhereInput
+  data: Prisma.XOR<Prisma.KanbanTaskUpdateWithoutAiTaskCandidateStatesInput, Prisma.KanbanTaskUncheckedUpdateWithoutAiTaskCandidateStatesInput>
+}
+
+export type KanbanTaskUpdateWithoutAiTaskCandidateStatesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  priority?: Prisma.NullableEnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority | null
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  project?: Prisma.ProjectUpdateOneRequiredWithoutTasksNestedInput
+  kanbanColumn?: Prisma.ProjectKanbanColumnUpdateOneRequiredWithoutTasksNestedInput
+  assignee?: Prisma.UserUpdateOneWithoutAssignedTasksNestedInput
+}
+
+export type KanbanTaskUncheckedUpdateWithoutAiTaskCandidateStatesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  title?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  dueDate?: Prisma.NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  priority?: Prisma.NullableEnumTaskPriorityFieldUpdateOperationsInput | $Enums.TaskPriority | null
+  sortOrder?: Prisma.IntFieldUpdateOperationsInput | number
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  columnId?: Prisma.StringFieldUpdateOperationsInput | string
+  assigneeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+}
+
 export type KanbanTaskCreateManyAssigneeInput = {
   id?: string
   title: string
@@ -824,6 +930,7 @@ export type KanbanTaskUpdateWithoutAssigneeInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutTasksNestedInput
   kanbanColumn?: Prisma.ProjectKanbanColumnUpdateOneRequiredWithoutTasksNestedInput
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUpdateManyWithoutCreatedTaskNestedInput
 }
 
 export type KanbanTaskUncheckedUpdateWithoutAssigneeInput = {
@@ -837,6 +944,7 @@ export type KanbanTaskUncheckedUpdateWithoutAssigneeInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
   columnId?: Prisma.StringFieldUpdateOperationsInput | string
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedUpdateManyWithoutCreatedTaskNestedInput
 }
 
 export type KanbanTaskUncheckedUpdateManyWithoutAssigneeInput = {
@@ -876,6 +984,7 @@ export type KanbanTaskUpdateWithoutProjectInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   kanbanColumn?: Prisma.ProjectKanbanColumnUpdateOneRequiredWithoutTasksNestedInput
   assignee?: Prisma.UserUpdateOneWithoutAssignedTasksNestedInput
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUpdateManyWithoutCreatedTaskNestedInput
 }
 
 export type KanbanTaskUncheckedUpdateWithoutProjectInput = {
@@ -889,6 +998,7 @@ export type KanbanTaskUncheckedUpdateWithoutProjectInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   columnId?: Prisma.StringFieldUpdateOperationsInput | string
   assigneeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedUpdateManyWithoutCreatedTaskNestedInput
 }
 
 export type KanbanTaskUncheckedUpdateManyWithoutProjectInput = {
@@ -928,6 +1038,7 @@ export type KanbanTaskUpdateWithoutKanbanColumnInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutTasksNestedInput
   assignee?: Prisma.UserUpdateOneWithoutAssignedTasksNestedInput
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUpdateManyWithoutCreatedTaskNestedInput
 }
 
 export type KanbanTaskUncheckedUpdateWithoutKanbanColumnInput = {
@@ -941,6 +1052,7 @@ export type KanbanTaskUncheckedUpdateWithoutKanbanColumnInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
   assigneeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedUpdateManyWithoutCreatedTaskNestedInput
 }
 
 export type KanbanTaskUncheckedUpdateManyWithoutKanbanColumnInput = {
@@ -956,6 +1068,35 @@ export type KanbanTaskUncheckedUpdateManyWithoutKanbanColumnInput = {
   assigneeId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
 }
 
+
+/**
+ * Count Type KanbanTaskCountOutputType
+ */
+
+export type KanbanTaskCountOutputType = {
+  aiTaskCandidateStates: number
+}
+
+export type KanbanTaskCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  aiTaskCandidateStates?: boolean | KanbanTaskCountOutputTypeCountAiTaskCandidateStatesArgs
+}
+
+/**
+ * KanbanTaskCountOutputType without action
+ */
+export type KanbanTaskCountOutputTypeDefaultArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the KanbanTaskCountOutputType
+   */
+  select?: Prisma.KanbanTaskCountOutputTypeSelect<ExtArgs> | null
+}
+
+/**
+ * KanbanTaskCountOutputType without action
+ */
+export type KanbanTaskCountOutputTypeCountAiTaskCandidateStatesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.AiTaskCandidateStateWhereInput
+}
 
 
 export type KanbanTaskSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -973,6 +1114,8 @@ export type KanbanTaskSelect<ExtArgs extends runtime.Types.Extensions.InternalAr
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   kanbanColumn?: boolean | Prisma.ProjectKanbanColumnDefaultArgs<ExtArgs>
   assignee?: boolean | Prisma.KanbanTask$assigneeArgs<ExtArgs>
+  aiTaskCandidateStates?: boolean | Prisma.KanbanTask$aiTaskCandidateStatesArgs<ExtArgs>
+  _count?: boolean | Prisma.KanbanTaskCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["kanbanTask"]>
 
 export type KanbanTaskSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -1028,6 +1171,8 @@ export type KanbanTaskInclude<ExtArgs extends runtime.Types.Extensions.InternalA
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
   kanbanColumn?: boolean | Prisma.ProjectKanbanColumnDefaultArgs<ExtArgs>
   assignee?: boolean | Prisma.KanbanTask$assigneeArgs<ExtArgs>
+  aiTaskCandidateStates?: boolean | Prisma.KanbanTask$aiTaskCandidateStatesArgs<ExtArgs>
+  _count?: boolean | Prisma.KanbanTaskCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type KanbanTaskIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
@@ -1046,6 +1191,7 @@ export type $KanbanTaskPayload<ExtArgs extends runtime.Types.Extensions.Internal
     project: Prisma.$ProjectPayload<ExtArgs>
     kanbanColumn: Prisma.$ProjectKanbanColumnPayload<ExtArgs>
     assignee: Prisma.$UserPayload<ExtArgs> | null
+    aiTaskCandidateStates: Prisma.$AiTaskCandidateStatePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1462,6 +1608,7 @@ export interface Prisma__KanbanTaskClient<T, Null = never, ExtArgs extends runti
   project<T extends Prisma.ProjectDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProjectDefaultArgs<ExtArgs>>): Prisma.Prisma__ProjectClient<runtime.Types.Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   kanbanColumn<T extends Prisma.ProjectKanbanColumnDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProjectKanbanColumnDefaultArgs<ExtArgs>>): Prisma.Prisma__ProjectKanbanColumnClient<runtime.Types.Result.GetResult<Prisma.$ProjectKanbanColumnPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   assignee<T extends Prisma.KanbanTask$assigneeArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.KanbanTask$assigneeArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+  aiTaskCandidateStates<T extends Prisma.KanbanTask$aiTaskCandidateStatesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.KanbanTask$aiTaskCandidateStatesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AiTaskCandidateStatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1919,6 +2066,30 @@ export type KanbanTask$assigneeArgs<ExtArgs extends runtime.Types.Extensions.Int
    */
   include?: Prisma.UserInclude<ExtArgs> | null
   where?: Prisma.UserWhereInput
+}
+
+/**
+ * KanbanTask.aiTaskCandidateStates
+ */
+export type KanbanTask$aiTaskCandidateStatesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the AiTaskCandidateState
+   */
+  select?: Prisma.AiTaskCandidateStateSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the AiTaskCandidateState
+   */
+  omit?: Prisma.AiTaskCandidateStateOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.AiTaskCandidateStateInclude<ExtArgs> | null
+  where?: Prisma.AiTaskCandidateStateWhereInput
+  orderBy?: Prisma.AiTaskCandidateStateOrderByWithRelationInput | Prisma.AiTaskCandidateStateOrderByWithRelationInput[]
+  cursor?: Prisma.AiTaskCandidateStateWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.AiTaskCandidateStateScalarFieldEnum | Prisma.AiTaskCandidateStateScalarFieldEnum[]
 }
 
 /**

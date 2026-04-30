@@ -54,3 +54,21 @@ export const AiTaskCandidateEventType = {
 } as const
 
 export type AiTaskCandidateEventType = (typeof AiTaskCandidateEventType)[keyof typeof AiTaskCandidateEventType]
+
+
+export const AiTaskCandidateStatus = {
+  HELD: 'HELD',
+  DISMISSED: 'DISMISSED',
+  ADDED: 'ADDED'
+} as const
+
+export type AiTaskCandidateStatus = (typeof AiTaskCandidateStatus)[keyof typeof AiTaskCandidateStatus]
+
+
+export const AiTaskCandidateSource = {
+  WORK_REPORT: 'WORK_REPORT',
+  SLACK: 'SLACK',
+  MEETING: 'MEETING'
+} as const
+
+export type AiTaskCandidateSource = (typeof AiTaskCandidateSource)[keyof typeof AiTaskCandidateSource]

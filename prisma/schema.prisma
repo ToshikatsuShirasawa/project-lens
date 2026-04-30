@@ -49,6 +49,20 @@ enum AiTaskCandidateEventType {
   DISMISSED
 }
 
+/// AIタスク候補の現在状態（行なし＝OPEN/未判断）
+enum AiTaskCandidateStatus {
+  HELD
+  DISMISSED
+  ADDED
+}
+
+/// AIタスク候補の生成ソース（SLACK / MEETING は将来拡張用）
+enum AiTaskCandidateSource {
+  WORK_REPORT
+  SLACK
+  MEETING
+}
+
 model User {
   /// Supabase Auth `auth.users.id`（UUID）と1対1
   id        String   @id
@@ -60,7 +74,8 @@ model User {
   memberships         ProjectMember[]
   organizationMembers OrganizationMember[]
   assignedTasks            KanbanTask[]
-  projectInvitationsSent   ProjectInvitation[] @relation("ProjectInvitationInvitedBy")
+  projectInvitationsSent   ProjectInvitation[]       @relation("ProjectInvitationInvitedBy")
+  updatedAiTaskCandidateStates AiTaskCandidateState[]
 
   @@map("users")
 }
@@ -113,6 +128,7 @@ model Project {
   kanbanColumns           ProjectKanbanColumn[]
   invitations             ProjectInvitation[]
   aiTaskCandidateEvents   AiTaskCandidateEvent[]
+  aiTaskCandidateStates   AiTaskCandidateState[]
   workReports             WorkReport[]
 
   @@index([organizationId])
@@ -215,6 +231,8 @@ model KanbanTask {
   assigneeId String?
   assignee   User?   @relation(fields: [assigneeId], references: [id], onDelete: SetNull)
 
+  aiTaskCandidateStates AiTaskCandidateState[]
+
   @@index([projectId, columnId, sortOrder])
   @@index([projectId, dueDate])
   @@map("kanban_tasks")
@@ -241,6 +259,8 @@ model WorkReport {
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  aiTaskCandidateStates AiTaskCandidateState[]
 
   @@index([projectId])
   @@index([projectId, reportDate])
@@ -278,4 +298,30 @@ model AiTaskCandidateEvent {
   @@index([projectId, createdAt])
   @@index([organizationId, createdAt])
   @@map("ai_task_candidate_events")
+}
+
+/// AIタスク候補の現在状態（行なし＝OPEN/未判断。score/reason は保存しない）
+model AiTaskCandidateState {
+  id              String                @id @default(cuid())
+  projectId       String
+  candidateKey    String
+  candidateTitle  String
+  status          AiTaskCandidateStatus
+  sourceType      AiTaskCandidateSource @default(WORK_REPORT)
+  sourceReportId  String?
+  createdTaskId   String?
+  updatedByUserId String?
+  createdAt       DateTime              @default(now())
+  updatedAt       DateTime              @updatedAt
+
+  project       Project    @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  sourceReport  WorkReport? @relation(fields: [sourceReportId], references: [id], onDelete: SetNull)
+  createdTask   KanbanTask? @relation(fields: [createdTaskId], references: [id], onDelete: SetNull)
+  updatedByUser User?       @relation(fields: [updatedByUserId], references: [id], onDelete: SetNull)
+
+  @@unique([projectId, candidateKey])
+  @@index([projectId, status])
+  @@index([sourceReportId])
+  @@index([createdTaskId])
+  @@map("ai_task_candidate_states")
 }

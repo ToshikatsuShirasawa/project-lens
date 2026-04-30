@@ -393,7 +393,8 @@ export const ModelName = {
   ProjectMember: 'ProjectMember',
   KanbanTask: 'KanbanTask',
   WorkReport: 'WorkReport',
-  AiTaskCandidateEvent: 'AiTaskCandidateEvent'
+  AiTaskCandidateEvent: 'AiTaskCandidateEvent',
+  AiTaskCandidateState: 'AiTaskCandidateState'
 } as const
 
 export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -409,7 +410,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "organization" | "organizationMember" | "project" | "projectInvitation" | "projectKanbanColumn" | "projectMember" | "kanbanTask" | "workReport" | "aiTaskCandidateEvent"
+    modelProps: "user" | "organization" | "organizationMember" | "project" | "projectInvitation" | "projectKanbanColumn" | "projectMember" | "kanbanTask" | "workReport" | "aiTaskCandidateEvent" | "aiTaskCandidateState"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1153,6 +1154,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    AiTaskCandidateState: {
+      payload: Prisma.$AiTaskCandidateStatePayload<ExtArgs>
+      fields: Prisma.AiTaskCandidateStateFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.AiTaskCandidateStateFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiTaskCandidateStatePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.AiTaskCandidateStateFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiTaskCandidateStatePayload>
+        }
+        findFirst: {
+          args: Prisma.AiTaskCandidateStateFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiTaskCandidateStatePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.AiTaskCandidateStateFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiTaskCandidateStatePayload>
+        }
+        findMany: {
+          args: Prisma.AiTaskCandidateStateFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiTaskCandidateStatePayload>[]
+        }
+        create: {
+          args: Prisma.AiTaskCandidateStateCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiTaskCandidateStatePayload>
+        }
+        createMany: {
+          args: Prisma.AiTaskCandidateStateCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.AiTaskCandidateStateCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiTaskCandidateStatePayload>[]
+        }
+        delete: {
+          args: Prisma.AiTaskCandidateStateDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiTaskCandidateStatePayload>
+        }
+        update: {
+          args: Prisma.AiTaskCandidateStateUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiTaskCandidateStatePayload>
+        }
+        deleteMany: {
+          args: Prisma.AiTaskCandidateStateDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.AiTaskCandidateStateUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.AiTaskCandidateStateUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiTaskCandidateStatePayload>[]
+        }
+        upsert: {
+          args: Prisma.AiTaskCandidateStateUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$AiTaskCandidateStatePayload>
+        }
+        aggregate: {
+          args: Prisma.AiTaskCandidateStateAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateAiTaskCandidateState>
+        }
+        groupBy: {
+          args: Prisma.AiTaskCandidateStateGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AiTaskCandidateStateGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.AiTaskCandidateStateCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AiTaskCandidateStateCountAggregateOutputType> | number
+        }
+      }
+    }
   }
 } & {
   other: {
@@ -1335,6 +1410,23 @@ export const AiTaskCandidateEventScalarFieldEnum = {
 } as const
 
 export type AiTaskCandidateEventScalarFieldEnum = (typeof AiTaskCandidateEventScalarFieldEnum)[keyof typeof AiTaskCandidateEventScalarFieldEnum]
+
+
+export const AiTaskCandidateStateScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  candidateKey: 'candidateKey',
+  candidateTitle: 'candidateTitle',
+  status: 'status',
+  sourceType: 'sourceType',
+  sourceReportId: 'sourceReportId',
+  createdTaskId: 'createdTaskId',
+  updatedByUserId: 'updatedByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type AiTaskCandidateStateScalarFieldEnum = (typeof AiTaskCandidateStateScalarFieldEnum)[keyof typeof AiTaskCandidateStateScalarFieldEnum]
 
 
 export const SortOrder = {
@@ -1525,6 +1617,34 @@ export type EnumQueryModeFieldRefInput<$PrismaModel> = FieldRefInputType<$Prisma
 
 
 /**
+ * Reference to a field of type 'AiTaskCandidateStatus'
+ */
+export type EnumAiTaskCandidateStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiTaskCandidateStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'AiTaskCandidateStatus[]'
+ */
+export type ListEnumAiTaskCandidateStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiTaskCandidateStatus[]'>
+    
+
+
+/**
+ * Reference to a field of type 'AiTaskCandidateSource'
+ */
+export type EnumAiTaskCandidateSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiTaskCandidateSource'>
+    
+
+
+/**
+ * Reference to a field of type 'AiTaskCandidateSource[]'
+ */
+export type ListEnumAiTaskCandidateSourceFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiTaskCandidateSource[]'>
+    
+
+
+/**
  * Reference to a field of type 'Float'
  */
 export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -1642,6 +1762,7 @@ export type GlobalOmitConfig = {
   kanbanTask?: Prisma.KanbanTaskOmit
   workReport?: Prisma.WorkReportOmit
   aiTaskCandidateEvent?: Prisma.AiTaskCandidateEventOmit
+  aiTaskCandidateState?: Prisma.AiTaskCandidateStateOmit
 }
 
 /* Types for Logging */

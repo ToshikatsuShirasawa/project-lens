@@ -91,3 +91,8 @@ export type WorkReport = Prisma.WorkReportModel
  * AI候補の表示・承認・あとで・却下の最小ログ（クライアント送信・失敗時もUIは継続）
  */
 export type AiTaskCandidateEvent = Prisma.AiTaskCandidateEventModel
+/**
+ * Model AiTaskCandidateState
+ * AIタスク候補の現在状態（行なし＝OPEN/未判断。score/reason は保存しない）
+ */
+export type AiTaskCandidateState = Prisma.AiTaskCandidateStateModel

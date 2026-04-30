@@ -399,7 +399,7 @@ export function TaskCandidateSidePanel({
               <>
                 <Sparkles className="h-8 w-8 text-muted-foreground/40" />
                 <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">AI候補はありません</p>
+                  <p className="text-sm text-muted-foreground">候補はありません</p>
                   <p className="text-[11px] text-muted-foreground/60 leading-relaxed max-w-[200px]">
                     作業報告に「確認が必要」「対応予定」「依頼中」などの内容があると候補として表示されます。
                   </p>

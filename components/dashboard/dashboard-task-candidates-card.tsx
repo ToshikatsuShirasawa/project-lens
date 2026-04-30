@@ -93,6 +93,7 @@ export function DashboardTaskCandidatesCard({ projectId }: DashboardTaskCandidat
     let cancelled = false
     void (async () => {
       try {
+        setIsMock(false)
         const res = await fetch(`/api/projects/${encodeURIComponent(projectId)}/reports`)
         const body: unknown = await res.json().catch(() => null)
         if (!res.ok) throw new Error(`HTTP ${res.status}`)
@@ -146,6 +147,8 @@ export function DashboardTaskCandidatesCard({ projectId }: DashboardTaskCandidat
           setRawCandidates(
             mockKanbanCandidates.map((c) => ({ ...c, extractionStatus: 'unknown' as const }))
           )
+        } else {
+          setRawCandidates([])
         }
       } catch {
         // API取得失敗: mock へのフォールバックは行わない（実エラーを隠さない）

@@ -239,6 +239,7 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
     void (async () => {
       const endpoint = `/api/projects/${encodeURIComponent(projectId)}/reports`
       try {
+        setIsMockCandidates(false)
         const res = await fetch(endpoint)
         const body: unknown = await res.json().catch(() => null)
         if (!res.ok) {
@@ -307,6 +308,8 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
           )
           setIsMockCandidates(true)
           setCandidates(mockKanbanCandidates.map((c) => ({ ...c, extractionStatus: 'unknown' as const })))
+        } else {
+          setCandidates([])
         }
       } catch (error) {
         if (cancelled) return

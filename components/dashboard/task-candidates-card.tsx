@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
@@ -56,6 +56,10 @@ export function TaskCandidatesCard({
 }: TaskCandidatesCardProps) {
   const [localCandidates, setLocalCandidates] = useState(candidates)
 
+  useEffect(() => {
+    setLocalCandidates(candidates)
+  }, [candidates])
+
   const handleAddToKanban = (id: string) => {
     setLocalCandidates((prev) => prev.filter((c) => c.id !== id))
     onAddToKanban?.(id)
@@ -78,7 +82,7 @@ export function TaskCandidatesCard({
           <div className="flex h-12 w-12 items-center justify-center rounded-full bg-muted mb-3">
             <Sparkles className="h-5 w-5 text-muted-foreground" />
           </div>
-          <p className="text-sm font-medium text-foreground">AI候補はありません</p>
+          <p className="text-sm font-medium text-foreground">候補はありません</p>
           <p className="text-xs text-muted-foreground mt-1 max-w-xs leading-relaxed">
             作業報告から、まだタスク候補は見つかっていません。
             <br />

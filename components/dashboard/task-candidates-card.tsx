@@ -15,7 +15,6 @@ import {
   Calendar,
   User,
   ChevronRight,
-  Lightbulb,
 } from "lucide-react"
 
 import { cn } from "@/lib/utils"
@@ -158,24 +157,11 @@ export function TaskCandidatesCard({
                 <h4 className="text-sm font-semibold text-foreground leading-snug">
                   {candidate.title}
                 </h4>
-              </div>
-
-              {/* Reason */}
-              <div className={cn(
-                "rounded-md border p-3 mb-4",
-                isTopCandidate ? "bg-primary/[0.04] border-primary/20" : "bg-muted/50 border-border/50"
-              )}>
-                <div className="flex items-start gap-2">
-                  <Lightbulb className="h-3.5 w-3.5 text-primary shrink-0 mt-0.5" />
-                  <div>
-                    <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-                      {isTopCandidate ? '優先理由' : '抽出理由'}
-                    </p>
-                    <p className="text-xs text-foreground leading-relaxed line-clamp-2">
-                      {candidate.reason || (isTopCandidate ? '未対応タスクとして優先度が高いと判断されました' : '')}
-                    </p>
-                  </div>
-                </div>
+                {candidate.reason?.trim() && (
+                  <p className="mt-1 truncate text-xs text-muted-foreground">
+                    理由：{candidate.reason.trim()}
+                  </p>
+                )}
               </div>
 
               {/* Suggestions */}

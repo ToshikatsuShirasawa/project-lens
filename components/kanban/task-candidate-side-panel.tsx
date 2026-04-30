@@ -464,6 +464,11 @@ export function TaskCandidateSidePanel({
                         </Badge>
                       ) : null}
                       <p className="text-sm font-medium text-foreground leading-snug">{c.displayTitle ?? c.title}</p>
+                      {c.reason?.trim() && (
+                        <p className="mt-1 truncate text-xs text-muted-foreground">
+                          理由：{c.reason.trim()}
+                        </p>
+                      )}
                     </div>
                     <div className="flex shrink-0 items-center gap-1 pt-0.5">
                       <Badge className={cn('text-[10px] h-4 px-1.5 border-0', priority.class)}>

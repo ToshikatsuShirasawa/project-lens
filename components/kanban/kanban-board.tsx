@@ -92,6 +92,20 @@ const emptyTaskForm = () => ({
   assigneeUserId: '',
 })
 
+function postCandidateState(
+  projectId: string,
+  candidateKey: string,
+  candidateTitle: string,
+  status: 'HELD' | 'DISMISSED' | 'ADDED',
+  createdTaskId?: string | null
+): void {
+  void fetch(`/api/projects/${encodeURIComponent(projectId)}/task-candidate-states`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ candidateKey, candidateTitle, status, createdTaskId: createdTaskId ?? null }),
+  }).catch((e) => console.warn('[kanban] candidate state save failed', e))
+}
+
 interface KanbanBoardProps {
   projectId: string
 }
@@ -251,7 +265,32 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
         const extracted = extractTaskCandidatesFromReports(reports, projectId)
         if (cancelled) return
         if (extracted.length > 0) {
-          setCandidates(sortTaskCandidatesForDisplay(mergeTaskCandidates(extracted)))
+          const merged = sortTaskCandidatesForDisplay(mergeTaskCandidates(extracted))
+          try {
+            const stateRes = await fetch(
+              `/api/projects/${encodeURIComponent(projectId)}/task-candidate-states`
+            )
+            if (stateRes.ok) {
+              const stateBody = (await stateRes.json()) as {
+                states?: Array<{ candidateKey: string; status: string; createdTaskId: string | null }>
+              }
+              const states = stateBody.states ?? []
+              const heldKeys = new Set(states.filter((s) => s.status === 'HELD').map((s) => s.candidateKey))
+              const dismissedKeys = new Set(states.filter((s) => s.status === 'DISMISSED').map((s) => s.candidateKey))
+              const addedKeys = new Set(states.filter((s) => s.status === 'ADDED').map((s) => s.candidateKey))
+              if (cancelled) return
+              const withHeld = heldKeys.size > 0
+                ? merged.map((c) => heldKeys.has(c.candidateKey ?? c.id) ? { ...c, held: true } : c)
+                : merged
+              setCandidates(withHeld)
+              if (dismissedKeys.size > 0) setDismissedCandidateIds((prev) => new Set([...prev, ...dismissedKeys]))
+              if (addedKeys.size > 0) setAddedCandidateIds((prev) => new Set([...prev, ...addedKeys]))
+            } else {
+              if (!cancelled) setCandidates(merged)
+            }
+          } catch {
+            if (!cancelled) setCandidates(merged)
+          }
           return
         }
 
@@ -668,6 +707,13 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
 
     await loadTasks({ silent: true })
     setAddedCandidateIds((prev) => new Set([...prev, candidate.candidateKey ?? candidate.id]))
+    postCandidateState(
+      projectId,
+      candidate.candidateKey ?? candidate.id,
+      candidate.displayTitle ?? candidate.title,
+      'ADDED',
+      newTaskId
+    )
     toastSuccess('AI候補をバックログに追加しました')
     if (newTaskId) {
       setRecentAiAdd({ columnKey: backlogColumnKey, taskId: newTaskId })
@@ -800,6 +846,12 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
                   orderedAiCandidates[0]?.id === target.id ? topRecommendation.isComparativeRecommendation : undefined,
               })
             )
+            postCandidateState(
+              projectId,
+              target.candidateKey ?? target.id,
+              target.displayTitle ?? target.title,
+              'HELD'
+            )
           }
           setCandidates((prev) => {
             const idx = prev.findIndex((c) => (c.candidateKey ?? c.id) === id)
@@ -823,6 +875,12 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
                 isComparativeRecommendation:
                   orderedAiCandidates[0]?.id === target.id ? topRecommendation.isComparativeRecommendation : undefined,
               })
+            )
+            postCandidateState(
+              projectId,
+              target.candidateKey ?? target.id,
+              target.displayTitle ?? target.title,
+              'DISMISSED'
             )
           }
           const existed = candidates.some((c) => (c.candidateKey ?? c.id) === id)

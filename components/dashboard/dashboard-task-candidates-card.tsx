@@ -50,6 +50,20 @@ function toWorkReport(raw: unknown, index: number, projectId: string): WorkRepor
   }
 }
 
+function postCandidateState(
+  projectId: string,
+  candidateKey: string,
+  candidateTitle: string,
+  status: 'HELD' | 'DISMISSED' | 'ADDED',
+  createdTaskId?: string | null
+): void {
+  void fetch(`/api/projects/${encodeURIComponent(projectId)}/task-candidate-states`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ candidateKey, candidateTitle, status, createdTaskId: createdTaskId ?? null }),
+  }).catch((e) => console.warn('[dashboard] candidate state save failed', e))
+}
+
 interface DashboardTaskCandidatesCardProps {
   projectId: string
 }
@@ -60,6 +74,8 @@ export function DashboardTaskCandidatesCard({ projectId }: DashboardTaskCandidat
   const [isMock, setIsMock] = useState(false)
   const [backlogColumnKey, setBacklogColumnKey] = useState('backlog')
   const [reportsFetchKey, setReportsFetchKey] = useState(0)
+  const [dismissedKeys, setDismissedKeys] = useState<Set<string>>(new Set())
+  const [addedKeys, setAddedKeys] = useState<Set<string>>(new Set())
 
   useEffect(() => {
     const handler = (e: Event) => {
@@ -72,7 +88,7 @@ export function DashboardTaskCandidatesCard({ projectId }: DashboardTaskCandidat
     return () => window.removeEventListener('projectlens:reports-updated', handler)
   }, [projectId])
 
-  // レポートからAI候補を抽出（カンバンと同じロジック）
+  // レポートからAI候補を抽出し、DB永続化済み状態を反映
   useEffect(() => {
     let cancelled = false
     void (async () => {
@@ -105,7 +121,26 @@ export function DashboardTaskCandidatesCard({ projectId }: DashboardTaskCandidat
         if (cancelled) return
 
         if (extracted.length > 0) {
-          setRawCandidates(sortTaskCandidatesForDisplay(mergeTaskCandidates(extracted)))
+          const merged = sortTaskCandidatesForDisplay(mergeTaskCandidates(extracted))
+          try {
+            const stateRes = await fetch(
+              `/api/projects/${encodeURIComponent(projectId)}/task-candidate-states`
+            )
+            if (stateRes.ok) {
+              const stateBody = (await stateRes.json()) as {
+                states?: Array<{ candidateKey: string; status: string }>
+              }
+              const states = stateBody.states ?? []
+              const dismissed = new Set(states.filter((s) => s.status === 'DISMISSED').map((s) => s.candidateKey))
+              const added = new Set(states.filter((s) => s.status === 'ADDED').map((s) => s.candidateKey))
+              if (cancelled) return
+              if (dismissed.size > 0) setDismissedKeys(dismissed)
+              if (added.size > 0) setAddedKeys(added)
+            }
+          } catch {
+            // 状態取得失敗は無視して候補をそのまま表示
+          }
+          if (!cancelled) setRawCandidates(merged)
         } else if (canUseMockCandidates) {
           setIsMock(true)
           setRawCandidates(
@@ -145,7 +180,12 @@ export function DashboardTaskCandidatesCard({ projectId }: DashboardTaskCandidat
     }
   }, [projectId])
 
-  const mappedCandidates = rawCandidates.map((c) => ({
+  // DISMISSED・ADDED を除いた候補のみ表示（リロード後も永続化された状態を反映）
+  const visibleCandidates = rawCandidates.filter(
+    (c) => !dismissedKeys.has(c.candidateKey ?? c.id) && !addedKeys.has(c.candidateKey ?? c.id)
+  )
+
+  const mappedCandidates = visibleCandidates.map((c) => ({
     id: c.candidateKey ?? c.id,
     title: c.displayTitle ?? c.title,
     reason: c.reason,
@@ -155,7 +195,7 @@ export function DashboardTaskCandidatesCard({ projectId }: DashboardTaskCandidat
   }))
 
   const handleAddToKanban = (id: string) => {
-    const candidate = rawCandidates.find((c) => c.id === id)
+    const candidate = rawCandidates.find((c) => (c.candidateKey ?? c.id) === id)
     if (!candidate) return
 
     const title = candidate.displayTitle ?? candidate.title
@@ -193,6 +233,13 @@ export function DashboardTaskCandidatesCard({ projectId }: DashboardTaskCandidat
           toastError(msg)
           return
         }
+        const resBody: unknown = await res.json().catch(() => null)
+        const newTaskId =
+          resBody && typeof resBody === 'object' && 'id' in resBody && typeof (resBody as { id: unknown }).id === 'string'
+            ? (resBody as { id: string }).id
+            : null
+        setAddedKeys((prev) => new Set([...prev, id]))
+        postCandidateState(projectId, id, title, 'ADDED', newTaskId)
         toastSuccess('AI候補をバックログに追加しました')
       })
       .catch((e) => {
@@ -200,11 +247,20 @@ export function DashboardTaskCandidatesCard({ projectId }: DashboardTaskCandidat
       })
   }
 
-  const handleHold = (_id: string) => {
+  const handleHold = (id: string) => {
+    const candidate = rawCandidates.find((c) => (c.candidateKey ?? c.id) === id)
+    if (candidate) {
+      postCandidateState(projectId, id, candidate.displayTitle ?? candidate.title, 'HELD')
+    }
     toastSuccess('候補をあとで確認に回しました')
   }
 
-  const handleDismiss = (_id: string) => {
+  const handleDismiss = (id: string) => {
+    const candidate = rawCandidates.find((c) => (c.candidateKey ?? c.id) === id)
+    if (candidate) {
+      setDismissedKeys((prev) => new Set([...prev, id]))
+      postCandidateState(projectId, id, candidate.displayTitle ?? candidate.title, 'DISMISSED')
+    }
     toastSuccess('候補を却下しました')
   }
 

@@ -17,7 +17,8 @@
       "Bash(npx next *)"
     ],
     "additionalDirectories": [
-      "c:\\work\\ai\\project-lens\\app\\projects\\[projectId]"
+      "c:\\work\\ai\\project-lens\\app\\projects\\[projectId]",
+      "c:\\work\\ai\\project-lens\\app\\api\\projects\\[projectId]"
     ]
   }
 }

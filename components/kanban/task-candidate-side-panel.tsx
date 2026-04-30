@@ -6,12 +6,33 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Sparkles, Plus, Pause, X, ChevronLeft, ChevronRight, ChevronDown, CheckCircle2, Loader2, PencilLine, ArrowRight } from 'lucide-react'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import {
+  Sparkles,
+  Plus,
+  Pause,
+  X,
+  ChevronLeft,
+  ChevronRight,
+  ChevronDown,
+  CheckCircle2,
+  Loader2,
+  PencilLine,
+  ArrowRight,
+} from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { ProjectMemberApiRecord, TaskCandidate } from '@/lib/types'
 import { summarizeCandidateReasons } from '@/lib/ai/candidate-reason-summary'
-import { buildComparativeRecommendationReason, scoreTaskCandidate } from '@/lib/ai/task-candidate-score'
+import {
+  buildComparativeRecommendationReason,
+  scoreTaskCandidate,
+} from '@/lib/ai/task-candidate-score'
 import { buildTaskCandidatePriorityReason } from '@/lib/ai/task-candidate-priority-reason'
 import {
   buildAiTaskCandidateEventPayload,
@@ -36,14 +57,31 @@ interface TaskCandidateSidePanelProps {
   backlogColumnName: string
   isMobile?: boolean
   onMobileClose?: () => void
-  onAddToKanban: (candidate: TaskCandidate, overrides?: CandidateApprovalOverrides) => Promise<void>
+  onAddToKanban: (
+    candidate: TaskCandidate,
+    overrides?: CandidateApprovalOverrides,
+  ) => Promise<void>
   onHold: (id: string) => void
   onDismiss: (id: string) => void
 }
 
 const KANBAN_AI_PANEL_OPEN_STORAGE_KEY = 'projectlens:kanban-ai-panel-open'
-const INITIAL_DISPLAY_COUNT = 3
 const ASSIGNEE_NONE_VALUE = '__none__'
+const IMMEDIATE_TASK_KEYWORDS = ['必要', '修正', '対応', '実装', '期限']
+const REVIEW_TASK_KEYWORDS = ['確認', '調査', '検討']
+
+type TaskCandidateDisplayGroupId = 'immediate' | 'review'
+
+interface GroupedTaskCandidate {
+  candidate: TaskCandidate
+  index: number
+}
+
+interface TaskCandidateDisplayGroup {
+  id: TaskCandidateDisplayGroupId
+  label: string
+  candidates: GroupedTaskCandidate[]
+}
 
 const sourceConfig = {
   slack: { label: 'Slack', class: 'bg-emerald-100 text-emerald-700' },
@@ -57,6 +95,38 @@ const priorityLabelConfig = {
   medium: { label: '優先度 中', class: 'bg-amber-100 text-amber-700' },
   review: { label: '優先度 低', class: 'bg-muted text-muted-foreground' },
 } as const
+
+function classifyTaskCandidateByTitle(
+  candidate: TaskCandidate,
+): TaskCandidateDisplayGroupId {
+  const title = candidate.title
+  if (IMMEDIATE_TASK_KEYWORDS.some((keyword) => title.includes(keyword))) {
+    return 'immediate'
+  }
+  if (REVIEW_TASK_KEYWORDS.some((keyword) => title.includes(keyword))) {
+    return 'review'
+  }
+  return 'review'
+}
+
+function groupTaskCandidatesByTitle(
+  candidates: TaskCandidate[],
+): TaskCandidateDisplayGroup[] {
+  const groups: Record<TaskCandidateDisplayGroupId, TaskCandidateDisplayGroup> =
+    {
+      immediate: { id: 'immediate', label: 'すぐやるべき', candidates: [] },
+      review: { id: 'review', label: 'あとで確認', candidates: [] },
+    }
+
+  candidates.forEach((candidate, index) => {
+    groups[classifyTaskCandidateByTitle(candidate)].candidates.push({
+      candidate,
+      index,
+    })
+  })
+
+  return [groups.immediate, groups.review]
+}
 
 /** "category: keyword" 形式の extractionReasons を表示用ラベルに変換する */
 const EXTRACTION_KEYWORD_DISPLAY: Record<string, string> = {
@@ -109,11 +179,16 @@ function memberOptionLabel(m: ProjectMemberApiRecord): string {
   return m.email.split('@')[0] ?? m.email
 }
 
-function resolveInitialAssigneeUserId(candidate: TaskCandidate, members: ProjectMemberApiRecord[]): string {
+function resolveInitialAssigneeUserId(
+  candidate: TaskCandidate,
+  members: ProjectMemberApiRecord[],
+): string {
   const suggested = candidate.suggestedAssignee?.trim()
   if (!suggested) return ''
   const normalized = suggested.toLowerCase()
-  const matched = members.find((member) => memberOptionLabel(member).trim().toLowerCase() === normalized)
+  const matched = members.find(
+    (member) => memberOptionLabel(member).trim().toLowerCase() === normalized,
+  )
   return matched?.userId ?? ''
 }
 
@@ -152,7 +227,11 @@ export function TaskCandidateSidePanel({
         const ck = candidate.candidateKey ?? candidate.id
         return addedCandidateIds.has(ck) || dismissedCandidateIds.has(ck)
       }),
-    [candidates, addedCandidateIds, dismissedCandidateIds]
+    [candidates, addedCandidateIds, dismissedCandidateIds],
+  )
+  const unresolvedCandidateGroups = useMemo(
+    () => groupTaskCandidatesByTitle(unresolvedCandidates),
+    [unresolvedCandidates],
   )
   const pendingCount = unresolvedCandidates.filter((c) => !c.held).length
   const shouldAutoCollapse = unresolvedCandidates.length === 0
@@ -162,7 +241,9 @@ export function TaskCandidateSidePanel({
   const [submittingId, setSubmittingId] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [drafts, setDrafts] = useState<Record<string, CandidateDraft>>({})
-  const [expandedDetailIds, setExpandedDetailIds] = useState<Set<string>>(new Set())
+  const [expandedDetailIds, setExpandedDetailIds] = useState<Set<string>>(
+    new Set(),
+  )
   const [showProcessed, setShowProcessed] = useState(false)
 
   const toggleDetail = (id: string) => {
@@ -176,11 +257,16 @@ export function TaskCandidateSidePanel({
       setEditingId(null)
     }
   }
-  const topRecommendation = useMemo(() => buildComparativeRecommendationReason(candidates), [candidates])
+  const topRecommendation = useMemo(
+    () => buildComparativeRecommendationReason(candidates),
+    [candidates],
+  )
 
   useEffect(() => {
     try {
-      const stored = window.localStorage.getItem(KANBAN_AI_PANEL_OPEN_STORAGE_KEY)
+      const stored = window.localStorage.getItem(
+        KANBAN_AI_PANEL_OPEN_STORAGE_KEY,
+      )
       if (stored === 'true') {
         setOpen(true)
       } else if (stored === 'false') {
@@ -196,26 +282,40 @@ export function TaskCandidateSidePanel({
   useEffect(() => {
     if (!openStateLoaded) return
     try {
-      window.localStorage.setItem(KANBAN_AI_PANEL_OPEN_STORAGE_KEY, String(open))
+      window.localStorage.setItem(
+        KANBAN_AI_PANEL_OPEN_STORAGE_KEY,
+        String(open),
+      )
     } catch {
       // Ignore persistence failures and keep panel usable.
     }
   }, [open, openStateLoaded])
 
   useEffect(() => {
-    if ((!open && !isMobile) || !openStateLoaded || candidates.length === 0) return
+    if ((!open && !isMobile) || !openStateLoaded || candidates.length === 0)
+      return
     const topId = candidates[0]?.id
     for (const c of candidates) {
       if (shownCandidateIdsRef.current.has(c.id)) continue
       shownCandidateIdsRef.current.add(c.id)
-      console.info('[ai-event] shown candidate', c.id, 'extractionStatus:', c.extractionStatus)
+      console.info(
+        '[ai-event] shown candidate',
+        c.id,
+        'extractionStatus:',
+        c.extractionStatus,
+      )
       logAiTaskCandidateEvent(
         buildAiTaskCandidateEventPayload(projectId, c, 'shown', {
           isTopCandidate: topId === c.id,
-          recommendationReasonOverride: topId === c.id ? topRecommendation.recommendationReason : undefined,
-          scoreDiffToNext: topId === c.id ? topRecommendation.scoreDiffToNext : undefined,
-          isComparativeRecommendation: topId === c.id ? topRecommendation.isComparativeRecommendation : undefined,
-        })
+          recommendationReasonOverride:
+            topId === c.id ? topRecommendation.recommendationReason : undefined,
+          scoreDiffToNext:
+            topId === c.id ? topRecommendation.scoreDiffToNext : undefined,
+          isComparativeRecommendation:
+            topId === c.id
+              ? topRecommendation.isComparativeRecommendation
+              : undefined,
+        }),
       )
     }
   }, [open, openStateLoaded, candidates, projectId, topRecommendation])
@@ -227,7 +327,9 @@ export function TaskCandidateSidePanel({
     }
     setDrafts((prev) => {
       const next = Object.fromEntries(
-        Object.entries(prev).filter(([candidateId]) => candidateIds.has(candidateId))
+        Object.entries(prev).filter(([candidateId]) =>
+          candidateIds.has(candidateId),
+        ),
       ) as Record<string, CandidateDraft>
       return Object.keys(next).length === Object.keys(prev).length ? prev : next
     })
@@ -241,7 +343,10 @@ export function TaskCandidateSidePanel({
         [candidate.id]: {
           title: candidate.displayTitle ?? candidate.title,
           dueDate: toDateInputValue(candidate.suggestedDueDate),
-          assigneeUserId: resolveInitialAssigneeUserId(candidate, projectMembers),
+          assigneeUserId: resolveInitialAssigneeUserId(
+            candidate,
+            projectMembers,
+          ),
         },
       }
     })
@@ -270,7 +375,9 @@ export function TaskCandidateSidePanel({
     })
   }
 
-  const getApprovalOverrides = (candidate: TaskCandidate): CandidateApprovalOverrides | undefined => {
+  const getApprovalOverrides = (
+    candidate: TaskCandidate,
+  ): CandidateApprovalOverrides | undefined => {
     const draft = drafts[candidate.id]
     if (!draft) return undefined
 
@@ -284,13 +391,19 @@ export function TaskCandidateSidePanel({
     const baseTitle = (candidate.displayTitle ?? candidate.title).trim()
     const baseDueDate = toDateInputValue(candidate.suggestedDueDate)
     const baseAssignee = (candidate.suggestedAssignee ?? '').trim()
-    const baseAssigneeUserId = resolveInitialAssigneeUserId(candidate, projectMembers)
+    const baseAssigneeUserId = resolveInitialAssigneeUserId(
+      candidate,
+      projectMembers,
+    )
 
     const overrides: CandidateApprovalOverrides = {}
     if (title && title !== baseTitle) overrides.title = title
-    if (dueDate !== baseDueDate) overrides.suggestedDueDate = dueDate || undefined
-    if (assignee !== baseAssignee) overrides.suggestedAssignee = assignee || undefined
-    if (assigneeUserId !== baseAssigneeUserId) overrides.suggestedAssigneeUserId = assigneeUserId || undefined
+    if (dueDate !== baseDueDate)
+      overrides.suggestedDueDate = dueDate || undefined
+    if (assignee !== baseAssignee)
+      overrides.suggestedAssignee = assignee || undefined
+    if (assigneeUserId !== baseAssigneeUserId)
+      overrides.suggestedAssigneeUserId = assigneeUserId || undefined
 
     return Object.keys(overrides).length > 0 ? overrides : undefined
   }
@@ -316,7 +429,9 @@ export function TaskCandidateSidePanel({
           </Button>
           <div className="flex flex-col items-center gap-1">
             <Sparkles className="h-4 w-4 text-primary shrink-0" aria-hidden />
-            <span className="text-[10px] font-semibold tracking-wide text-muted-foreground">AI</span>
+            <span className="text-[10px] font-semibold tracking-wide text-muted-foreground">
+              AI
+            </span>
           </div>
           {pendingCount > 0 ? (
             <Badge className="h-5 min-w-5 px-1 text-[10px] justify-center bg-primary/10 text-primary border-0">
@@ -336,7 +451,7 @@ export function TaskCandidateSidePanel({
     <aside
       className={cn(
         'shrink-0 flex flex-col border-l-4 border-l-primary/40 border-t border-b border-r border-border/60 bg-primary/[0.04] h-full',
-        isMobile ? 'w-full max-w-sm' : 'w-80'
+        isMobile ? 'w-full max-w-sm' : 'w-80',
       )}
       aria-label="AIタスク候補"
     >
@@ -344,7 +459,9 @@ export function TaskCandidateSidePanel({
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/15 shrink-0">
           <Sparkles className="h-4 w-4 text-primary" />
         </div>
-        <span className="min-w-0 flex-1 truncate text-sm font-bold text-foreground">AIが見つけたタスク候補</span>
+        <span className="min-w-0 flex-1 truncate text-sm font-bold text-foreground">
+          AIが見つけたタスク候補
+        </span>
         {pendingCount > 0 && (
           <Badge className="shrink-0 text-[10px] h-5 px-1.5 bg-primary/10 text-primary border-0">
             {pendingCount}件
@@ -377,7 +494,9 @@ export function TaskCandidateSidePanel({
       <div className="px-4 py-2.5 border-b border-primary/15 bg-primary/10 space-y-1">
         <div className="flex items-center gap-2">
           <ArrowRight className="h-3.5 w-3.5 text-primary shrink-0" />
-          <p className="text-xs font-medium text-primary">{backlogColumnName}に追加されます</p>
+          <p className="text-xs font-medium text-primary">
+            {backlogColumnName}に追加されます
+          </p>
         </div>
         <p className="text-[11px] text-muted-foreground leading-relaxed">
           作業報告などからAIが見つけた「まだ確定していないタスク候補」です。必要なものだけタスクに追加してください。
@@ -391,15 +510,21 @@ export function TaskCandidateSidePanel({
               <>
                 <Loader2 className="h-7 w-7 animate-spin text-primary/40" />
                 <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">AI候補を確認しています...</p>
-                  <p className="text-xs text-muted-foreground/60">作業報告から候補を抽出しています</p>
+                  <p className="text-sm text-muted-foreground">
+                    AI候補を確認しています...
+                  </p>
+                  <p className="text-xs text-muted-foreground/60">
+                    作業報告から候補を抽出しています
+                  </p>
                 </div>
               </>
             ) : (
               <>
                 <Sparkles className="h-8 w-8 text-muted-foreground/40" />
                 <div className="space-y-1">
-                  <p className="text-sm text-muted-foreground">候補はありません</p>
+                  <p className="text-sm text-muted-foreground">
+                    候補はありません
+                  </p>
                   <p className="text-[11px] text-muted-foreground/60 leading-relaxed max-w-[200px]">
                     作業報告に「確認が必要」「対応予定」「依頼中」などの内容があると候補として表示されます。
                   </p>
@@ -409,342 +534,435 @@ export function TaskCandidateSidePanel({
           </div>
         ) : (
           <>
-          {unresolvedCandidates.length > 0 && (
-            <div className="px-1 pb-2">
-              <p className="text-[11px] font-semibold text-muted-foreground/70 uppercase tracking-wide">
-                {unresolvedCandidates.length > INITIAL_DISPLAY_COUNT
-                  ? `まずはこの${INITIAL_DISPLAY_COUNT}件を確認してください`
-                  : 'まずここから確認してください'}
-              </p>
-            </div>
-          )}
-          {unresolvedCandidates.flatMap((c, index) => {
-            const src = sourceConfig[c.source]
-            const isTopCandidate = index === 0
-            const isTopThree = index < 3
-            const isSubmitting = submittingId === c.id
-            const reasonSummary = summarizeCandidateReasons(c, { isTopCandidate: false, maxChips: 2 })
-            const scoreResult = scoreTaskCandidate(c)
-            const priorityReason = buildTaskCandidatePriorityReason(c, scoreResult)
-            const priority = priorityLabelConfig[scoreResult.confidenceLevel]
-            const isAdded = false
-            const isHeld = c.held ?? false
-            const isWaiting = c.extractionStatus === 'waiting'
-            const visibleReasons = (c.extractionReasons ?? []).slice(0, 3)
-            const overflowCount = Math.max(0, (c.extractionReasons?.length ?? 0) - 3)
-            const hasDetail = true
-            const isDetailOpen = expandedDetailIds.has(c.id)
-            const card = (
-              <Card
-                key={c.id}
-                className={cn(
-                  'relative overflow-hidden border shadow-sm transition-colors hover:shadow-md',
-                  isTopCandidate
-                    ? 'bg-primary/[0.05] border-primary/30'
-                    : isTopThree
-                    ? 'bg-card border-border/80'
-                    : 'bg-card border-border/60'
-                )}
-              >
-                <div className={cn(
-                  'absolute left-0 top-0 bottom-0 w-1.5',
-                  isTopCandidate ? 'bg-primary' : isTopThree ? 'bg-primary/60' : 'bg-primary/30'
-                )} />
-                <CardContent className="p-4 pl-5 space-y-3">
-                  {/* ── Row 1: タイトル + バッジ ── */}
-                  <div className="flex items-start justify-between gap-2">
-                    <div className="min-w-0 flex-1">
-                      {isTopCandidate ? (
-                        <Badge className="text-[10px] h-4 px-1.5 border-0 bg-primary text-primary-foreground mb-1 inline-flex">
-                          まず確認
-                        </Badge>
-                      ) : isTopThree ? (
-                        <Badge className="text-[10px] h-4 px-1.5 border-0 bg-primary/15 text-primary mb-1 inline-flex">
-                          上位候補
-                        </Badge>
-                      ) : null}
-                      <p className="text-sm font-medium text-foreground leading-snug">{c.displayTitle ?? c.title}</p>
-                      {c.reason?.trim() && (
-                        <p className="mt-1 truncate text-xs text-muted-foreground">
-                          理由：{c.reason.trim()}
-                        </p>
-                      )}
-                    </div>
-                    <div className="flex shrink-0 items-center gap-1 pt-0.5">
-                      <Badge className={cn('text-[10px] h-4 px-1.5 border-0', priority.class)}>
-                        {priority.label}
-                      </Badge>
-                      <span className="text-[10px] text-muted-foreground/50">{src.label}</span>
-                    </div>
-                  </div>
-
-                  {/* ── Row 2: 優先理由 ── */}
-                  {isTopCandidate ? (
-                    <div className="flex items-start gap-1">
-                      <span className="text-[10px] font-semibold text-primary/70 shrink-0 mt-0.5">優先理由：</span>
-                      <p className="text-[11px] text-primary/70 leading-relaxed truncate">
-                        {topRecommendation.recommendationReason || priorityReason || '未対応タスクとして優先度が高いと判断されました'}
-                      </p>
-                    </div>
-                  ) : isTopThree ? (
-                    <div className="flex items-start gap-1">
-                      <span className="text-[10px] text-muted-foreground/60 shrink-0 mt-0.5">理由：</span>
-                      <p className="text-[11px] text-muted-foreground leading-relaxed truncate">
-                        {priorityReason}
-                      </p>
-                    </div>
-                  ) : (
-                    <p className="text-[11px] text-muted-foreground leading-relaxed truncate">
-                      {priorityReason}
-                    </p>
-                  )}
-
-                  {/* ── Row 3: 重要タグ（最大2） ── */}
-                  {reasonSummary.chips.length > 0 && (
-                    <div className="flex flex-wrap gap-1">
-                      {reasonSummary.chips.map((chip, chipIndex) => (
-                        <Badge
-                          key={`${c.id}-${chip.label}`}
+            {unresolvedCandidateGroups.map((group) => (
+              <section key={group.id} className="space-y-2">
+                <div className="px-1 pb-1">
+                  <p className="text-[11px] font-semibold text-muted-foreground/70 uppercase tracking-wide">
+                    ■ {group.label}
+                  </p>
+                </div>
+                {group.candidates.length === 0 ? (
+                  <p className="px-1 pb-2 text-[11px] text-muted-foreground/60">
+                    該当する候補はありません
+                  </p>
+                ) : (
+                  group.candidates.map(({ candidate: c, index }) => {
+                    const src = sourceConfig[c.source]
+                    const isTopCandidate = index === 0
+                    const isTopThree = index < 3
+                    const isSubmitting = submittingId === c.id
+                    const reasonSummary = summarizeCandidateReasons(c, {
+                      isTopCandidate: false,
+                      maxChips: 2,
+                    })
+                    const scoreResult = scoreTaskCandidate(c)
+                    const priorityReason = buildTaskCandidatePriorityReason(
+                      c,
+                      scoreResult,
+                    )
+                    const priority =
+                      priorityLabelConfig[scoreResult.confidenceLevel]
+                    const isAdded = false
+                    const isHeld = c.held ?? false
+                    const isWaiting = c.extractionStatus === 'waiting'
+                    const visibleReasons = (c.extractionReasons ?? []).slice(
+                      0,
+                      3,
+                    )
+                    const overflowCount = Math.max(
+                      0,
+                      (c.extractionReasons?.length ?? 0) - 3,
+                    )
+                    const hasDetail = true
+                    const isDetailOpen = expandedDetailIds.has(c.id)
+                    const card = (
+                      <Card
+                        key={c.id}
+                        className={cn(
+                          'relative overflow-hidden border shadow-sm transition-colors hover:shadow-md',
+                          isTopCandidate
+                            ? 'bg-primary/[0.05] border-primary/30'
+                            : isTopThree
+                              ? 'bg-card border-border/80'
+                              : 'bg-card border-border/60',
+                        )}
+                      >
+                        <div
                           className={cn(
-                            'h-5 border-0 px-2 text-[10px]',
-                            chipIndex === 0 || chip.strength === 'strong'
-                              ? 'bg-primary/15 text-primary'
-                              : 'bg-muted text-muted-foreground'
+                            'absolute left-0 top-0 bottom-0 w-1.5',
+                            isTopCandidate
+                              ? 'bg-primary'
+                              : isTopThree
+                                ? 'bg-primary/60'
+                                : 'bg-primary/30',
                           )}
-                        >
-                          {chip.label}
-                        </Badge>
-                      ))}
-                    </div>
-                  )}
-
-                  {/* ── 詳細トグル ── */}
-                  {hasDetail && !isTopThree && (
-                    <button
-                      type="button"
-                      className="flex items-center gap-0.5 text-[10px] text-muted-foreground/40 hover:text-muted-foreground/60 transition-colors"
-                      onClick={() => toggleDetail(c.id)}
-                    >
-                      <ChevronDown
-                        className={cn('h-3 w-3 transition-transform duration-150', isDetailOpen && 'rotate-180')}
-                      />
-                      {isDetailOpen ? '閉じる' : '詳細'}
-                    </button>
-                  )}
-
-                  {/* ── 詳細セクション（折りたたみ） ── */}
-                  {isDetailOpen && (
-                    <div className="space-y-2 border-t border-border/40 pt-2">
-                      {(c.mergedCount ?? 1) > 1 && (
-                        <p className="text-[10px] text-muted-foreground/70">（関連{c.mergedCount}件）</p>
-                      )}
-                      {isWaiting && (
-                        <Badge className="text-[10px] h-5 px-2 border-0 bg-sky-100 text-sky-700">
-                          回答待ち候補
-                        </Badge>
-                      )}
-                      {reasonSummary.supportText && (
-                        <div className="space-y-0.5">
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-                            補足
-                          </p>
-                          <p className="text-xs text-muted-foreground leading-relaxed">
-                            {reasonSummary.supportText}
-                          </p>
-                        </div>
-                      )}
-                      {visibleReasons.length > 0 && (
-                        <div className="space-y-0.5">
-                          <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
-                            理由
-                          </p>
-                          <ul className="space-y-0.5">
-                            {visibleReasons.map((r) => (
-                              <li key={r} className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                                <span className="h-1 w-1 shrink-0 rounded-full bg-muted-foreground/40" aria-hidden />
-                                {formatExtractionReason(r)}
-                              </li>
-                            ))}
-                            {overflowCount > 0 && (
-                              <li className="text-xs text-muted-foreground/70 pl-2.5">ほか{overflowCount}件</li>
-                            )}
-                          </ul>
-                        </div>
-                      )}
-                      {(c.suggestedAssignee || c.suggestedDueDate) && (
-                        <div className="flex gap-3 text-[11px] text-muted-foreground">
-                          {c.suggestedAssignee && <span>担当候補: {c.suggestedAssignee}</span>}
-                          {c.suggestedDueDate && <span>期限候補: {c.suggestedDueDate}</span>}
-                        </div>
-                      )}
-                      <p className="text-[10px] text-muted-foreground/70">
-                        → {backlogColumnName} に追加されます
-                      </p>
-                      {editingId !== c.id && (
-                        <div className="flex justify-start">
-                          <Button
-                            type="button"
-                            size="sm"
-                            variant="ghost"
-                            className="h-6 px-2 text-[11px] text-muted-foreground"
-                            onClick={() => {
-                              ensureDraft(c)
-                              setEditingId(c.id)
-                            }}
-                          >
-                            <PencilLine className="h-3 w-3" />
-                            編集
-                          </Button>
-                        </div>
-                      )}
-                      {editingId === c.id && (
-                        <div className="relative space-y-2 rounded-md border border-border/80 bg-muted/40 p-2.5">
-                          <Button
-                            type="button"
-                            size="icon"
-                            variant="ghost"
-                            className="absolute right-1.5 top-1.5 h-6 w-6 text-muted-foreground"
-                            onClick={() => setEditingId(null)}
-                            title="編集を閉じる"
-                          >
-                            <X className="h-3.5 w-3.5" />
-                            <span className="sr-only">編集を閉じる</span>
-                          </Button>
-                          <p className="text-[11px] text-muted-foreground">編集してから追加できます</p>
-                          <div className="space-y-1">
-                            <Label htmlFor={`candidate-title-${c.id}`} className="text-[11px]">
-                              タイトル
-                            </Label>
-                            <Input
-                              id={`candidate-title-${c.id}`}
-                              value={getDraft(c).title}
-                              onChange={(e) => updateDraft(c.id, { title: e.target.value })}
-                              placeholder="タスクタイトル"
-                              className="h-8 text-xs"
-                            />
-                          </div>
-                          <div className="grid grid-cols-2 gap-2">
-                            <div className="space-y-1">
-                              <Label htmlFor={`candidate-due-${c.id}`} className="text-[11px]">
-                                期限
-                              </Label>
-                              <Input
-                                id={`candidate-due-${c.id}`}
-                                type="date"
-                                value={getDraft(c).dueDate}
-                                onChange={(e) => updateDraft(c.id, { dueDate: e.target.value })}
-                                className="h-8 text-xs"
-                              />
+                        />
+                        <CardContent className="p-4 pl-5 space-y-3">
+                          {/* ── Row 1: タイトル + バッジ ── */}
+                          <div className="flex items-start justify-between gap-2">
+                            <div className="min-w-0 flex-1">
+                              {isTopCandidate ? (
+                                <Badge className="text-[10px] h-4 px-1.5 border-0 bg-primary text-primary-foreground mb-1 inline-flex">
+                                  まず確認
+                                </Badge>
+                              ) : isTopThree ? (
+                                <Badge className="text-[10px] h-4 px-1.5 border-0 bg-primary/15 text-primary mb-1 inline-flex">
+                                  上位候補
+                                </Badge>
+                              ) : null}
+                              <p className="text-sm font-medium text-foreground leading-snug">
+                                {c.displayTitle ?? c.title}
+                              </p>
+                              {c.reason?.trim() && (
+                                <p className="mt-1 truncate text-xs text-muted-foreground">
+                                  理由：{c.reason.trim()}
+                                </p>
+                              )}
                             </div>
-                            <div className="space-y-1">
-                              <Label htmlFor={`candidate-assignee-${c.id}`} className="text-[11px]">
-                                担当
-                              </Label>
-                              <Select
-                                value={getDraft(c).assigneeUserId.trim() ? getDraft(c).assigneeUserId : ASSIGNEE_NONE_VALUE}
-                                onValueChange={(value) =>
-                                  updateDraft(c.id, { assigneeUserId: value === ASSIGNEE_NONE_VALUE ? '' : value })
-                                }
+                            <div className="flex shrink-0 items-center gap-1 pt-0.5">
+                              <Badge
+                                className={cn(
+                                  'text-[10px] h-4 px-1.5 border-0',
+                                  priority.class,
+                                )}
                               >
-                                <SelectTrigger id={`candidate-assignee-${c.id}`} className="h-8 text-xs">
-                                  <SelectValue placeholder="未設定" />
-                                </SelectTrigger>
-                                <SelectContent>
-                                  <SelectItem value={ASSIGNEE_NONE_VALUE}>未設定</SelectItem>
-                                  {projectMembers.map((member) => (
-                                    <SelectItem key={member.userId} value={member.userId}>
-                                      {memberOptionLabel(member)}
-                                    </SelectItem>
-                                  ))}
-                                </SelectContent>
-                              </Select>
+                                {priority.label}
+                              </Badge>
+                              <span className="text-[10px] text-muted-foreground/50">
+                                {src.label}
+                              </span>
                             </div>
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  )}
 
-                  {isAdded ? (
-                    <div className="flex items-center gap-2 rounded-md bg-emerald-50 px-2.5 py-1.5 text-xs text-emerald-700 border border-emerald-200/60">
-                      <span className="flex items-center gap-1.5 font-medium">
-                        <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
-                        {backlogColumnName} に追加済み
-                      </span>
-                    </div>
-                  ) : (
-                    <>
-                      <div className="flex items-center gap-3 pt-1 border-t border-border/40">
-                        <Button
-                          size="sm"
-                          className={cn(
-                            'flex-1 gap-1.5 text-xs h-8 shadow-sm transition-all active:scale-[0.99]',
+                          {/* ── Row 2: 優先理由 ── */}
+                          {isTopCandidate ? (
+                            <div className="flex items-start gap-1">
+                              <span className="text-[10px] font-semibold text-primary/70 shrink-0 mt-0.5">
+                                優先理由：
+                              </span>
+                              <p className="text-[11px] text-primary/70 leading-relaxed truncate">
+                                {topRecommendation.recommendationReason ||
+                                  priorityReason ||
+                                  '未対応タスクとして優先度が高いと判断されました'}
+                              </p>
+                            </div>
+                          ) : isTopThree ? (
+                            <div className="flex items-start gap-1">
+                              <span className="text-[10px] text-muted-foreground/60 shrink-0 mt-0.5">
+                                理由：
+                              </span>
+                              <p className="text-[11px] text-muted-foreground leading-relaxed truncate">
+                                {priorityReason}
+                              </p>
+                            </div>
+                          ) : (
+                            <p className="text-[11px] text-muted-foreground leading-relaxed truncate">
+                              {priorityReason}
+                            </p>
                           )}
-                          onClick={() => {
-                            if (isAdded) return
-                            setSubmittingId(c.id)
-                            void onAddToKanban(c, getApprovalOverrides(c)).finally(() =>
-                              setSubmittingId(null)
-                            )
-                          }}
-                          disabled={isSubmitting || isAdded}
-                        >
-                          {isSubmitting ? (
-                            <>
-                              <CheckCircle2 className="h-3 w-3" />
-                              追加中...
-                            </>
+
+                          {/* ── Row 3: 重要タグ（最大2） ── */}
+                          {reasonSummary.chips.length > 0 && (
+                            <div className="flex flex-wrap gap-1">
+                              {reasonSummary.chips.map((chip, chipIndex) => (
+                                <Badge
+                                  key={`${c.id}-${chip.label}`}
+                                  className={cn(
+                                    'h-5 border-0 px-2 text-[10px]',
+                                    chipIndex === 0 ||
+                                      chip.strength === 'strong'
+                                      ? 'bg-primary/15 text-primary'
+                                      : 'bg-muted text-muted-foreground',
+                                  )}
+                                >
+                                  {chip.label}
+                                </Badge>
+                              ))}
+                            </div>
+                          )}
+
+                          {/* ── 詳細トグル ── */}
+                          {hasDetail && !isTopThree && (
+                            <button
+                              type="button"
+                              className="flex items-center gap-0.5 text-[10px] text-muted-foreground/40 hover:text-muted-foreground/60 transition-colors"
+                              onClick={() => toggleDetail(c.id)}
+                            >
+                              <ChevronDown
+                                className={cn(
+                                  'h-3 w-3 transition-transform duration-150',
+                                  isDetailOpen && 'rotate-180',
+                                )}
+                              />
+                              {isDetailOpen ? '閉じる' : '詳細'}
+                            </button>
+                          )}
+
+                          {/* ── 詳細セクション（折りたたみ） ── */}
+                          {isDetailOpen && (
+                            <div className="space-y-2 border-t border-border/40 pt-2">
+                              {(c.mergedCount ?? 1) > 1 && (
+                                <p className="text-[10px] text-muted-foreground/70">
+                                  （関連{c.mergedCount}件）
+                                </p>
+                              )}
+                              {isWaiting && (
+                                <Badge className="text-[10px] h-5 px-2 border-0 bg-sky-100 text-sky-700">
+                                  回答待ち候補
+                                </Badge>
+                              )}
+                              {reasonSummary.supportText && (
+                                <div className="space-y-0.5">
+                                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                                    補足
+                                  </p>
+                                  <p className="text-xs text-muted-foreground leading-relaxed">
+                                    {reasonSummary.supportText}
+                                  </p>
+                                </div>
+                              )}
+                              {visibleReasons.length > 0 && (
+                                <div className="space-y-0.5">
+                                  <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/70">
+                                    理由
+                                  </p>
+                                  <ul className="space-y-0.5">
+                                    {visibleReasons.map((r) => (
+                                      <li
+                                        key={r}
+                                        className="flex items-center gap-1.5 text-xs text-muted-foreground"
+                                      >
+                                        <span
+                                          className="h-1 w-1 shrink-0 rounded-full bg-muted-foreground/40"
+                                          aria-hidden
+                                        />
+                                        {formatExtractionReason(r)}
+                                      </li>
+                                    ))}
+                                    {overflowCount > 0 && (
+                                      <li className="text-xs text-muted-foreground/70 pl-2.5">
+                                        ほか{overflowCount}件
+                                      </li>
+                                    )}
+                                  </ul>
+                                </div>
+                              )}
+                              {(c.suggestedAssignee || c.suggestedDueDate) && (
+                                <div className="flex gap-3 text-[11px] text-muted-foreground">
+                                  {c.suggestedAssignee && (
+                                    <span>担当候補: {c.suggestedAssignee}</span>
+                                  )}
+                                  {c.suggestedDueDate && (
+                                    <span>期限候補: {c.suggestedDueDate}</span>
+                                  )}
+                                </div>
+                              )}
+                              <p className="text-[10px] text-muted-foreground/70">
+                                → {backlogColumnName} に追加されます
+                              </p>
+                              {editingId !== c.id && (
+                                <div className="flex justify-start">
+                                  <Button
+                                    type="button"
+                                    size="sm"
+                                    variant="ghost"
+                                    className="h-6 px-2 text-[11px] text-muted-foreground"
+                                    onClick={() => {
+                                      ensureDraft(c)
+                                      setEditingId(c.id)
+                                    }}
+                                  >
+                                    <PencilLine className="h-3 w-3" />
+                                    編集
+                                  </Button>
+                                </div>
+                              )}
+                              {editingId === c.id && (
+                                <div className="relative space-y-2 rounded-md border border-border/80 bg-muted/40 p-2.5">
+                                  <Button
+                                    type="button"
+                                    size="icon"
+                                    variant="ghost"
+                                    className="absolute right-1.5 top-1.5 h-6 w-6 text-muted-foreground"
+                                    onClick={() => setEditingId(null)}
+                                    title="編集を閉じる"
+                                  >
+                                    <X className="h-3.5 w-3.5" />
+                                    <span className="sr-only">
+                                      編集を閉じる
+                                    </span>
+                                  </Button>
+                                  <p className="text-[11px] text-muted-foreground">
+                                    編集してから追加できます
+                                  </p>
+                                  <div className="space-y-1">
+                                    <Label
+                                      htmlFor={`candidate-title-${c.id}`}
+                                      className="text-[11px]"
+                                    >
+                                      タイトル
+                                    </Label>
+                                    <Input
+                                      id={`candidate-title-${c.id}`}
+                                      value={getDraft(c).title}
+                                      onChange={(e) =>
+                                        updateDraft(c.id, {
+                                          title: e.target.value,
+                                        })
+                                      }
+                                      placeholder="タスクタイトル"
+                                      className="h-8 text-xs"
+                                    />
+                                  </div>
+                                  <div className="grid grid-cols-2 gap-2">
+                                    <div className="space-y-1">
+                                      <Label
+                                        htmlFor={`candidate-due-${c.id}`}
+                                        className="text-[11px]"
+                                      >
+                                        期限
+                                      </Label>
+                                      <Input
+                                        id={`candidate-due-${c.id}`}
+                                        type="date"
+                                        value={getDraft(c).dueDate}
+                                        onChange={(e) =>
+                                          updateDraft(c.id, {
+                                            dueDate: e.target.value,
+                                          })
+                                        }
+                                        className="h-8 text-xs"
+                                      />
+                                    </div>
+                                    <div className="space-y-1">
+                                      <Label
+                                        htmlFor={`candidate-assignee-${c.id}`}
+                                        className="text-[11px]"
+                                      >
+                                        担当
+                                      </Label>
+                                      <Select
+                                        value={
+                                          getDraft(c).assigneeUserId.trim()
+                                            ? getDraft(c).assigneeUserId
+                                            : ASSIGNEE_NONE_VALUE
+                                        }
+                                        onValueChange={(value) =>
+                                          updateDraft(c.id, {
+                                            assigneeUserId:
+                                              value === ASSIGNEE_NONE_VALUE
+                                                ? ''
+                                                : value,
+                                          })
+                                        }
+                                      >
+                                        <SelectTrigger
+                                          id={`candidate-assignee-${c.id}`}
+                                          className="h-8 text-xs"
+                                        >
+                                          <SelectValue placeholder="未設定" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          <SelectItem
+                                            value={ASSIGNEE_NONE_VALUE}
+                                          >
+                                            未設定
+                                          </SelectItem>
+                                          {projectMembers.map((member) => (
+                                            <SelectItem
+                                              key={member.userId}
+                                              value={member.userId}
+                                            >
+                                              {memberOptionLabel(member)}
+                                            </SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                  </div>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {isAdded ? (
+                            <div className="flex items-center gap-2 rounded-md bg-emerald-50 px-2.5 py-1.5 text-xs text-emerald-700 border border-emerald-200/60">
+                              <span className="flex items-center gap-1.5 font-medium">
+                                <CheckCircle2 className="h-3.5 w-3.5 shrink-0" />
+                                {backlogColumnName} に追加済み
+                              </span>
+                            </div>
                           ) : (
                             <>
-                              <Plus className="h-3 w-3" />
-                              タスクに追加
+                              <div className="flex items-center gap-3 pt-1 border-t border-border/40">
+                                <Button
+                                  size="sm"
+                                  className={cn(
+                                    'flex-1 gap-1.5 text-xs h-8 shadow-sm transition-all active:scale-[0.99]',
+                                  )}
+                                  onClick={() => {
+                                    if (isAdded) return
+                                    setSubmittingId(c.id)
+                                    void onAddToKanban(
+                                      c,
+                                      getApprovalOverrides(c),
+                                    ).finally(() => setSubmittingId(null))
+                                  }}
+                                  disabled={isSubmitting || isAdded}
+                                >
+                                  {isSubmitting ? (
+                                    <>
+                                      <CheckCircle2 className="h-3 w-3" />
+                                      追加中...
+                                    </>
+                                  ) : (
+                                    <>
+                                      <Plus className="h-3 w-3" />
+                                      タスクに追加
+                                    </>
+                                  )}
+                                </Button>
+                                {isHeld ? (
+                                  <span className="inline-flex items-center gap-1 text-[11px] text-sky-600 shrink-0 font-medium">
+                                    <Pause className="h-3 w-3" />
+                                    あとで確認
+                                  </span>
+                                ) : (
+                                  <Button
+                                    size="sm"
+                                    variant="outline"
+                                    className="gap-1 text-xs h-8 px-3"
+                                    onClick={() =>
+                                      onHold(c.candidateKey ?? c.id)
+                                    }
+                                    title="あとで確認に移動（このセッションのみ）"
+                                  >
+                                    <Pause className="h-3 w-3" />
+                                    あとで
+                                  </Button>
+                                )}
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
+                                  onClick={() =>
+                                    onDismiss(c.candidateKey ?? c.id)
+                                  }
+                                  title="却下"
+                                >
+                                  <X className="h-4 w-4" />
+                                </Button>
+                              </div>
                             </>
                           )}
-                        </Button>
-                        {isHeld ? (
-                          <span className="inline-flex items-center gap-1 text-[11px] text-sky-600 shrink-0 font-medium">
-                            <Pause className="h-3 w-3" />
-                            あとで確認
-                          </span>
-                        ) : (
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            className="gap-1 text-xs h-8 px-3"
-                            onClick={() => onHold(c.candidateKey ?? c.id)}
-                            title="あとで確認に移動（このセッションのみ）"
-                          >
-                            <Pause className="h-3 w-3" />
-                            あとで
-                          </Button>
-                        )}
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          className="h-8 w-8 p-0 text-muted-foreground hover:text-destructive"
-                          onClick={() => onDismiss(c.candidateKey ?? c.id)}
-                          title="却下"
-                        >
-                          <X className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </>
-                  )}
-                </CardContent>
-              </Card>
-            )
-            if (index === INITIAL_DISPLAY_COUNT && unresolvedCandidates.length > INITIAL_DISPLAY_COUNT) {
-              return [
-                <div key="other-section-header" className="px-1 pt-3 pb-2">
-                  <p className="text-[11px] font-semibold text-muted-foreground/70 uppercase tracking-wide">
-                    優先度が低い候補
-                  </p>
-                </div>,
-                card,
-              ]
-            }
-            return [card]
-          })}
+                        </CardContent>
+                      </Card>
+                    )
+                    return card
+                  })
+                )}
+              </section>
+            ))}
           </>
         )}
 
@@ -757,7 +975,12 @@ export function TaskCandidateSidePanel({
               onClick={() => setShowProcessed((prev) => !prev)}
             >
               <span>処理済み {processedCandidates.length}件</span>
-              <ChevronDown className={cn('h-3.5 w-3.5 transition-transform', showProcessed && 'rotate-180')} />
+              <ChevronDown
+                className={cn(
+                  'h-3.5 w-3.5 transition-transform',
+                  showProcessed && 'rotate-180',
+                )}
+              />
             </Button>
             {showProcessed && (
               <div className="mt-2 space-y-2">
@@ -771,10 +994,17 @@ export function TaskCandidateSidePanel({
                       ? '却下済み'
                       : 'あとで確認'
                   return (
-                    <Card key={`processed-${c.id}`} className="bg-muted/20 border-border/60">
+                    <Card
+                      key={`processed-${c.id}`}
+                      className="bg-muted/20 border-border/60"
+                    >
                       <CardContent className="p-2.5 space-y-1.5">
-                        <p className="text-xs font-medium text-foreground leading-snug">{c.displayTitle ?? c.title}</p>
-                        <p className="text-[11px] text-muted-foreground">{statusText}</p>
+                        <p className="text-xs font-medium text-foreground leading-snug">
+                          {c.displayTitle ?? c.title}
+                        </p>
+                        <p className="text-[11px] text-muted-foreground">
+                          {statusText}
+                        </p>
                       </CardContent>
                     </Card>
                   )

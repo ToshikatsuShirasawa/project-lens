@@ -42,10 +42,19 @@ const TODO_KEYWORDS: readonly string[] = [
   '週明け',
   'TODO',
   '修正する',
+  '修正します',
   '確認する',
+  '確認します',
   '作成する',
+  '作成します',
   '準備する',
   '調整する',
+  '調整します',
+  '直します',
+  '入れます',
+  '対応します',
+  '実装します',
+  '更新します',
 ]
 
 /**
@@ -118,6 +127,8 @@ const STATUS_ONLY_KEYWORDS: readonly string[] = [
   '支障なし',
 ]
 
+const LOW_SIGNAL_ACTION_KEYWORDS: readonly string[] = ['後で見ます', 'ちょっと確認します']
+
 // ─── 節分割 ──────────────────────────────────────────────────
 
 /**
@@ -171,7 +182,7 @@ function collectLegacyTodoMatches(clause: string): string[] {
 
 /**
  * 優先順位:
- *   memo > waiting > spec-todo > done > in-progress > status-only > legacy-todo > unknown
+ *   memo > waiting > low-signal > spec-todo > done > in-progress > status-only > legacy-todo > unknown
  *
  * spec-todo（TODO_KEYWORDS）は done より高優先。節分割後の単独 todo 節を取りこぼさないため。
  * legacy-todo（LEGACY_TODO_KEYWORDS の短形式）は done より低優先。
@@ -182,6 +193,7 @@ function collectLegacyTodoMatches(clause: string): string[] {
 export function judgeExtractionClause(clause: string): ExtractionJudgement {
   const memoMatches = collectMatches(clause, MEMO_KEYWORDS)
   const waitingMatches = collectMatches(clause, WAITING_KEYWORDS)
+  const lowSignalActionMatches = collectMatches(clause, LOW_SIGNAL_ACTION_KEYWORDS)
   const specTodoMatches = collectMatches(clause, TODO_KEYWORDS)
   const doneMatches = collectMatches(clause, DONE_KEYWORDS)
   const legacyTodoMatches = collectLegacyTodoMatches(clause)
@@ -191,6 +203,7 @@ export function judgeExtractionClause(clause: string): ExtractionJudgement {
   const reasons: string[] = [
     ...memoMatches.map((k) => `memo: ${k}`),
     ...waitingMatches.map((k) => `waiting: ${k}`),
+    ...lowSignalActionMatches.map((k) => `low-signal: ${k}`),
     ...specTodoMatches.map((k) => `todo: ${k}`),
     ...legacyTodoMatches.map((k) => `todo(legacy): ${k}`),
     ...doneMatches.map((k) => `done: ${k}`),
@@ -203,6 +216,9 @@ export function judgeExtractionClause(clause: string): ExtractionJudgement {
   }
   if (waitingMatches.length > 0) {
     return { status: 'waiting', shouldExtract: false, confidence: 0.8, reasons }
+  }
+  if (lowSignalActionMatches.length > 0) {
+    return { status: 'memo', shouldExtract: false, confidence: 0.8, reasons }
   }
   // spec-todo は done より優先（節分割済みの純粋 todo 節）
   if (specTodoMatches.length > 0) {

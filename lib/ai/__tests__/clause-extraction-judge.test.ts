@@ -135,6 +135,20 @@ describe('judgeExtractionClause', () => {
     expect(j.shouldExtract).toBe(true)
   })
 
+  it.each([
+    'ログ出力を修正します',
+    'API仕様を確認します',
+    '画面文言を直します',
+    '一旦エラー修正入れます',
+    'あとで追加確認します',
+    'API確認',
+    'ログ修正',
+  ])('作業予定表現を抽出する: %s', (clause) => {
+    const j = judgeExtractionClause(clause)
+    expect(j.status).toBe('todo')
+    expect(j.shouldExtract).toBe(true)
+  })
+
   // ─── waiting（待ち状態はタスク候補から除外）
   it('ケース3a: 「先方に確認依頼済みです」→ waiting、候補化しない', () => {
     const j = judgeExtractionClause('先方に確認依頼済みです')
@@ -274,6 +288,14 @@ describe('judgeExtractionClause', () => {
     expect(j.shouldExtract).toBe(false)
   })
 
+  it.each(['後で見ます', 'ちょっと確認します'])(
+    '低シグナルな行動表現は候補化しない: %s',
+    (clause) => {
+      const j = judgeExtractionClause(clause)
+      expect(j.shouldExtract).toBe(false)
+    },
+  )
+
   it('status-only + spec-todo 混在 → spec-todo 優先で候補化する', () => {
     const j = judgeExtractionClause('問題なく対応できましたが確認が必要な点があります')
     expect(j.status).toBe('todo')
@@ -351,6 +373,48 @@ describe('統合テスト', () => {
     expect(result).toHaveLength(1)
     expect(result[0]).toBe('追加修正が必要です')
     expect(judgeExtractionClause(result[0]).status).toBe('todo')
+  })
+})
+
+// ─── 抽出漏れ改善: 作業予定・対応予定表現 ───────────────────────
+
+describe('抽出漏れ改善: 作業予定・対応予定表現', () => {
+  function extractCandidateClauses(text: string): string[] {
+    return splitReportIntoClauses(text).filter((clause) =>
+      shouldCreateTaskCandidate(judgeExtractionClause(clause)),
+    )
+  }
+
+  const expectedCandidates = [
+    'ログ出力を修正します',
+    'API仕様を確認します',
+    '画面文言を直します',
+    '一旦エラー修正入れます',
+    'あとで追加確認します',
+    'API確認',
+    'ログ修正',
+  ]
+
+  it('指定入力例から期待候補をすべて抽出する', () => {
+    const result = extractCandidateClauses(expectedCandidates.join('\n'))
+    expect(result).toEqual(expectedCandidates)
+  })
+
+  it.each(expectedCandidates)('抽出される: %s', (clause) => {
+    expect(extractCandidateClauses(clause)).toContain(clause)
+  })
+
+  it.each([
+    '対応完了しました',
+    '修正終わっています',
+    '確認待ちです',
+    '返答待ちです',
+    '問題ありません',
+    '特になしです',
+    '後で見ます',
+    'ちょっと確認します',
+  ])('抽出されない: %s', (clause) => {
+    expect(extractCandidateClauses(clause)).toHaveLength(0)
   })
 })
 

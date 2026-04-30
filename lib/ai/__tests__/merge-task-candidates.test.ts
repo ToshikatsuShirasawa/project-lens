@@ -43,6 +43,12 @@ describe('buildTaskCandidateKey', () => {
     expect(buildTaskCandidateKey('「API修正」')).toBe('api修正')
   })
 
+  it('軽い文末表現を削除する', () => {
+    expect(buildTaskCandidateKey('API修正します')).toBe('api修正')
+    expect(buildTaskCandidateKey('API修正です')).toBe('api修正')
+    expect(buildTaskCandidateKey('API修正が必要です')).toBe('api修正')
+  })
+
   it('「APIの修正」と「API修正」が同一キーになる', () => {
     expect(buildTaskCandidateKey('APIの修正')).toBe(buildTaskCandidateKey('API修正'))
   })
@@ -113,6 +119,33 @@ describe('mergeTaskCandidates: 重複統合', () => {
     const c2 = makeCandidate({ id: 'b', title: '修正2', displayTitle: 'API修正' })
     const result = mergeTaskCandidates([c1, c2])
     expect(result[0].mergedTitles).toEqual(['API修正', 'API修正'])
+  })
+
+  it('部分一致する候補を軽量に統合する', () => {
+    const c1 = makeCandidate({ id: 'a', title: '詳細画面の確認', displayTitle: '詳細画面確認' })
+    const c2 = makeCandidate({
+      id: 'b',
+      title: '詳細画面の確認が必要です',
+      displayTitle: '詳細画面確認が必要です',
+    })
+    const result = mergeTaskCandidates([c1, c2])
+    expect(result).toHaveLength(1)
+    expect(result[0].mergedCount).toBe(2)
+  })
+
+  it('語順違いでも文字が十分近い候補を統合する', () => {
+    const c1 = makeCandidate({ id: 'a', title: 'API修正対応', displayTitle: 'API修正対応' })
+    const c2 = makeCandidate({ id: 'b', title: 'API対応修正', displayTitle: 'API対応修正' })
+    const result = mergeTaskCandidates([c1, c2])
+    expect(result).toHaveLength(1)
+    expect(result[0].mergedCount).toBe(2)
+  })
+
+  it('短すぎる部分一致は統合しない', () => {
+    const c1 = makeCandidate({ id: 'a', title: '確認', displayTitle: '確認' })
+    const c2 = makeCandidate({ id: 'b', title: '仕様確認', displayTitle: '仕様確認' })
+    const result = mergeTaskCandidates([c1, c2])
+    expect(result).toHaveLength(2)
   })
 })
 

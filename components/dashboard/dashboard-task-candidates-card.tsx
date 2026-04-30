@@ -195,6 +195,7 @@ export function DashboardTaskCandidatesCard({ projectId }: DashboardTaskCandidat
     source: toCardSource(c.source),
     suggestedAssignee: c.suggestedAssignee,
     suggestedDueDate: c.suggestedDueDate,
+    mergedCount: c.mergedCount,
   }))
 
   const handleAddToKanban = (id: string) => {

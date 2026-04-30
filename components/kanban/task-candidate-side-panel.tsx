@@ -613,6 +613,11 @@ export function TaskCandidateSidePanel({
                               <p className="text-sm font-medium text-foreground leading-snug">
                                 {c.displayTitle ?? c.title}
                               </p>
+                              {(c.mergedCount ?? 1) > 1 && (
+                                <p className="mt-1 text-[11px] text-muted-foreground/70">
+                                  （同様の候補が{c.mergedCount}件）
+                                </p>
+                              )}
                               {c.reason?.trim() && (
                                 <p className="mt-1 truncate text-xs text-muted-foreground">
                                   理由：{c.reason.trim()}
@@ -703,7 +708,7 @@ export function TaskCandidateSidePanel({
                             <div className="space-y-2 border-t border-border/40 pt-2">
                               {(c.mergedCount ?? 1) > 1 && (
                                 <p className="text-[10px] text-muted-foreground/70">
-                                  （関連{c.mergedCount}件）
+                                  （同様の候補が{c.mergedCount}件）
                                 </p>
                               )}
                               {isWaiting && (

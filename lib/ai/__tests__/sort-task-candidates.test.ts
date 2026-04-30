@@ -1,5 +1,8 @@
 import { describe, it, expect } from 'vitest'
-import { sortTaskCandidatesForDisplay } from '../sort-task-candidates'
+import {
+  scoreTaskCandidateDisplayPriority,
+  sortTaskCandidatesForDisplay,
+} from '../sort-task-candidates'
 import type { TaskCandidate } from '@/lib/types'
 import type { TaskCandidateScoreResult } from '../task-candidate-score'
 
@@ -69,6 +72,36 @@ describe('sortTaskCandidatesForDisplay', () => {
     const result = sortTaskCandidatesForDisplay(candidates, scorer)
 
     expect(result.map((c) => c.id)).toEqual(['high', 'low'])
+  })
+
+  it('表示優先度スコアが高い候補を同じグループ内で上に表示する', () => {
+    const candidates = [
+      makeCandidate('need-check', { title: '仕様確認が必要です' }),
+      makeCandidate('urgent-fix', { title: '明日までにエラー画面を修正します' }),
+      makeCandidate('investigate-log', { title: 'ログ出力を調査します' }),
+      makeCandidate('implement-admin', { title: '管理画面を実装します' }),
+    ]
+
+    const result = sortTaskCandidatesForDisplay(candidates)
+
+    expect(result.map((c) => c.title)).toEqual([
+      '明日までにエラー画面を修正します',
+      '管理画面を実装します',
+      '仕様確認が必要です',
+      'ログ出力を調査します',
+    ])
+  })
+
+  it('表示優先度スコアに緊急度・作業性・必要性・リスクを反映する', () => {
+    expect(
+      scoreTaskCandidateDisplayPriority(
+        makeCandidate('urgent-fix', { title: '明日までにエラー画面を修正します' })
+      )
+    ).toBeGreaterThan(
+      scoreTaskCandidateDisplayPriority(
+        makeCandidate('investigate-log', { title: 'ログ出力を調査します' })
+      )
+    )
   })
 
   it('waiting 候補を末尾に配置する', () => {

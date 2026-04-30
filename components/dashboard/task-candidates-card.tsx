@@ -32,6 +32,7 @@ interface TaskCandidate {
   source: AISource
   suggestedAssignee?: string
   suggestedDueDate?: string
+  mergedCount?: number
 }
 
 interface GroupedTaskCandidate {
@@ -242,6 +243,11 @@ export function TaskCandidatesCard({
                       <h4 className="text-sm font-semibold text-foreground leading-snug">
                         {candidate.title}
                       </h4>
+                      {(candidate.mergedCount ?? 1) > 1 && (
+                        <p className="mt-1 text-[11px] text-muted-foreground/70">
+                          （同様の候補が{candidate.mergedCount}件）
+                        </p>
+                      )}
                       {candidate.reason?.trim() && (
                         <p className="mt-1 truncate text-xs text-muted-foreground">
                           理由：{candidate.reason.trim()}

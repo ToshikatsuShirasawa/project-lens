@@ -87,6 +87,11 @@ export type KanbanTask = Prisma.KanbanTaskModel
  */
 export type WorkReport = Prisma.WorkReportModel
 /**
+ * Model ProjectInput
+ * Slackログ・議事録・自由メモなどの未整理テキスト。AI候補生成の素材にする
+ */
+export type ProjectInput = Prisma.ProjectInputModel
+/**
  * Model AiTaskCandidateEvent
  * AI候補の表示・承認・あとで・却下の最小ログ（クライアント送信・失敗時もUIは継続）
  */

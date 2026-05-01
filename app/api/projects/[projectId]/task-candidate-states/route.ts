@@ -16,6 +16,12 @@ const STATUS_FROM_API: Record<string, AiTaskCandidateStatus> = {
   ADDED: AiTaskCandidateStatus.ADDED,
 }
 
+const SOURCE_TYPE_FROM_API: Record<string, AiTaskCandidateSource> = {
+  WORK_REPORT: AiTaskCandidateSource.WORK_REPORT,
+  SLACK: AiTaskCandidateSource.SLACK,
+  MEETING: AiTaskCandidateSource.MEETING,
+}
+
 export async function GET(_request: Request, context: RouteContext) {
   const { projectId } = await context.params
   const access = await requireProjectAccessJson(projectId)
@@ -51,6 +57,7 @@ export async function POST(request: Request, context: RouteContext) {
   const candidateKey = typeof raw.candidateKey === 'string' ? raw.candidateKey.trim() : ''
   const candidateTitle = typeof raw.candidateTitle === 'string' ? raw.candidateTitle.trim() : ''
   const statusRaw = typeof raw.status === 'string' ? raw.status.trim().toUpperCase() : ''
+  const sourceTypeRaw = typeof raw.sourceType === 'string' ? raw.sourceType.trim().toUpperCase() : ''
 
   if (!candidateKey || !candidateTitle || !statusRaw) {
     return NextResponse.json(
@@ -63,6 +70,7 @@ export async function POST(request: Request, context: RouteContext) {
   if (!status) {
     return NextResponse.json({ message: 'status が不正です' }, { status: 400 })
   }
+  const sourceType = SOURCE_TYPE_FROM_API[sourceTypeRaw] ?? AiTaskCandidateSource.WORK_REPORT
 
   let createdTaskId: string | null = null
   if (raw.createdTaskId !== undefined && raw.createdTaskId !== null) {
@@ -84,7 +92,7 @@ export async function POST(request: Request, context: RouteContext) {
         candidateKey,
         candidateTitle,
         status,
-        sourceType: AiTaskCandidateSource.WORK_REPORT,
+        sourceType,
         createdTaskId,
         updatedByUserId: access.ctx.appUser.id,
       },

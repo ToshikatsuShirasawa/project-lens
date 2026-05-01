@@ -60,6 +60,7 @@ export const ModelName = {
   ProjectMember: 'ProjectMember',
   KanbanTask: 'KanbanTask',
   WorkReport: 'WorkReport',
+  ProjectInput: 'ProjectInput',
   AiTaskCandidateEvent: 'AiTaskCandidateEvent',
   AiTaskCandidateState: 'AiTaskCandidateState'
 } as const
@@ -203,6 +204,22 @@ export const WorkReportScalarFieldEnum = {
 } as const
 
 export type WorkReportScalarFieldEnum = (typeof WorkReportScalarFieldEnum)[keyof typeof WorkReportScalarFieldEnum]
+
+
+export const ProjectInputScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  inputType: 'inputType',
+  title: 'title',
+  body: 'body',
+  sourceLabel: 'sourceLabel',
+  submittedByUserId: 'submittedByUserId',
+  submittedBy: 'submittedBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ProjectInputScalarFieldEnum = (typeof ProjectInputScalarFieldEnum)[keyof typeof ProjectInputScalarFieldEnum]
 
 
 export const AiTaskCandidateEventScalarFieldEnum = {

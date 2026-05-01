@@ -393,6 +393,7 @@ export const ModelName = {
   ProjectMember: 'ProjectMember',
   KanbanTask: 'KanbanTask',
   WorkReport: 'WorkReport',
+  ProjectInput: 'ProjectInput',
   AiTaskCandidateEvent: 'AiTaskCandidateEvent',
   AiTaskCandidateState: 'AiTaskCandidateState'
 } as const
@@ -410,7 +411,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "organization" | "organizationMember" | "project" | "projectInvitation" | "projectKanbanColumn" | "projectMember" | "kanbanTask" | "workReport" | "aiTaskCandidateEvent" | "aiTaskCandidateState"
+    modelProps: "user" | "organization" | "organizationMember" | "project" | "projectInvitation" | "projectKanbanColumn" | "projectMember" | "kanbanTask" | "workReport" | "projectInput" | "aiTaskCandidateEvent" | "aiTaskCandidateState"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1080,6 +1081,80 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    ProjectInput: {
+      payload: Prisma.$ProjectInputPayload<ExtArgs>
+      fields: Prisma.ProjectInputFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.ProjectInputFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectInputPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.ProjectInputFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectInputPayload>
+        }
+        findFirst: {
+          args: Prisma.ProjectInputFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectInputPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.ProjectInputFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectInputPayload>
+        }
+        findMany: {
+          args: Prisma.ProjectInputFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectInputPayload>[]
+        }
+        create: {
+          args: Prisma.ProjectInputCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectInputPayload>
+        }
+        createMany: {
+          args: Prisma.ProjectInputCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.ProjectInputCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectInputPayload>[]
+        }
+        delete: {
+          args: Prisma.ProjectInputDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectInputPayload>
+        }
+        update: {
+          args: Prisma.ProjectInputUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectInputPayload>
+        }
+        deleteMany: {
+          args: Prisma.ProjectInputDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.ProjectInputUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.ProjectInputUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectInputPayload>[]
+        }
+        upsert: {
+          args: Prisma.ProjectInputUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$ProjectInputPayload>
+        }
+        aggregate: {
+          args: Prisma.ProjectInputAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateProjectInput>
+        }
+        groupBy: {
+          args: Prisma.ProjectInputGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ProjectInputGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.ProjectInputCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.ProjectInputCountAggregateOutputType> | number
+        }
+      }
+    }
     AiTaskCandidateEvent: {
       payload: Prisma.$AiTaskCandidateEventPayload<ExtArgs>
       fields: Prisma.AiTaskCandidateEventFieldRefs
@@ -1392,6 +1467,22 @@ export const WorkReportScalarFieldEnum = {
 export type WorkReportScalarFieldEnum = (typeof WorkReportScalarFieldEnum)[keyof typeof WorkReportScalarFieldEnum]
 
 
+export const ProjectInputScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  inputType: 'inputType',
+  title: 'title',
+  body: 'body',
+  sourceLabel: 'sourceLabel',
+  submittedByUserId: 'submittedByUserId',
+  submittedBy: 'submittedBy',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type ProjectInputScalarFieldEnum = (typeof ProjectInputScalarFieldEnum)[keyof typeof ProjectInputScalarFieldEnum]
+
+
 export const AiTaskCandidateEventScalarFieldEnum = {
   id: 'id',
   createdAt: 'createdAt',
@@ -1589,6 +1680,20 @@ export type ListEnumTaskPriorityFieldRefInput<$PrismaModel> = FieldRefInputType<
 
 
 /**
+ * Reference to a field of type 'ProjectInputType'
+ */
+export type EnumProjectInputTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProjectInputType'>
+    
+
+
+/**
+ * Reference to a field of type 'ProjectInputType[]'
+ */
+export type ListEnumProjectInputTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'ProjectInputType[]'>
+    
+
+
+/**
  * Reference to a field of type 'AiTaskCandidateEventType'
  */
 export type EnumAiTaskCandidateEventTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiTaskCandidateEventType'>
@@ -1761,6 +1866,7 @@ export type GlobalOmitConfig = {
   projectMember?: Prisma.ProjectMemberOmit
   kanbanTask?: Prisma.KanbanTaskOmit
   workReport?: Prisma.WorkReportOmit
+  projectInput?: Prisma.ProjectInputOmit
   aiTaskCandidateEvent?: Prisma.AiTaskCandidateEventOmit
   aiTaskCandidateState?: Prisma.AiTaskCandidateStateOmit
 }

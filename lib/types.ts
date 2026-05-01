@@ -596,6 +596,9 @@ export interface WorkReport {
   nextActions: string
   submittedAt: string
   submittedBy: string
+  candidateSource?: SourceType
+  candidateReasonSourceLabel?: string
+  candidateIdPrefix?: string
 }
 
 export interface WorkReportPreview {
@@ -634,6 +637,37 @@ export interface WorkReportCreateRequest {
   blockers?: string
   nextActions?: string
   reportDate?: string
+}
+
+// ============================================================
+// Project Inputs
+// ============================================================
+
+export type ProjectInputTypeApi = 'SLACK' | 'MEETING' | 'MEMO'
+
+export interface ProjectInputApiRecord {
+  id: string
+  projectId: string
+  inputType: ProjectInputTypeApi
+  title: string | null
+  body: string
+  sourceLabel: string | null
+  submittedBy: string
+  submittedByUserId: string | null
+  createdAt: string
+  updatedAt: string
+}
+
+export interface ProjectInputListResponse {
+  inputs: ProjectInputApiRecord[]
+}
+
+export interface ProjectInputCreateRequest {
+  inputType?: ProjectInputTypeApi
+  title?: string | null
+  body?: string
+  sourceLabel?: string | null
+  submittedBy?: string | null
 }
 
 // ============================================================

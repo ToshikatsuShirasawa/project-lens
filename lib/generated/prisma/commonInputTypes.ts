@@ -270,6 +270,23 @@ export type EnumTaskPriorityNullableWithAggregatesFilter<$PrismaModel = never> =
   _max?: Prisma.NestedEnumTaskPriorityNullableFilter<$PrismaModel>
 }
 
+export type EnumProjectInputTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProjectInputType | Prisma.EnumProjectInputTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.ProjectInputType[] | Prisma.ListEnumProjectInputTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ProjectInputType[] | Prisma.ListEnumProjectInputTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumProjectInputTypeFilter<$PrismaModel> | $Enums.ProjectInputType
+}
+
+export type EnumProjectInputTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProjectInputType | Prisma.EnumProjectInputTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.ProjectInputType[] | Prisma.ListEnumProjectInputTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ProjectInputType[] | Prisma.ListEnumProjectInputTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumProjectInputTypeWithAggregatesFilter<$PrismaModel> | $Enums.ProjectInputType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumProjectInputTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumProjectInputTypeFilter<$PrismaModel>
+}
+
 export type EnumAiTaskCandidateEventTypeFilter<$PrismaModel = never> = {
   equals?: $Enums.AiTaskCandidateEventType | Prisma.EnumAiTaskCandidateEventTypeFieldRefInput<$PrismaModel>
   in?: $Enums.AiTaskCandidateEventType[] | Prisma.ListEnumAiTaskCandidateEventTypeFieldRefInput<$PrismaModel>
@@ -690,6 +707,23 @@ export type NestedEnumTaskPriorityNullableWithAggregatesFilter<$PrismaModel = ne
   _count?: Prisma.NestedIntNullableFilter<$PrismaModel>
   _min?: Prisma.NestedEnumTaskPriorityNullableFilter<$PrismaModel>
   _max?: Prisma.NestedEnumTaskPriorityNullableFilter<$PrismaModel>
+}
+
+export type NestedEnumProjectInputTypeFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProjectInputType | Prisma.EnumProjectInputTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.ProjectInputType[] | Prisma.ListEnumProjectInputTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ProjectInputType[] | Prisma.ListEnumProjectInputTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumProjectInputTypeFilter<$PrismaModel> | $Enums.ProjectInputType
+}
+
+export type NestedEnumProjectInputTypeWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.ProjectInputType | Prisma.EnumProjectInputTypeFieldRefInput<$PrismaModel>
+  in?: $Enums.ProjectInputType[] | Prisma.ListEnumProjectInputTypeFieldRefInput<$PrismaModel>
+  notIn?: $Enums.ProjectInputType[] | Prisma.ListEnumProjectInputTypeFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumProjectInputTypeWithAggregatesFilter<$PrismaModel> | $Enums.ProjectInputType
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumProjectInputTypeFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumProjectInputTypeFilter<$PrismaModel>
 }
 
 export type NestedEnumAiTaskCandidateEventTypeFilter<$PrismaModel = never> = {

@@ -39,6 +39,7 @@ import {
   logAiTaskCandidateEvent,
 } from '@/lib/ai/log-candidate-event'
 import { extractTaskCandidatesFromReports } from '@/lib/ai/extract-task-candidates-from-reports'
+import { projectInputToWorkReport } from '@/lib/ai/project-inputs-as-reports'
 import { buildTaskCandidateKey, mergeTaskCandidates } from '@/lib/ai/merge-task-candidates'
 import { sortTaskCandidatesForDisplay } from '@/lib/ai/sort-task-candidates'
 import { buildComparativeRecommendationReason, sortTaskCandidatesByScore } from '@/lib/ai/task-candidate-score'
@@ -49,6 +50,7 @@ import {
 import type {
   KanbanTask,
   KanbanTaskApiRecord,
+  ProjectInputListResponse,
   ProjectKanbanColumnApi,
   ProjectMemberApiRecord,
   TaskCandidate,
@@ -84,6 +86,12 @@ function toDateInputValue(s: string | undefined): string {
   return ''
 }
 
+function toCandidateStateSourceType(source: TaskCandidate['source']): 'WORK_REPORT' | 'SLACK' | 'MEETING' {
+  if (source === 'slack') return 'SLACK'
+  if (source === 'meeting') return 'MEETING'
+  return 'WORK_REPORT'
+}
+
 const emptyTaskForm = () => ({
   title: '',
   description: '',
@@ -97,12 +105,13 @@ function postCandidateState(
   candidateKey: string,
   candidateTitle: string,
   status: 'HELD' | 'DISMISSED' | 'ADDED',
-  createdTaskId?: string | null
+  createdTaskId?: string | null,
+  sourceType: 'WORK_REPORT' | 'SLACK' | 'MEETING' = 'WORK_REPORT'
 ): void {
   void fetch(`/api/projects/${encodeURIComponent(projectId)}/task-candidate-states`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ candidateKey, candidateTitle, status, createdTaskId: createdTaskId ?? null }),
+    body: JSON.stringify({ candidateKey, candidateTitle, status, createdTaskId: createdTaskId ?? null, sourceType }),
   }).catch((e) => console.warn('[kanban] candidate state save failed', e))
 }
 
@@ -263,7 +272,20 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
               item.nextActions.trim()
           )
 
-        const extracted = extractTaskCandidatesFromReports(reports, projectId)
+        let inputReports: WorkReport[] = []
+        try {
+          const inputsRes = await fetch(`/api/projects/${encodeURIComponent(projectId)}/inputs`)
+          if (inputsRes.ok) {
+            const inputsBody: ProjectInputListResponse = await inputsRes.json()
+            inputReports = (inputsBody.inputs ?? [])
+              .map((item, index) => projectInputToWorkReport(item, index, projectId))
+              .filter((item) => item.nextActions.trim())
+          }
+        } catch {
+          // 自由テキストの取得失敗時も、既存の作業報告候補は表示する
+        }
+
+        const extracted = extractTaskCandidatesFromReports([...reports, ...inputReports], projectId)
         if (cancelled) return
         if (extracted.length > 0) {
           const merged = sortTaskCandidatesForDisplay(mergeTaskCandidates(extracted))
@@ -715,7 +737,8 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
       candidate.candidateKey ?? candidate.id,
       candidate.displayTitle ?? candidate.title,
       'ADDED',
-      newTaskId
+      newTaskId,
+      toCandidateStateSourceType(candidate.source)
     )
     toastSuccess('AI候補をバックログに追加しました')
     if (newTaskId) {
@@ -853,7 +876,9 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
               projectId,
               target.candidateKey ?? target.id,
               target.displayTitle ?? target.title,
-              'HELD'
+              'HELD',
+              null,
+              toCandidateStateSourceType(target.source)
             )
           }
           setCandidates((prev) => {
@@ -883,7 +908,9 @@ export function KanbanBoard({ projectId }: KanbanBoardProps) {
               projectId,
               target.candidateKey ?? target.id,
               target.displayTitle ?? target.title,
-              'DISMISSED'
+              'DISMISSED',
+              null,
+              toCandidateStateSourceType(target.source)
             )
           }
           const existed = candidates.some((c) => (c.candidateKey ?? c.id) === id)

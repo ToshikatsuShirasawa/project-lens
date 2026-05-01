@@ -72,3 +72,12 @@ export const AiTaskCandidateSource = {
 } as const
 
 export type AiTaskCandidateSource = (typeof AiTaskCandidateSource)[keyof typeof AiTaskCandidateSource]
+
+
+export const ProjectInputType = {
+  SLACK: 'SLACK',
+  MEETING: 'MEETING',
+  MEMO: 'MEMO'
+} as const
+
+export type ProjectInputType = (typeof ProjectInputType)[keyof typeof ProjectInputType]

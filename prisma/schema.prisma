@@ -63,6 +63,13 @@ enum AiTaskCandidateSource {
   MEETING
 }
 
+/// 未整理テキスト入力の種類。Slack API 連携前の手動入力もこの区分で保存する
+enum ProjectInputType {
+  SLACK
+  MEETING
+  MEMO
+}
+
 model User {
   /// Supabase Auth `auth.users.id`（UUID）と1対1
   id        String   @id
@@ -130,6 +137,7 @@ model Project {
   aiTaskCandidateEvents   AiTaskCandidateEvent[]
   aiTaskCandidateStates   AiTaskCandidateState[]
   workReports             WorkReport[]
+  inputs                  ProjectInput[]
 
   @@index([organizationId])
   @@map("projects")
@@ -265,6 +273,29 @@ model WorkReport {
   @@index([projectId])
   @@index([projectId, reportDate])
   @@map("work_reports")
+}
+
+/// Slackログ・議事録・自由メモなどの未整理テキスト。AI候補生成の素材にする
+model ProjectInput {
+  id        String           @id @default(cuid())
+  projectId String
+  project   Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+
+  inputType ProjectInputType @default(MEETING)
+  title     String?
+  body      String
+  sourceLabel String?
+
+  /// 投稿者の User.id（将来の外部連携や匿名入力は null 許容）
+  submittedByUserId String?
+  /// 表示用の投稿者名（手動指定があればそれを優先）
+  submittedBy       String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([projectId, createdAt])
+  @@map("project_inputs")
 }
 
 /// AI候補の表示・承認・あとで・却下の最小ログ（クライアント送信・失敗時もUIは継続）

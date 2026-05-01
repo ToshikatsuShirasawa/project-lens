@@ -1,4 +1,4 @@
-import type { TaskCandidate, WorkReport } from '@/lib/types'
+import type { SourceType, TaskCandidate, WorkReport } from '@/lib/types'
 import {
   judgeExtractionClause,
   shouldCreateTaskCandidate,
@@ -8,7 +8,11 @@ import type { ExtractionStatus } from '@/lib/ai/clause-extraction-judge'
 import { normalizeTaskCandidateTitle } from '@/lib/ai/normalize-task-candidate-title'
 import { generateCandidateKey } from '@/lib/ai/candidate-key'
 
-type ReportLike = Pick<WorkReport, 'id' | 'submittedBy' | 'completed' | 'inProgress' | 'blockers' | 'nextActions'>
+type ReportLike = Pick<WorkReport, 'id' | 'submittedBy' | 'completed' | 'inProgress' | 'blockers' | 'nextActions'> & {
+  candidateSource?: SourceType
+  candidateReasonSourceLabel?: string
+  candidateIdPrefix?: string
+}
 
 function normalizeWhitespace(text: string): string {
   return text.replace(/\s+/g, ' ').trim()
@@ -84,7 +88,13 @@ function buildExcerpt(sentence: string, maxLength = 16): string {
   return `${text.slice(0, maxLength - 1)}…`
 }
 
-function buildReason(sentence: string, status: ExtractionStatus): string {
+function buildReason(sentence: string, status: ExtractionStatus, sourceLabel?: string): string {
+  if (sourceLabel) {
+    const excerpt = normalizeWhitespace(sentence)
+    const quoted = excerpt.length <= 32 ? excerpt : `${excerpt.slice(0, 31)}…`
+    return `${sourceLabel}内の「${quoted}」から抽出`
+  }
+
   const excerpt = buildExcerpt(sentence)
   if (status === 'waiting') {
     return `${excerpt}のため要フォロー`
@@ -98,6 +108,8 @@ export function extractTaskCandidatesFromReports(reports: ReportLike[], projectI
 
   for (const report of reports) {
     const assignee = normalizeWhitespace(report.submittedBy)
+    const candidateSource = report.candidateSource ?? 'report'
+    const candidateIdPrefix = report.candidateIdPrefix ?? 'report'
     const reportText = [report.completed, report.inProgress, report.blockers, report.nextActions]
       .map((part) => part ?? '')
       .join('\n')
@@ -113,16 +125,16 @@ export function extractTaskCandidatesFromReports(reports: ReportLike[], projectI
       if (!normalizedTitle || seenTitles.has(normalizedTitle)) continue
       seenTitles.add(normalizedTitle)
 
-      const reason = buildReason(clause, judgement.status)
+      const reason = buildReason(clause, judgement.status, report.candidateReasonSourceLabel)
 
       const displayTitle = normalizeTaskCandidateTitle(title)
       candidates.push({
-        id: `report-${report.id}-${reportCandidateIndex}`,
+        id: `${candidateIdPrefix}-${report.id}-${reportCandidateIndex}`,
         candidateKey: generateCandidateKey(projectId, title),
         title,
         displayTitle: displayTitle !== title ? displayTitle : undefined,
         reason,
-        source: 'report',
+        source: candidateSource,
         suggestedAssignee: assignee || undefined,
         suggestedDueDate: inferDueDate(clause),
         extractionStatus: judgement.status,

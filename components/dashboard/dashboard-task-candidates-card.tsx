@@ -5,12 +5,13 @@ import { Card, CardContent } from '@/components/ui/card'
 import { Loader2 } from 'lucide-react'
 import { TaskCandidatesCard } from '@/components/dashboard/task-candidates-card'
 import { extractTaskCandidatesFromReports } from '@/lib/ai/extract-task-candidates-from-reports'
+import { projectInputToWorkReport } from '@/lib/ai/project-inputs-as-reports'
 import { mergeTaskCandidates } from '@/lib/ai/merge-task-candidates'
 import { sortTaskCandidatesForDisplay } from '@/lib/ai/sort-task-candidates'
 import { mockKanbanCandidates } from '@/lib/mock/kanban'
 import { canUseMockCandidates } from '@/lib/mock/can-use-mock-candidates'
 import { toastError, toastSuccess } from '@/lib/operation-toast'
-import type { TaskCandidate, WorkReport } from '@/lib/types'
+import type { ProjectInputListResponse, TaskCandidate, WorkReport } from '@/lib/types'
 
 // v0 TaskCandidatesCard のソース型は "ai" を持たないため変換が必要
 type CardAISource = 'slack' | 'report' | 'meeting'
@@ -18,6 +19,12 @@ type CardAISource = 'slack' | 'report' | 'meeting'
 function toCardSource(source: string): CardAISource {
   if (source === 'slack' || source === 'meeting') return source
   return 'report'
+}
+
+function toCandidateStateSourceType(source: TaskCandidate['source']): 'WORK_REPORT' | 'SLACK' | 'MEETING' {
+  if (source === 'slack') return 'SLACK'
+  if (source === 'meeting') return 'MEETING'
+  return 'WORK_REPORT'
 }
 
 function toWorkReport(raw: unknown, index: number, projectId: string): WorkReport | null {
@@ -55,12 +62,13 @@ function postCandidateState(
   candidateKey: string,
   candidateTitle: string,
   status: 'HELD' | 'DISMISSED' | 'ADDED',
-  createdTaskId?: string | null
+  createdTaskId?: string | null,
+  sourceType: 'WORK_REPORT' | 'SLACK' | 'MEETING' = 'WORK_REPORT'
 ): void {
   void fetch(`/api/projects/${encodeURIComponent(projectId)}/task-candidate-states`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ candidateKey, candidateTitle, status, createdTaskId: createdTaskId ?? null }),
+    body: JSON.stringify({ candidateKey, candidateTitle, status, createdTaskId: createdTaskId ?? null, sourceType }),
   }).catch((e) => console.warn('[dashboard] candidate state save failed', e))
 }
 
@@ -118,7 +126,20 @@ export function DashboardTaskCandidatesCard({ projectId }: DashboardTaskCandidat
               item.nextActions.trim()
           )
 
-        const extracted = extractTaskCandidatesFromReports(reports, projectId)
+        let inputReports: WorkReport[] = []
+        try {
+          const inputsRes = await fetch(`/api/projects/${encodeURIComponent(projectId)}/inputs`)
+          if (inputsRes.ok) {
+            const inputsBody: ProjectInputListResponse = await inputsRes.json()
+            inputReports = (inputsBody.inputs ?? [])
+              .map((item, idx) => projectInputToWorkReport(item, idx, projectId))
+              .filter((item) => item.nextActions.trim())
+          }
+        } catch {
+          // 自由テキストの取得失敗時も、既存の作業報告候補は表示する
+        }
+
+        const extracted = extractTaskCandidatesFromReports([...reports, ...inputReports], projectId)
         if (cancelled) return
 
         if (extracted.length > 0) {
@@ -243,7 +264,7 @@ export function DashboardTaskCandidatesCard({ projectId }: DashboardTaskCandidat
             ? (resBody as { id: string }).id
             : null
         setAddedKeys((prev) => new Set([...prev, id]))
-        postCandidateState(projectId, id, title, 'ADDED', newTaskId)
+        postCandidateState(projectId, id, title, 'ADDED', newTaskId, toCandidateStateSourceType(candidate.source))
         toastSuccess('AI候補をバックログに追加しました')
       })
       .catch((e) => {
@@ -254,7 +275,7 @@ export function DashboardTaskCandidatesCard({ projectId }: DashboardTaskCandidat
   const handleHold = (id: string) => {
     const candidate = rawCandidates.find((c) => (c.candidateKey ?? c.id) === id)
     if (candidate) {
-      postCandidateState(projectId, id, candidate.displayTitle ?? candidate.title, 'HELD')
+      postCandidateState(projectId, id, candidate.displayTitle ?? candidate.title, 'HELD', null, toCandidateStateSourceType(candidate.source))
     }
     toastSuccess('候補をあとで確認に回しました')
   }
@@ -263,7 +284,7 @@ export function DashboardTaskCandidatesCard({ projectId }: DashboardTaskCandidat
     const candidate = rawCandidates.find((c) => (c.candidateKey ?? c.id) === id)
     if (candidate) {
       setDismissedKeys((prev) => new Set([...prev, id]))
-      postCandidateState(projectId, id, candidate.displayTitle ?? candidate.title, 'DISMISSED')
+      postCandidateState(projectId, id, candidate.displayTitle ?? candidate.title, 'DISMISSED', null, toCandidateStateSourceType(candidate.source))
     }
     toastSuccess('候補を却下しました')
   }

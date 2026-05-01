@@ -37,6 +37,7 @@ const sourceReasonMap: Record<TaskCandidate['source'], CandidateReasonChip> = {
   slack: { label: 'Slackメモで確認依頼', weight: 85, strength: 'support' },
   report: { label: '作業報告由来', weight: 70, strength: 'support' },
   meeting: { label: '会議メモ由来', weight: 75, strength: 'support' },
+  memo: { label: 'メモ由来', weight: 72, strength: 'support' },
   ai: { label: 'AI検出シグナル', weight: 60, strength: 'support' },
 }
 

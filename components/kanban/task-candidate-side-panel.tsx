@@ -105,7 +105,7 @@ const priorityLabelConfig = {
 function classifyTaskCandidateByTitle(
   candidate: TaskCandidate,
 ): TaskCandidateDisplayGroupId {
-  const title = candidate.title
+  const title = candidate.displayTitle ?? candidate.title
   if (IMMEDIATE_TASK_KEYWORDS.some((keyword) => title.includes(keyword))) {
     return 'immediate'
   }

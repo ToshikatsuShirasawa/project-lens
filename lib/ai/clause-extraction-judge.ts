@@ -50,6 +50,17 @@ const TODO_KEYWORDS: readonly string[] = [
   '準備する',
   '調整する',
   '調整します',
+  '見直す',
+  '見直します',
+  '見直したい',
+  '分かりやすくしたい',
+  'わかりやすくしたい',
+  '直せそう',
+  '修正したい',
+  '直したい',
+  '確認してもらえる',
+  '調整お願い',
+  '対応できそう',
   '直します',
   '入れます',
   '対応します',
@@ -73,6 +84,7 @@ const LEGACY_TODO_KEYWORDS: readonly string[] = [
   '修正',
   '準備',
   '調整',
+  '見直し',
   '今週',
   '残タスク',
   '残作業',
@@ -129,6 +141,9 @@ const STATUS_ONLY_KEYWORDS: readonly string[] = [
 
 const LOW_SIGNAL_ACTION_KEYWORDS: readonly string[] = ['後で見ます', 'ちょっと確認します']
 
+const STRUCTURAL_HEADING_RE =
+  /^(?:決定事項|確認事項|TODO|ToDo|todo|議題|アジェンダ|メモ|備考|本日の定例で以下を確認した)[:：]?$/
+
 // ─── 節分割 ──────────────────────────────────────────────────
 
 /**
@@ -155,6 +170,7 @@ export function splitReportIntoClauses(text: string): string[] {
   return withConnectorSplits
     .split(/[\n。．！？!?]+/)
     .map(normalizeWhitespace)
+    .map((clause) => clause.replace(/^[\s・*･\-–—]+/, '').trim())
     .filter(Boolean)
 }
 
@@ -191,6 +207,10 @@ function collectLegacyTodoMatches(clause: string): string[] {
  *   "対応中ですが確認が必要" のような複合節は spec-todo が優先して抽出する。
  */
 export function judgeExtractionClause(clause: string): ExtractionJudgement {
+  if (STRUCTURAL_HEADING_RE.test(clause.trim())) {
+    return { status: 'memo', shouldExtract: false, confidence: 0.9, reasons: ['memo: heading'] }
+  }
+
   const memoMatches = collectMatches(clause, MEMO_KEYWORDS)
   const waitingMatches = collectMatches(clause, WAITING_KEYWORDS)
   const lowSignalActionMatches = collectMatches(clause, LOW_SIGNAL_ACTION_KEYWORDS)

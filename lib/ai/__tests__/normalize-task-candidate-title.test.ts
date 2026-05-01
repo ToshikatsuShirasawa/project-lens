@@ -43,6 +43,24 @@ describe('Slack風テキスト: 候補タイトルの自然化', () => {
       '追加確認を行う',
     )
   })
+
+  it('議事録の箇条書きを自然なタスク表現にする', () => {
+    expect(normalizeTaskCandidateTitle('- 管理画面の文言は今週中に調整する')).toBe(
+      '管理画面の文言を調整する',
+    )
+    expect(normalizeTaskCandidateTitle('- 権限設定の仕様を田中さんに確認する')).toBe(
+      '権限設定の仕様を確認する',
+    )
+  })
+
+  it('雑メモの見直し系表現をタスク名にする', () => {
+    expect(normalizeTaskCandidateTitle('候補カードの文言はもう少し分かりやすくしたい')).toBe(
+      '候補カードの文言を見直す',
+    )
+    expect(normalizeTaskCandidateTitle('設定画面の導線は後で見直す')).toBe(
+      '設定画面の導線を見直す',
+    )
+  })
 })
 
 // ─── 抽象語のみ → 補正 ────────────────────────────────────────

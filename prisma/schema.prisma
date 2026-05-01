@@ -71,6 +71,20 @@ enum ProjectInputType {
   MEMO
 }
 
+/// Slack手動取り込みの期間プリセット
+enum SlackImportRangePreset {
+  LAST_24_HOURS
+  LAST_3_DAYS
+  LAST_7_DAYS
+}
+
+/// Slack取り込み処理の状態
+enum SlackImportStatus {
+  RUNNING
+  SUCCESS
+  FAILED
+}
+
 model User {
   /// Supabase Auth `auth.users.id`（UUID）と1対1
   id        String   @id
@@ -84,6 +98,8 @@ model User {
   assignedTasks            KanbanTask[]
   projectInvitationsSent   ProjectInvitation[]       @relation("ProjectInvitationInvitedBy")
   updatedAiTaskCandidateStates AiTaskCandidateState[]
+  slackConnectionsInstalled SlackConnection[]         @relation("SlackConnectionInstalledBy")
+  slackImports              SlackImport[]             @relation("SlackImportImportedBy")
 
   @@map("users")
 }
@@ -100,6 +116,7 @@ model Organization {
   members            OrganizationMember[]
   projects           Project[]
   projectInvitations ProjectInvitation[]
+  slackConnections   SlackConnection[]
 
   @@map("organizations")
 }
@@ -139,6 +156,8 @@ model Project {
   aiTaskCandidateStates   AiTaskCandidateState[]
   workReports             WorkReport[]
   inputs                  ProjectInput[]
+  slackImports            SlackImport[]
+  slackMessages           SlackMessage[]
 
   @@index([organizationId])
   @@map("projects")
@@ -295,8 +314,87 @@ model ProjectInput {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  slackImport SlackImport?
+
   @@index([projectId, createdAt])
   @@map("project_inputs")
+}
+
+/// Slack workspace接続情報。Bot token は暗号化済み文字列のみ保存する
+model SlackConnection {
+  id                String   @id @default(cuid())
+  organizationId    String
+  teamId            String
+  teamName          String
+  botUserId         String?
+  botTokenEncrypted String
+  installedByUserId String
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+
+  organization    Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  installedByUser User         @relation("SlackConnectionInstalledBy", fields: [installedByUserId], references: [id], onDelete: Restrict)
+  imports         SlackImport[]
+  messages        SlackMessage[]
+
+  @@unique([organizationId, teamId])
+  @@index([organizationId])
+  @@map("slack_connections")
+}
+
+/// project単位のSlack手動取り込み履歴
+model SlackImport {
+  id               String                 @id @default(cuid())
+  projectId        String
+  connectionId     String
+  channelId        String
+  channelName      String
+  rangePreset      SlackImportRangePreset
+  oldestTs         String
+  latestTs         String
+  messageCount     Int                    @default(0)
+  status           SlackImportStatus      @default(RUNNING)
+  errorMessage     String?
+  projectInputId   String?                @unique
+  importedByUserId String
+  createdAt        DateTime               @default(now())
+  updatedAt        DateTime               @updatedAt
+
+  project        Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  connection     SlackConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  projectInput   ProjectInput?   @relation(fields: [projectInputId], references: [id], onDelete: SetNull)
+  importedByUser User            @relation("SlackImportImportedBy", fields: [importedByUserId], references: [id], onDelete: Restrict)
+  messages       SlackMessage[]
+
+  @@index([projectId, createdAt])
+  @@index([connectionId, channelId])
+  @@map("slack_imports")
+}
+
+/// Slackメッセージ単位の保存。messageTsで重複取り込みを防ぐ
+model SlackMessage {
+  id           String   @id @default(cuid())
+  connectionId String
+  projectId    String
+  importId     String
+  channelId    String
+  channelName  String
+  messageTs    String
+  threadTs     String?
+  userId       String?
+  userName     String?
+  text         String
+  permalink    String?
+  createdAt    DateTime @default(now())
+
+  connection SlackConnection @relation(fields: [connectionId], references: [id], onDelete: Cascade)
+  project    Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  import     SlackImport     @relation(fields: [importId], references: [id], onDelete: Cascade)
+
+  @@unique([connectionId, channelId, messageTs])
+  @@index([projectId, channelId, messageTs])
+  @@index([importId])
+  @@map("slack_messages")
 }
 
 /// AI候補の表示・承認・あとで・却下の最小ログ（クライアント送信・失敗時もUIは継続）

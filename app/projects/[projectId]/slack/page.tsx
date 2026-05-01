@@ -1,0 +1,27 @@
+import { ProjectShell } from '@/components/layout/project-shell'
+import { SlackIntegrationPanel } from '@/components/slack/slack-integration-panel'
+
+interface SlackPageProps {
+  params: Promise<{ projectId: string }>
+}
+
+export default async function SlackPage({ params }: SlackPageProps) {
+  const { projectId } = await params
+
+  return (
+    <ProjectShell projectId={projectId} redirectToNewUrl>
+      <div className="p-6">
+        <div className="mx-auto max-w-6xl space-y-6">
+          <div>
+            <h1 className="text-2xl font-bold text-foreground">Slack連携</h1>
+            <p className="text-sm text-muted-foreground mt-1">
+              AI候補の元になるSlackの会話を取り込みます。
+              対象チャンネルと期間を選択して、必要な会話だけを候補抽出に使います。
+            </p>
+          </div>
+          <SlackIntegrationPanel projectId={projectId} />
+        </div>
+      </div>
+    </ProjectShell>
+  )
+}

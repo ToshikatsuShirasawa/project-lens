@@ -223,6 +223,7 @@ export type ProjectInputWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"ProjectInput"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ProjectInput"> | Date | string
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
+  slackImport?: Prisma.XOR<Prisma.SlackImportNullableScalarRelationFilter, Prisma.SlackImportWhereInput> | null
 }
 
 export type ProjectInputOrderByWithRelationInput = {
@@ -237,6 +238,7 @@ export type ProjectInputOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   project?: Prisma.ProjectOrderByWithRelationInput
+  slackImport?: Prisma.SlackImportOrderByWithRelationInput
 }
 
 export type ProjectInputWhereUniqueInput = Prisma.AtLeast<{
@@ -254,6 +256,7 @@ export type ProjectInputWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"ProjectInput"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"ProjectInput"> | Date | string
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
+  slackImport?: Prisma.XOR<Prisma.SlackImportNullableScalarRelationFilter, Prisma.SlackImportWhereInput> | null
 }, "id">
 
 export type ProjectInputOrderByWithAggregationInput = {
@@ -299,6 +302,7 @@ export type ProjectInputCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutInputsInput
+  slackImport?: Prisma.SlackImportCreateNestedOneWithoutProjectInputInput
 }
 
 export type ProjectInputUncheckedCreateInput = {
@@ -312,6 +316,7 @@ export type ProjectInputUncheckedCreateInput = {
   submittedBy: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  slackImport?: Prisma.SlackImportUncheckedCreateNestedOneWithoutProjectInputInput
 }
 
 export type ProjectInputUpdateInput = {
@@ -325,6 +330,7 @@ export type ProjectInputUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutInputsNestedInput
+  slackImport?: Prisma.SlackImportUpdateOneWithoutProjectInputNestedInput
 }
 
 export type ProjectInputUncheckedUpdateInput = {
@@ -338,6 +344,7 @@ export type ProjectInputUncheckedUpdateInput = {
   submittedBy?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  slackImport?: Prisma.SlackImportUncheckedUpdateOneWithoutProjectInputNestedInput
 }
 
 export type ProjectInputCreateManyInput = {
@@ -427,6 +434,11 @@ export type ProjectInputMinOrderByAggregateInput = {
   updatedAt?: Prisma.SortOrder
 }
 
+export type ProjectInputNullableScalarRelationFilter = {
+  is?: Prisma.ProjectInputWhereInput | null
+  isNot?: Prisma.ProjectInputWhereInput | null
+}
+
 export type ProjectInputCreateNestedManyWithoutProjectInput = {
   create?: Prisma.XOR<Prisma.ProjectInputCreateWithoutProjectInput, Prisma.ProjectInputUncheckedCreateWithoutProjectInput> | Prisma.ProjectInputCreateWithoutProjectInput[] | Prisma.ProjectInputUncheckedCreateWithoutProjectInput[]
   connectOrCreate?: Prisma.ProjectInputCreateOrConnectWithoutProjectInput | Prisma.ProjectInputCreateOrConnectWithoutProjectInput[]
@@ -473,6 +485,22 @@ export type EnumProjectInputTypeFieldUpdateOperationsInput = {
   set?: $Enums.ProjectInputType
 }
 
+export type ProjectInputCreateNestedOneWithoutSlackImportInput = {
+  create?: Prisma.XOR<Prisma.ProjectInputCreateWithoutSlackImportInput, Prisma.ProjectInputUncheckedCreateWithoutSlackImportInput>
+  connectOrCreate?: Prisma.ProjectInputCreateOrConnectWithoutSlackImportInput
+  connect?: Prisma.ProjectInputWhereUniqueInput
+}
+
+export type ProjectInputUpdateOneWithoutSlackImportNestedInput = {
+  create?: Prisma.XOR<Prisma.ProjectInputCreateWithoutSlackImportInput, Prisma.ProjectInputUncheckedCreateWithoutSlackImportInput>
+  connectOrCreate?: Prisma.ProjectInputCreateOrConnectWithoutSlackImportInput
+  upsert?: Prisma.ProjectInputUpsertWithoutSlackImportInput
+  disconnect?: Prisma.ProjectInputWhereInput | boolean
+  delete?: Prisma.ProjectInputWhereInput | boolean
+  connect?: Prisma.ProjectInputWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProjectInputUpdateToOneWithWhereWithoutSlackImportInput, Prisma.ProjectInputUpdateWithoutSlackImportInput>, Prisma.ProjectInputUncheckedUpdateWithoutSlackImportInput>
+}
+
 export type ProjectInputCreateWithoutProjectInput = {
   id?: string
   inputType?: $Enums.ProjectInputType
@@ -483,6 +511,7 @@ export type ProjectInputCreateWithoutProjectInput = {
   submittedBy: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  slackImport?: Prisma.SlackImportCreateNestedOneWithoutProjectInputInput
 }
 
 export type ProjectInputUncheckedCreateWithoutProjectInput = {
@@ -495,6 +524,7 @@ export type ProjectInputUncheckedCreateWithoutProjectInput = {
   submittedBy: string
   createdAt?: Date | string
   updatedAt?: Date | string
+  slackImport?: Prisma.SlackImportUncheckedCreateNestedOneWithoutProjectInputInput
 }
 
 export type ProjectInputCreateOrConnectWithoutProjectInput = {
@@ -539,6 +569,74 @@ export type ProjectInputScalarWhereInput = {
   updatedAt?: Prisma.DateTimeFilter<"ProjectInput"> | Date | string
 }
 
+export type ProjectInputCreateWithoutSlackImportInput = {
+  id?: string
+  inputType?: $Enums.ProjectInputType
+  title?: string | null
+  body: string
+  sourceLabel?: string | null
+  submittedByUserId?: string | null
+  submittedBy: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  project: Prisma.ProjectCreateNestedOneWithoutInputsInput
+}
+
+export type ProjectInputUncheckedCreateWithoutSlackImportInput = {
+  id?: string
+  projectId: string
+  inputType?: $Enums.ProjectInputType
+  title?: string | null
+  body: string
+  sourceLabel?: string | null
+  submittedByUserId?: string | null
+  submittedBy: string
+  createdAt?: Date | string
+  updatedAt?: Date | string
+}
+
+export type ProjectInputCreateOrConnectWithoutSlackImportInput = {
+  where: Prisma.ProjectInputWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProjectInputCreateWithoutSlackImportInput, Prisma.ProjectInputUncheckedCreateWithoutSlackImportInput>
+}
+
+export type ProjectInputUpsertWithoutSlackImportInput = {
+  update: Prisma.XOR<Prisma.ProjectInputUpdateWithoutSlackImportInput, Prisma.ProjectInputUncheckedUpdateWithoutSlackImportInput>
+  create: Prisma.XOR<Prisma.ProjectInputCreateWithoutSlackImportInput, Prisma.ProjectInputUncheckedCreateWithoutSlackImportInput>
+  where?: Prisma.ProjectInputWhereInput
+}
+
+export type ProjectInputUpdateToOneWithWhereWithoutSlackImportInput = {
+  where?: Prisma.ProjectInputWhereInput
+  data: Prisma.XOR<Prisma.ProjectInputUpdateWithoutSlackImportInput, Prisma.ProjectInputUncheckedUpdateWithoutSlackImportInput>
+}
+
+export type ProjectInputUpdateWithoutSlackImportInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  inputType?: Prisma.EnumProjectInputTypeFieldUpdateOperationsInput | $Enums.ProjectInputType
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  body?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  submittedByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  submittedBy?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  project?: Prisma.ProjectUpdateOneRequiredWithoutInputsNestedInput
+}
+
+export type ProjectInputUncheckedUpdateWithoutSlackImportInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  projectId?: Prisma.StringFieldUpdateOperationsInput | string
+  inputType?: Prisma.EnumProjectInputTypeFieldUpdateOperationsInput | $Enums.ProjectInputType
+  title?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  body?: Prisma.StringFieldUpdateOperationsInput | string
+  sourceLabel?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  submittedByUserId?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  submittedBy?: Prisma.StringFieldUpdateOperationsInput | string
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+}
+
 export type ProjectInputCreateManyProjectInput = {
   id?: string
   inputType?: $Enums.ProjectInputType
@@ -561,6 +659,7 @@ export type ProjectInputUpdateWithoutProjectInput = {
   submittedBy?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  slackImport?: Prisma.SlackImportUpdateOneWithoutProjectInputNestedInput
 }
 
 export type ProjectInputUncheckedUpdateWithoutProjectInput = {
@@ -573,6 +672,7 @@ export type ProjectInputUncheckedUpdateWithoutProjectInput = {
   submittedBy?: Prisma.StringFieldUpdateOperationsInput | string
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  slackImport?: Prisma.SlackImportUncheckedUpdateOneWithoutProjectInputNestedInput
 }
 
 export type ProjectInputUncheckedUpdateManyWithoutProjectInput = {
@@ -601,6 +701,7 @@ export type ProjectInputSelect<ExtArgs extends runtime.Types.Extensions.Internal
   createdAt?: boolean
   updatedAt?: boolean
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
+  slackImport?: boolean | Prisma.ProjectInput$slackImportArgs<ExtArgs>
 }, ExtArgs["result"]["projectInput"]>
 
 export type ProjectInputSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
@@ -647,6 +748,7 @@ export type ProjectInputSelectScalar = {
 export type ProjectInputOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "inputType" | "title" | "body" | "sourceLabel" | "submittedByUserId" | "submittedBy" | "createdAt" | "updatedAt", ExtArgs["result"]["projectInput"]>
 export type ProjectInputInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
+  slackImport?: boolean | Prisma.ProjectInput$slackImportArgs<ExtArgs>
 }
 export type ProjectInputIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
@@ -659,6 +761,7 @@ export type $ProjectInputPayload<ExtArgs extends runtime.Types.Extensions.Intern
   name: "ProjectInput"
   objects: {
     project: Prisma.$ProjectPayload<ExtArgs>
+    slackImport: Prisma.$SlackImportPayload<ExtArgs> | null
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1072,6 +1175,7 @@ readonly fields: ProjectInputFieldRefs;
 export interface Prisma__ProjectInputClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   project<T extends Prisma.ProjectDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProjectDefaultArgs<ExtArgs>>): Prisma.Prisma__ProjectClient<runtime.Types.Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  slackImport<T extends Prisma.ProjectInput$slackImportArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProjectInput$slackImportArgs<ExtArgs>>): Prisma.Prisma__SlackImportClient<runtime.Types.Result.GetResult<Prisma.$SlackImportPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1509,6 +1613,25 @@ export type ProjectInputDeleteManyArgs<ExtArgs extends runtime.Types.Extensions.
    * Limit how many ProjectInputs to delete.
    */
   limit?: number
+}
+
+/**
+ * ProjectInput.slackImport
+ */
+export type ProjectInput$slackImportArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SlackImport
+   */
+  select?: Prisma.SlackImportSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SlackImport
+   */
+  omit?: Prisma.SlackImportOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SlackImportInclude<ExtArgs> | null
+  where?: Prisma.SlackImportWhereInput
 }
 
 /**

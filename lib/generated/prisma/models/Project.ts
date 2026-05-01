@@ -199,6 +199,8 @@ export type ProjectWhereInput = {
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateListRelationFilter
   workReports?: Prisma.WorkReportListRelationFilter
   inputs?: Prisma.ProjectInputListRelationFilter
+  slackImports?: Prisma.SlackImportListRelationFilter
+  slackMessages?: Prisma.SlackMessageListRelationFilter
 }
 
 export type ProjectOrderByWithRelationInput = {
@@ -217,6 +219,8 @@ export type ProjectOrderByWithRelationInput = {
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateOrderByRelationAggregateInput
   workReports?: Prisma.WorkReportOrderByRelationAggregateInput
   inputs?: Prisma.ProjectInputOrderByRelationAggregateInput
+  slackImports?: Prisma.SlackImportOrderByRelationAggregateInput
+  slackMessages?: Prisma.SlackMessageOrderByRelationAggregateInput
 }
 
 export type ProjectWhereUniqueInput = Prisma.AtLeast<{
@@ -238,6 +242,8 @@ export type ProjectWhereUniqueInput = Prisma.AtLeast<{
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateListRelationFilter
   workReports?: Prisma.WorkReportListRelationFilter
   inputs?: Prisma.ProjectInputListRelationFilter
+  slackImports?: Prisma.SlackImportListRelationFilter
+  slackMessages?: Prisma.SlackMessageListRelationFilter
 }, "id">
 
 export type ProjectOrderByWithAggregationInput = {
@@ -279,6 +285,8 @@ export type ProjectCreateInput = {
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateCreateNestedManyWithoutProjectInput
   workReports?: Prisma.WorkReportCreateNestedManyWithoutProjectInput
   inputs?: Prisma.ProjectInputCreateNestedManyWithoutProjectInput
+  slackImports?: Prisma.SlackImportCreateNestedManyWithoutProjectInput
+  slackMessages?: Prisma.SlackMessageCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateInput = {
@@ -296,6 +304,8 @@ export type ProjectUncheckedCreateInput = {
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedCreateNestedManyWithoutProjectInput
   workReports?: Prisma.WorkReportUncheckedCreateNestedManyWithoutProjectInput
   inputs?: Prisma.ProjectInputUncheckedCreateNestedManyWithoutProjectInput
+  slackImports?: Prisma.SlackImportUncheckedCreateNestedManyWithoutProjectInput
+  slackMessages?: Prisma.SlackMessageUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUpdateInput = {
@@ -313,6 +323,8 @@ export type ProjectUpdateInput = {
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUpdateManyWithoutProjectNestedInput
   workReports?: Prisma.WorkReportUpdateManyWithoutProjectNestedInput
   inputs?: Prisma.ProjectInputUpdateManyWithoutProjectNestedInput
+  slackImports?: Prisma.SlackImportUpdateManyWithoutProjectNestedInput
+  slackMessages?: Prisma.SlackMessageUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateInput = {
@@ -330,6 +342,8 @@ export type ProjectUncheckedUpdateInput = {
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedUpdateManyWithoutProjectNestedInput
   workReports?: Prisma.WorkReportUncheckedUpdateManyWithoutProjectNestedInput
   inputs?: Prisma.ProjectInputUncheckedUpdateManyWithoutProjectNestedInput
+  slackImports?: Prisma.SlackImportUncheckedUpdateManyWithoutProjectNestedInput
+  slackMessages?: Prisma.SlackMessageUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateManyInput = {
@@ -526,6 +540,34 @@ export type ProjectUpdateOneRequiredWithoutInputsNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.ProjectUpdateToOneWithWhereWithoutInputsInput, Prisma.ProjectUpdateWithoutInputsInput>, Prisma.ProjectUncheckedUpdateWithoutInputsInput>
 }
 
+export type ProjectCreateNestedOneWithoutSlackImportsInput = {
+  create?: Prisma.XOR<Prisma.ProjectCreateWithoutSlackImportsInput, Prisma.ProjectUncheckedCreateWithoutSlackImportsInput>
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutSlackImportsInput
+  connect?: Prisma.ProjectWhereUniqueInput
+}
+
+export type ProjectUpdateOneRequiredWithoutSlackImportsNestedInput = {
+  create?: Prisma.XOR<Prisma.ProjectCreateWithoutSlackImportsInput, Prisma.ProjectUncheckedCreateWithoutSlackImportsInput>
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutSlackImportsInput
+  upsert?: Prisma.ProjectUpsertWithoutSlackImportsInput
+  connect?: Prisma.ProjectWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProjectUpdateToOneWithWhereWithoutSlackImportsInput, Prisma.ProjectUpdateWithoutSlackImportsInput>, Prisma.ProjectUncheckedUpdateWithoutSlackImportsInput>
+}
+
+export type ProjectCreateNestedOneWithoutSlackMessagesInput = {
+  create?: Prisma.XOR<Prisma.ProjectCreateWithoutSlackMessagesInput, Prisma.ProjectUncheckedCreateWithoutSlackMessagesInput>
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutSlackMessagesInput
+  connect?: Prisma.ProjectWhereUniqueInput
+}
+
+export type ProjectUpdateOneRequiredWithoutSlackMessagesNestedInput = {
+  create?: Prisma.XOR<Prisma.ProjectCreateWithoutSlackMessagesInput, Prisma.ProjectUncheckedCreateWithoutSlackMessagesInput>
+  connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutSlackMessagesInput
+  upsert?: Prisma.ProjectUpsertWithoutSlackMessagesInput
+  connect?: Prisma.ProjectWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.ProjectUpdateToOneWithWhereWithoutSlackMessagesInput, Prisma.ProjectUpdateWithoutSlackMessagesInput>, Prisma.ProjectUncheckedUpdateWithoutSlackMessagesInput>
+}
+
 export type ProjectCreateNestedOneWithoutAiTaskCandidateEventsInput = {
   create?: Prisma.XOR<Prisma.ProjectCreateWithoutAiTaskCandidateEventsInput, Prisma.ProjectUncheckedCreateWithoutAiTaskCandidateEventsInput>
   connectOrCreate?: Prisma.ProjectCreateOrConnectWithoutAiTaskCandidateEventsInput
@@ -568,6 +610,8 @@ export type ProjectCreateWithoutOrganizationInput = {
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateCreateNestedManyWithoutProjectInput
   workReports?: Prisma.WorkReportCreateNestedManyWithoutProjectInput
   inputs?: Prisma.ProjectInputCreateNestedManyWithoutProjectInput
+  slackImports?: Prisma.SlackImportCreateNestedManyWithoutProjectInput
+  slackMessages?: Prisma.SlackMessageCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutOrganizationInput = {
@@ -584,6 +628,8 @@ export type ProjectUncheckedCreateWithoutOrganizationInput = {
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedCreateNestedManyWithoutProjectInput
   workReports?: Prisma.WorkReportUncheckedCreateNestedManyWithoutProjectInput
   inputs?: Prisma.ProjectInputUncheckedCreateNestedManyWithoutProjectInput
+  slackImports?: Prisma.SlackImportUncheckedCreateNestedManyWithoutProjectInput
+  slackMessages?: Prisma.SlackMessageUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutOrganizationInput = {
@@ -638,6 +684,8 @@ export type ProjectCreateWithoutInvitationsInput = {
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateCreateNestedManyWithoutProjectInput
   workReports?: Prisma.WorkReportCreateNestedManyWithoutProjectInput
   inputs?: Prisma.ProjectInputCreateNestedManyWithoutProjectInput
+  slackImports?: Prisma.SlackImportCreateNestedManyWithoutProjectInput
+  slackMessages?: Prisma.SlackMessageCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutInvitationsInput = {
@@ -654,6 +702,8 @@ export type ProjectUncheckedCreateWithoutInvitationsInput = {
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedCreateNestedManyWithoutProjectInput
   workReports?: Prisma.WorkReportUncheckedCreateNestedManyWithoutProjectInput
   inputs?: Prisma.ProjectInputUncheckedCreateNestedManyWithoutProjectInput
+  slackImports?: Prisma.SlackImportUncheckedCreateNestedManyWithoutProjectInput
+  slackMessages?: Prisma.SlackMessageUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutInvitationsInput = {
@@ -686,6 +736,8 @@ export type ProjectUpdateWithoutInvitationsInput = {
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUpdateManyWithoutProjectNestedInput
   workReports?: Prisma.WorkReportUpdateManyWithoutProjectNestedInput
   inputs?: Prisma.ProjectInputUpdateManyWithoutProjectNestedInput
+  slackImports?: Prisma.SlackImportUpdateManyWithoutProjectNestedInput
+  slackMessages?: Prisma.SlackMessageUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutInvitationsInput = {
@@ -702,6 +754,8 @@ export type ProjectUncheckedUpdateWithoutInvitationsInput = {
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedUpdateManyWithoutProjectNestedInput
   workReports?: Prisma.WorkReportUncheckedUpdateManyWithoutProjectNestedInput
   inputs?: Prisma.ProjectInputUncheckedUpdateManyWithoutProjectNestedInput
+  slackImports?: Prisma.SlackImportUncheckedUpdateManyWithoutProjectNestedInput
+  slackMessages?: Prisma.SlackMessageUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutKanbanColumnsInput = {
@@ -718,6 +772,8 @@ export type ProjectCreateWithoutKanbanColumnsInput = {
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateCreateNestedManyWithoutProjectInput
   workReports?: Prisma.WorkReportCreateNestedManyWithoutProjectInput
   inputs?: Prisma.ProjectInputCreateNestedManyWithoutProjectInput
+  slackImports?: Prisma.SlackImportCreateNestedManyWithoutProjectInput
+  slackMessages?: Prisma.SlackMessageCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutKanbanColumnsInput = {
@@ -734,6 +790,8 @@ export type ProjectUncheckedCreateWithoutKanbanColumnsInput = {
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedCreateNestedManyWithoutProjectInput
   workReports?: Prisma.WorkReportUncheckedCreateNestedManyWithoutProjectInput
   inputs?: Prisma.ProjectInputUncheckedCreateNestedManyWithoutProjectInput
+  slackImports?: Prisma.SlackImportUncheckedCreateNestedManyWithoutProjectInput
+  slackMessages?: Prisma.SlackMessageUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutKanbanColumnsInput = {
@@ -766,6 +824,8 @@ export type ProjectUpdateWithoutKanbanColumnsInput = {
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUpdateManyWithoutProjectNestedInput
   workReports?: Prisma.WorkReportUpdateManyWithoutProjectNestedInput
   inputs?: Prisma.ProjectInputUpdateManyWithoutProjectNestedInput
+  slackImports?: Prisma.SlackImportUpdateManyWithoutProjectNestedInput
+  slackMessages?: Prisma.SlackMessageUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutKanbanColumnsInput = {
@@ -782,6 +842,8 @@ export type ProjectUncheckedUpdateWithoutKanbanColumnsInput = {
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedUpdateManyWithoutProjectNestedInput
   workReports?: Prisma.WorkReportUncheckedUpdateManyWithoutProjectNestedInput
   inputs?: Prisma.ProjectInputUncheckedUpdateManyWithoutProjectNestedInput
+  slackImports?: Prisma.SlackImportUncheckedUpdateManyWithoutProjectNestedInput
+  slackMessages?: Prisma.SlackMessageUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutMembersInput = {
@@ -798,6 +860,8 @@ export type ProjectCreateWithoutMembersInput = {
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateCreateNestedManyWithoutProjectInput
   workReports?: Prisma.WorkReportCreateNestedManyWithoutProjectInput
   inputs?: Prisma.ProjectInputCreateNestedManyWithoutProjectInput
+  slackImports?: Prisma.SlackImportCreateNestedManyWithoutProjectInput
+  slackMessages?: Prisma.SlackMessageCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutMembersInput = {
@@ -814,6 +878,8 @@ export type ProjectUncheckedCreateWithoutMembersInput = {
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedCreateNestedManyWithoutProjectInput
   workReports?: Prisma.WorkReportUncheckedCreateNestedManyWithoutProjectInput
   inputs?: Prisma.ProjectInputUncheckedCreateNestedManyWithoutProjectInput
+  slackImports?: Prisma.SlackImportUncheckedCreateNestedManyWithoutProjectInput
+  slackMessages?: Prisma.SlackMessageUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutMembersInput = {
@@ -846,6 +912,8 @@ export type ProjectUpdateWithoutMembersInput = {
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUpdateManyWithoutProjectNestedInput
   workReports?: Prisma.WorkReportUpdateManyWithoutProjectNestedInput
   inputs?: Prisma.ProjectInputUpdateManyWithoutProjectNestedInput
+  slackImports?: Prisma.SlackImportUpdateManyWithoutProjectNestedInput
+  slackMessages?: Prisma.SlackMessageUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutMembersInput = {
@@ -862,6 +930,8 @@ export type ProjectUncheckedUpdateWithoutMembersInput = {
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedUpdateManyWithoutProjectNestedInput
   workReports?: Prisma.WorkReportUncheckedUpdateManyWithoutProjectNestedInput
   inputs?: Prisma.ProjectInputUncheckedUpdateManyWithoutProjectNestedInput
+  slackImports?: Prisma.SlackImportUncheckedUpdateManyWithoutProjectNestedInput
+  slackMessages?: Prisma.SlackMessageUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutTasksInput = {
@@ -878,6 +948,8 @@ export type ProjectCreateWithoutTasksInput = {
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateCreateNestedManyWithoutProjectInput
   workReports?: Prisma.WorkReportCreateNestedManyWithoutProjectInput
   inputs?: Prisma.ProjectInputCreateNestedManyWithoutProjectInput
+  slackImports?: Prisma.SlackImportCreateNestedManyWithoutProjectInput
+  slackMessages?: Prisma.SlackMessageCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutTasksInput = {
@@ -894,6 +966,8 @@ export type ProjectUncheckedCreateWithoutTasksInput = {
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedCreateNestedManyWithoutProjectInput
   workReports?: Prisma.WorkReportUncheckedCreateNestedManyWithoutProjectInput
   inputs?: Prisma.ProjectInputUncheckedCreateNestedManyWithoutProjectInput
+  slackImports?: Prisma.SlackImportUncheckedCreateNestedManyWithoutProjectInput
+  slackMessages?: Prisma.SlackMessageUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutTasksInput = {
@@ -926,6 +1000,8 @@ export type ProjectUpdateWithoutTasksInput = {
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUpdateManyWithoutProjectNestedInput
   workReports?: Prisma.WorkReportUpdateManyWithoutProjectNestedInput
   inputs?: Prisma.ProjectInputUpdateManyWithoutProjectNestedInput
+  slackImports?: Prisma.SlackImportUpdateManyWithoutProjectNestedInput
+  slackMessages?: Prisma.SlackMessageUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutTasksInput = {
@@ -942,6 +1018,8 @@ export type ProjectUncheckedUpdateWithoutTasksInput = {
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedUpdateManyWithoutProjectNestedInput
   workReports?: Prisma.WorkReportUncheckedUpdateManyWithoutProjectNestedInput
   inputs?: Prisma.ProjectInputUncheckedUpdateManyWithoutProjectNestedInput
+  slackImports?: Prisma.SlackImportUncheckedUpdateManyWithoutProjectNestedInput
+  slackMessages?: Prisma.SlackMessageUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutWorkReportsInput = {
@@ -958,6 +1036,8 @@ export type ProjectCreateWithoutWorkReportsInput = {
   aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventCreateNestedManyWithoutProjectInput
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateCreateNestedManyWithoutProjectInput
   inputs?: Prisma.ProjectInputCreateNestedManyWithoutProjectInput
+  slackImports?: Prisma.SlackImportCreateNestedManyWithoutProjectInput
+  slackMessages?: Prisma.SlackMessageCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutWorkReportsInput = {
@@ -974,6 +1054,8 @@ export type ProjectUncheckedCreateWithoutWorkReportsInput = {
   aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUncheckedCreateNestedManyWithoutProjectInput
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedCreateNestedManyWithoutProjectInput
   inputs?: Prisma.ProjectInputUncheckedCreateNestedManyWithoutProjectInput
+  slackImports?: Prisma.SlackImportUncheckedCreateNestedManyWithoutProjectInput
+  slackMessages?: Prisma.SlackMessageUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutWorkReportsInput = {
@@ -1006,6 +1088,8 @@ export type ProjectUpdateWithoutWorkReportsInput = {
   aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUpdateManyWithoutProjectNestedInput
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUpdateManyWithoutProjectNestedInput
   inputs?: Prisma.ProjectInputUpdateManyWithoutProjectNestedInput
+  slackImports?: Prisma.SlackImportUpdateManyWithoutProjectNestedInput
+  slackMessages?: Prisma.SlackMessageUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutWorkReportsInput = {
@@ -1022,6 +1106,8 @@ export type ProjectUncheckedUpdateWithoutWorkReportsInput = {
   aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUncheckedUpdateManyWithoutProjectNestedInput
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedUpdateManyWithoutProjectNestedInput
   inputs?: Prisma.ProjectInputUncheckedUpdateManyWithoutProjectNestedInput
+  slackImports?: Prisma.SlackImportUncheckedUpdateManyWithoutProjectNestedInput
+  slackMessages?: Prisma.SlackMessageUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutInputsInput = {
@@ -1038,6 +1124,8 @@ export type ProjectCreateWithoutInputsInput = {
   aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventCreateNestedManyWithoutProjectInput
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateCreateNestedManyWithoutProjectInput
   workReports?: Prisma.WorkReportCreateNestedManyWithoutProjectInput
+  slackImports?: Prisma.SlackImportCreateNestedManyWithoutProjectInput
+  slackMessages?: Prisma.SlackMessageCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutInputsInput = {
@@ -1054,6 +1142,8 @@ export type ProjectUncheckedCreateWithoutInputsInput = {
   aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUncheckedCreateNestedManyWithoutProjectInput
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedCreateNestedManyWithoutProjectInput
   workReports?: Prisma.WorkReportUncheckedCreateNestedManyWithoutProjectInput
+  slackImports?: Prisma.SlackImportUncheckedCreateNestedManyWithoutProjectInput
+  slackMessages?: Prisma.SlackMessageUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutInputsInput = {
@@ -1086,6 +1176,8 @@ export type ProjectUpdateWithoutInputsInput = {
   aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUpdateManyWithoutProjectNestedInput
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUpdateManyWithoutProjectNestedInput
   workReports?: Prisma.WorkReportUpdateManyWithoutProjectNestedInput
+  slackImports?: Prisma.SlackImportUpdateManyWithoutProjectNestedInput
+  slackMessages?: Prisma.SlackMessageUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutInputsInput = {
@@ -1102,6 +1194,184 @@ export type ProjectUncheckedUpdateWithoutInputsInput = {
   aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUncheckedUpdateManyWithoutProjectNestedInput
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedUpdateManyWithoutProjectNestedInput
   workReports?: Prisma.WorkReportUncheckedUpdateManyWithoutProjectNestedInput
+  slackImports?: Prisma.SlackImportUncheckedUpdateManyWithoutProjectNestedInput
+  slackMessages?: Prisma.SlackMessageUncheckedUpdateManyWithoutProjectNestedInput
+}
+
+export type ProjectCreateWithoutSlackImportsInput = {
+  id?: string
+  name: string
+  description?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutProjectsInput
+  members?: Prisma.ProjectMemberCreateNestedManyWithoutProjectInput
+  tasks?: Prisma.KanbanTaskCreateNestedManyWithoutProjectInput
+  kanbanColumns?: Prisma.ProjectKanbanColumnCreateNestedManyWithoutProjectInput
+  invitations?: Prisma.ProjectInvitationCreateNestedManyWithoutProjectInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventCreateNestedManyWithoutProjectInput
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateCreateNestedManyWithoutProjectInput
+  workReports?: Prisma.WorkReportCreateNestedManyWithoutProjectInput
+  inputs?: Prisma.ProjectInputCreateNestedManyWithoutProjectInput
+  slackMessages?: Prisma.SlackMessageCreateNestedManyWithoutProjectInput
+}
+
+export type ProjectUncheckedCreateWithoutSlackImportsInput = {
+  id?: string
+  name: string
+  description?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  organizationId: string
+  members?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutProjectInput
+  tasks?: Prisma.KanbanTaskUncheckedCreateNestedManyWithoutProjectInput
+  kanbanColumns?: Prisma.ProjectKanbanColumnUncheckedCreateNestedManyWithoutProjectInput
+  invitations?: Prisma.ProjectInvitationUncheckedCreateNestedManyWithoutProjectInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUncheckedCreateNestedManyWithoutProjectInput
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedCreateNestedManyWithoutProjectInput
+  workReports?: Prisma.WorkReportUncheckedCreateNestedManyWithoutProjectInput
+  inputs?: Prisma.ProjectInputUncheckedCreateNestedManyWithoutProjectInput
+  slackMessages?: Prisma.SlackMessageUncheckedCreateNestedManyWithoutProjectInput
+}
+
+export type ProjectCreateOrConnectWithoutSlackImportsInput = {
+  where: Prisma.ProjectWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProjectCreateWithoutSlackImportsInput, Prisma.ProjectUncheckedCreateWithoutSlackImportsInput>
+}
+
+export type ProjectUpsertWithoutSlackImportsInput = {
+  update: Prisma.XOR<Prisma.ProjectUpdateWithoutSlackImportsInput, Prisma.ProjectUncheckedUpdateWithoutSlackImportsInput>
+  create: Prisma.XOR<Prisma.ProjectCreateWithoutSlackImportsInput, Prisma.ProjectUncheckedCreateWithoutSlackImportsInput>
+  where?: Prisma.ProjectWhereInput
+}
+
+export type ProjectUpdateToOneWithWhereWithoutSlackImportsInput = {
+  where?: Prisma.ProjectWhereInput
+  data: Prisma.XOR<Prisma.ProjectUpdateWithoutSlackImportsInput, Prisma.ProjectUncheckedUpdateWithoutSlackImportsInput>
+}
+
+export type ProjectUpdateWithoutSlackImportsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutProjectsNestedInput
+  members?: Prisma.ProjectMemberUpdateManyWithoutProjectNestedInput
+  tasks?: Prisma.KanbanTaskUpdateManyWithoutProjectNestedInput
+  kanbanColumns?: Prisma.ProjectKanbanColumnUpdateManyWithoutProjectNestedInput
+  invitations?: Prisma.ProjectInvitationUpdateManyWithoutProjectNestedInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUpdateManyWithoutProjectNestedInput
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUpdateManyWithoutProjectNestedInput
+  workReports?: Prisma.WorkReportUpdateManyWithoutProjectNestedInput
+  inputs?: Prisma.ProjectInputUpdateManyWithoutProjectNestedInput
+  slackMessages?: Prisma.SlackMessageUpdateManyWithoutProjectNestedInput
+}
+
+export type ProjectUncheckedUpdateWithoutSlackImportsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  members?: Prisma.ProjectMemberUncheckedUpdateManyWithoutProjectNestedInput
+  tasks?: Prisma.KanbanTaskUncheckedUpdateManyWithoutProjectNestedInput
+  kanbanColumns?: Prisma.ProjectKanbanColumnUncheckedUpdateManyWithoutProjectNestedInput
+  invitations?: Prisma.ProjectInvitationUncheckedUpdateManyWithoutProjectNestedInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUncheckedUpdateManyWithoutProjectNestedInput
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedUpdateManyWithoutProjectNestedInput
+  workReports?: Prisma.WorkReportUncheckedUpdateManyWithoutProjectNestedInput
+  inputs?: Prisma.ProjectInputUncheckedUpdateManyWithoutProjectNestedInput
+  slackMessages?: Prisma.SlackMessageUncheckedUpdateManyWithoutProjectNestedInput
+}
+
+export type ProjectCreateWithoutSlackMessagesInput = {
+  id?: string
+  name: string
+  description?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  organization: Prisma.OrganizationCreateNestedOneWithoutProjectsInput
+  members?: Prisma.ProjectMemberCreateNestedManyWithoutProjectInput
+  tasks?: Prisma.KanbanTaskCreateNestedManyWithoutProjectInput
+  kanbanColumns?: Prisma.ProjectKanbanColumnCreateNestedManyWithoutProjectInput
+  invitations?: Prisma.ProjectInvitationCreateNestedManyWithoutProjectInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventCreateNestedManyWithoutProjectInput
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateCreateNestedManyWithoutProjectInput
+  workReports?: Prisma.WorkReportCreateNestedManyWithoutProjectInput
+  inputs?: Prisma.ProjectInputCreateNestedManyWithoutProjectInput
+  slackImports?: Prisma.SlackImportCreateNestedManyWithoutProjectInput
+}
+
+export type ProjectUncheckedCreateWithoutSlackMessagesInput = {
+  id?: string
+  name: string
+  description?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  organizationId: string
+  members?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutProjectInput
+  tasks?: Prisma.KanbanTaskUncheckedCreateNestedManyWithoutProjectInput
+  kanbanColumns?: Prisma.ProjectKanbanColumnUncheckedCreateNestedManyWithoutProjectInput
+  invitations?: Prisma.ProjectInvitationUncheckedCreateNestedManyWithoutProjectInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUncheckedCreateNestedManyWithoutProjectInput
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedCreateNestedManyWithoutProjectInput
+  workReports?: Prisma.WorkReportUncheckedCreateNestedManyWithoutProjectInput
+  inputs?: Prisma.ProjectInputUncheckedCreateNestedManyWithoutProjectInput
+  slackImports?: Prisma.SlackImportUncheckedCreateNestedManyWithoutProjectInput
+}
+
+export type ProjectCreateOrConnectWithoutSlackMessagesInput = {
+  where: Prisma.ProjectWhereUniqueInput
+  create: Prisma.XOR<Prisma.ProjectCreateWithoutSlackMessagesInput, Prisma.ProjectUncheckedCreateWithoutSlackMessagesInput>
+}
+
+export type ProjectUpsertWithoutSlackMessagesInput = {
+  update: Prisma.XOR<Prisma.ProjectUpdateWithoutSlackMessagesInput, Prisma.ProjectUncheckedUpdateWithoutSlackMessagesInput>
+  create: Prisma.XOR<Prisma.ProjectCreateWithoutSlackMessagesInput, Prisma.ProjectUncheckedCreateWithoutSlackMessagesInput>
+  where?: Prisma.ProjectWhereInput
+}
+
+export type ProjectUpdateToOneWithWhereWithoutSlackMessagesInput = {
+  where?: Prisma.ProjectWhereInput
+  data: Prisma.XOR<Prisma.ProjectUpdateWithoutSlackMessagesInput, Prisma.ProjectUncheckedUpdateWithoutSlackMessagesInput>
+}
+
+export type ProjectUpdateWithoutSlackMessagesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organization?: Prisma.OrganizationUpdateOneRequiredWithoutProjectsNestedInput
+  members?: Prisma.ProjectMemberUpdateManyWithoutProjectNestedInput
+  tasks?: Prisma.KanbanTaskUpdateManyWithoutProjectNestedInput
+  kanbanColumns?: Prisma.ProjectKanbanColumnUpdateManyWithoutProjectNestedInput
+  invitations?: Prisma.ProjectInvitationUpdateManyWithoutProjectNestedInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUpdateManyWithoutProjectNestedInput
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUpdateManyWithoutProjectNestedInput
+  workReports?: Prisma.WorkReportUpdateManyWithoutProjectNestedInput
+  inputs?: Prisma.ProjectInputUpdateManyWithoutProjectNestedInput
+  slackImports?: Prisma.SlackImportUpdateManyWithoutProjectNestedInput
+}
+
+export type ProjectUncheckedUpdateWithoutSlackMessagesInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  description?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  organizationId?: Prisma.StringFieldUpdateOperationsInput | string
+  members?: Prisma.ProjectMemberUncheckedUpdateManyWithoutProjectNestedInput
+  tasks?: Prisma.KanbanTaskUncheckedUpdateManyWithoutProjectNestedInput
+  kanbanColumns?: Prisma.ProjectKanbanColumnUncheckedUpdateManyWithoutProjectNestedInput
+  invitations?: Prisma.ProjectInvitationUncheckedUpdateManyWithoutProjectNestedInput
+  aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUncheckedUpdateManyWithoutProjectNestedInput
+  aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedUpdateManyWithoutProjectNestedInput
+  workReports?: Prisma.WorkReportUncheckedUpdateManyWithoutProjectNestedInput
+  inputs?: Prisma.ProjectInputUncheckedUpdateManyWithoutProjectNestedInput
+  slackImports?: Prisma.SlackImportUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutAiTaskCandidateEventsInput = {
@@ -1118,6 +1388,8 @@ export type ProjectCreateWithoutAiTaskCandidateEventsInput = {
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateCreateNestedManyWithoutProjectInput
   workReports?: Prisma.WorkReportCreateNestedManyWithoutProjectInput
   inputs?: Prisma.ProjectInputCreateNestedManyWithoutProjectInput
+  slackImports?: Prisma.SlackImportCreateNestedManyWithoutProjectInput
+  slackMessages?: Prisma.SlackMessageCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutAiTaskCandidateEventsInput = {
@@ -1134,6 +1406,8 @@ export type ProjectUncheckedCreateWithoutAiTaskCandidateEventsInput = {
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedCreateNestedManyWithoutProjectInput
   workReports?: Prisma.WorkReportUncheckedCreateNestedManyWithoutProjectInput
   inputs?: Prisma.ProjectInputUncheckedCreateNestedManyWithoutProjectInput
+  slackImports?: Prisma.SlackImportUncheckedCreateNestedManyWithoutProjectInput
+  slackMessages?: Prisma.SlackMessageUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutAiTaskCandidateEventsInput = {
@@ -1166,6 +1440,8 @@ export type ProjectUpdateWithoutAiTaskCandidateEventsInput = {
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUpdateManyWithoutProjectNestedInput
   workReports?: Prisma.WorkReportUpdateManyWithoutProjectNestedInput
   inputs?: Prisma.ProjectInputUpdateManyWithoutProjectNestedInput
+  slackImports?: Prisma.SlackImportUpdateManyWithoutProjectNestedInput
+  slackMessages?: Prisma.SlackMessageUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutAiTaskCandidateEventsInput = {
@@ -1182,6 +1458,8 @@ export type ProjectUncheckedUpdateWithoutAiTaskCandidateEventsInput = {
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedUpdateManyWithoutProjectNestedInput
   workReports?: Prisma.WorkReportUncheckedUpdateManyWithoutProjectNestedInput
   inputs?: Prisma.ProjectInputUncheckedUpdateManyWithoutProjectNestedInput
+  slackImports?: Prisma.SlackImportUncheckedUpdateManyWithoutProjectNestedInput
+  slackMessages?: Prisma.SlackMessageUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateWithoutAiTaskCandidateStatesInput = {
@@ -1198,6 +1476,8 @@ export type ProjectCreateWithoutAiTaskCandidateStatesInput = {
   aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventCreateNestedManyWithoutProjectInput
   workReports?: Prisma.WorkReportCreateNestedManyWithoutProjectInput
   inputs?: Prisma.ProjectInputCreateNestedManyWithoutProjectInput
+  slackImports?: Prisma.SlackImportCreateNestedManyWithoutProjectInput
+  slackMessages?: Prisma.SlackMessageCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectUncheckedCreateWithoutAiTaskCandidateStatesInput = {
@@ -1214,6 +1494,8 @@ export type ProjectUncheckedCreateWithoutAiTaskCandidateStatesInput = {
   aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUncheckedCreateNestedManyWithoutProjectInput
   workReports?: Prisma.WorkReportUncheckedCreateNestedManyWithoutProjectInput
   inputs?: Prisma.ProjectInputUncheckedCreateNestedManyWithoutProjectInput
+  slackImports?: Prisma.SlackImportUncheckedCreateNestedManyWithoutProjectInput
+  slackMessages?: Prisma.SlackMessageUncheckedCreateNestedManyWithoutProjectInput
 }
 
 export type ProjectCreateOrConnectWithoutAiTaskCandidateStatesInput = {
@@ -1246,6 +1528,8 @@ export type ProjectUpdateWithoutAiTaskCandidateStatesInput = {
   aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUpdateManyWithoutProjectNestedInput
   workReports?: Prisma.WorkReportUpdateManyWithoutProjectNestedInput
   inputs?: Prisma.ProjectInputUpdateManyWithoutProjectNestedInput
+  slackImports?: Prisma.SlackImportUpdateManyWithoutProjectNestedInput
+  slackMessages?: Prisma.SlackMessageUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutAiTaskCandidateStatesInput = {
@@ -1262,6 +1546,8 @@ export type ProjectUncheckedUpdateWithoutAiTaskCandidateStatesInput = {
   aiTaskCandidateEvents?: Prisma.AiTaskCandidateEventUncheckedUpdateManyWithoutProjectNestedInput
   workReports?: Prisma.WorkReportUncheckedUpdateManyWithoutProjectNestedInput
   inputs?: Prisma.ProjectInputUncheckedUpdateManyWithoutProjectNestedInput
+  slackImports?: Prisma.SlackImportUncheckedUpdateManyWithoutProjectNestedInput
+  slackMessages?: Prisma.SlackMessageUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectCreateManyOrganizationInput = {
@@ -1286,6 +1572,8 @@ export type ProjectUpdateWithoutOrganizationInput = {
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUpdateManyWithoutProjectNestedInput
   workReports?: Prisma.WorkReportUpdateManyWithoutProjectNestedInput
   inputs?: Prisma.ProjectInputUpdateManyWithoutProjectNestedInput
+  slackImports?: Prisma.SlackImportUpdateManyWithoutProjectNestedInput
+  slackMessages?: Prisma.SlackMessageUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateWithoutOrganizationInput = {
@@ -1302,6 +1590,8 @@ export type ProjectUncheckedUpdateWithoutOrganizationInput = {
   aiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedUpdateManyWithoutProjectNestedInput
   workReports?: Prisma.WorkReportUncheckedUpdateManyWithoutProjectNestedInput
   inputs?: Prisma.ProjectInputUncheckedUpdateManyWithoutProjectNestedInput
+  slackImports?: Prisma.SlackImportUncheckedUpdateManyWithoutProjectNestedInput
+  slackMessages?: Prisma.SlackMessageUncheckedUpdateManyWithoutProjectNestedInput
 }
 
 export type ProjectUncheckedUpdateManyWithoutOrganizationInput = {
@@ -1326,6 +1616,8 @@ export type ProjectCountOutputType = {
   aiTaskCandidateStates: number
   workReports: number
   inputs: number
+  slackImports: number
+  slackMessages: number
 }
 
 export type ProjectCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1337,6 +1629,8 @@ export type ProjectCountOutputTypeSelect<ExtArgs extends runtime.Types.Extension
   aiTaskCandidateStates?: boolean | ProjectCountOutputTypeCountAiTaskCandidateStatesArgs
   workReports?: boolean | ProjectCountOutputTypeCountWorkReportsArgs
   inputs?: boolean | ProjectCountOutputTypeCountInputsArgs
+  slackImports?: boolean | ProjectCountOutputTypeCountSlackImportsArgs
+  slackMessages?: boolean | ProjectCountOutputTypeCountSlackMessagesArgs
 }
 
 /**
@@ -1405,6 +1699,20 @@ export type ProjectCountOutputTypeCountInputsArgs<ExtArgs extends runtime.Types.
   where?: Prisma.ProjectInputWhereInput
 }
 
+/**
+ * ProjectCountOutputType without action
+ */
+export type ProjectCountOutputTypeCountSlackImportsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SlackImportWhereInput
+}
+
+/**
+ * ProjectCountOutputType without action
+ */
+export type ProjectCountOutputTypeCountSlackMessagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SlackMessageWhereInput
+}
+
 
 export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -1422,6 +1730,8 @@ export type ProjectSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs 
   aiTaskCandidateStates?: boolean | Prisma.Project$aiTaskCandidateStatesArgs<ExtArgs>
   workReports?: boolean | Prisma.Project$workReportsArgs<ExtArgs>
   inputs?: boolean | Prisma.Project$inputsArgs<ExtArgs>
+  slackImports?: boolean | Prisma.Project$slackImportsArgs<ExtArgs>
+  slackMessages?: boolean | Prisma.Project$slackMessagesArgs<ExtArgs>
   _count?: boolean | Prisma.ProjectCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["project"]>
 
@@ -1465,6 +1775,8 @@ export type ProjectInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs
   aiTaskCandidateStates?: boolean | Prisma.Project$aiTaskCandidateStatesArgs<ExtArgs>
   workReports?: boolean | Prisma.Project$workReportsArgs<ExtArgs>
   inputs?: boolean | Prisma.Project$inputsArgs<ExtArgs>
+  slackImports?: boolean | Prisma.Project$slackImportsArgs<ExtArgs>
+  slackMessages?: boolean | Prisma.Project$slackMessagesArgs<ExtArgs>
   _count?: boolean | Prisma.ProjectCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type ProjectIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -1486,6 +1798,8 @@ export type $ProjectPayload<ExtArgs extends runtime.Types.Extensions.InternalArg
     aiTaskCandidateStates: Prisma.$AiTaskCandidateStatePayload<ExtArgs>[]
     workReports: Prisma.$WorkReportPayload<ExtArgs>[]
     inputs: Prisma.$ProjectInputPayload<ExtArgs>[]
+    slackImports: Prisma.$SlackImportPayload<ExtArgs>[]
+    slackMessages: Prisma.$SlackMessagePayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1897,6 +2211,8 @@ export interface Prisma__ProjectClient<T, Null = never, ExtArgs extends runtime.
   aiTaskCandidateStates<T extends Prisma.Project$aiTaskCandidateStatesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$aiTaskCandidateStatesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AiTaskCandidateStatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   workReports<T extends Prisma.Project$workReportsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$workReportsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$WorkReportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   inputs<T extends Prisma.Project$inputsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$inputsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProjectInputPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  slackImports<T extends Prisma.Project$slackImportsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$slackImportsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SlackImportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  slackMessages<T extends Prisma.Project$slackMessagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Project$slackMessagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SlackMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -2522,6 +2838,54 @@ export type Project$inputsArgs<ExtArgs extends runtime.Types.Extensions.Internal
   take?: number
   skip?: number
   distinct?: Prisma.ProjectInputScalarFieldEnum | Prisma.ProjectInputScalarFieldEnum[]
+}
+
+/**
+ * Project.slackImports
+ */
+export type Project$slackImportsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SlackImport
+   */
+  select?: Prisma.SlackImportSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SlackImport
+   */
+  omit?: Prisma.SlackImportOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SlackImportInclude<ExtArgs> | null
+  where?: Prisma.SlackImportWhereInput
+  orderBy?: Prisma.SlackImportOrderByWithRelationInput | Prisma.SlackImportOrderByWithRelationInput[]
+  cursor?: Prisma.SlackImportWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SlackImportScalarFieldEnum | Prisma.SlackImportScalarFieldEnum[]
+}
+
+/**
+ * Project.slackMessages
+ */
+export type Project$slackMessagesArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SlackMessage
+   */
+  select?: Prisma.SlackMessageSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SlackMessage
+   */
+  omit?: Prisma.SlackMessageOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SlackMessageInclude<ExtArgs> | null
+  where?: Prisma.SlackMessageWhereInput
+  orderBy?: Prisma.SlackMessageOrderByWithRelationInput | Prisma.SlackMessageOrderByWithRelationInput[]
+  cursor?: Prisma.SlackMessageWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SlackMessageScalarFieldEnum | Prisma.SlackMessageScalarFieldEnum[]
 }
 
 /**

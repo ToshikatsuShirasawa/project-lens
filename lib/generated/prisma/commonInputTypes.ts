@@ -287,6 +287,40 @@ export type EnumProjectInputTypeWithAggregatesFilter<$PrismaModel = never> = {
   _max?: Prisma.NestedEnumProjectInputTypeFilter<$PrismaModel>
 }
 
+export type EnumSlackImportRangePresetFilter<$PrismaModel = never> = {
+  equals?: $Enums.SlackImportRangePreset | Prisma.EnumSlackImportRangePresetFieldRefInput<$PrismaModel>
+  in?: $Enums.SlackImportRangePreset[] | Prisma.ListEnumSlackImportRangePresetFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SlackImportRangePreset[] | Prisma.ListEnumSlackImportRangePresetFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSlackImportRangePresetFilter<$PrismaModel> | $Enums.SlackImportRangePreset
+}
+
+export type EnumSlackImportStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.SlackImportStatus | Prisma.EnumSlackImportStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.SlackImportStatus[] | Prisma.ListEnumSlackImportStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SlackImportStatus[] | Prisma.ListEnumSlackImportStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSlackImportStatusFilter<$PrismaModel> | $Enums.SlackImportStatus
+}
+
+export type EnumSlackImportRangePresetWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SlackImportRangePreset | Prisma.EnumSlackImportRangePresetFieldRefInput<$PrismaModel>
+  in?: $Enums.SlackImportRangePreset[] | Prisma.ListEnumSlackImportRangePresetFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SlackImportRangePreset[] | Prisma.ListEnumSlackImportRangePresetFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSlackImportRangePresetWithAggregatesFilter<$PrismaModel> | $Enums.SlackImportRangePreset
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSlackImportRangePresetFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSlackImportRangePresetFilter<$PrismaModel>
+}
+
+export type EnumSlackImportStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SlackImportStatus | Prisma.EnumSlackImportStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.SlackImportStatus[] | Prisma.ListEnumSlackImportStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SlackImportStatus[] | Prisma.ListEnumSlackImportStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSlackImportStatusWithAggregatesFilter<$PrismaModel> | $Enums.SlackImportStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSlackImportStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSlackImportStatusFilter<$PrismaModel>
+}
+
 export type EnumAiTaskCandidateEventTypeFilter<$PrismaModel = never> = {
   equals?: $Enums.AiTaskCandidateEventType | Prisma.EnumAiTaskCandidateEventTypeFieldRefInput<$PrismaModel>
   in?: $Enums.AiTaskCandidateEventType[] | Prisma.ListEnumAiTaskCandidateEventTypeFieldRefInput<$PrismaModel>
@@ -724,6 +758,40 @@ export type NestedEnumProjectInputTypeWithAggregatesFilter<$PrismaModel = never>
   _count?: Prisma.NestedIntFilter<$PrismaModel>
   _min?: Prisma.NestedEnumProjectInputTypeFilter<$PrismaModel>
   _max?: Prisma.NestedEnumProjectInputTypeFilter<$PrismaModel>
+}
+
+export type NestedEnumSlackImportRangePresetFilter<$PrismaModel = never> = {
+  equals?: $Enums.SlackImportRangePreset | Prisma.EnumSlackImportRangePresetFieldRefInput<$PrismaModel>
+  in?: $Enums.SlackImportRangePreset[] | Prisma.ListEnumSlackImportRangePresetFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SlackImportRangePreset[] | Prisma.ListEnumSlackImportRangePresetFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSlackImportRangePresetFilter<$PrismaModel> | $Enums.SlackImportRangePreset
+}
+
+export type NestedEnumSlackImportStatusFilter<$PrismaModel = never> = {
+  equals?: $Enums.SlackImportStatus | Prisma.EnumSlackImportStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.SlackImportStatus[] | Prisma.ListEnumSlackImportStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SlackImportStatus[] | Prisma.ListEnumSlackImportStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSlackImportStatusFilter<$PrismaModel> | $Enums.SlackImportStatus
+}
+
+export type NestedEnumSlackImportRangePresetWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SlackImportRangePreset | Prisma.EnumSlackImportRangePresetFieldRefInput<$PrismaModel>
+  in?: $Enums.SlackImportRangePreset[] | Prisma.ListEnumSlackImportRangePresetFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SlackImportRangePreset[] | Prisma.ListEnumSlackImportRangePresetFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSlackImportRangePresetWithAggregatesFilter<$PrismaModel> | $Enums.SlackImportRangePreset
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSlackImportRangePresetFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSlackImportRangePresetFilter<$PrismaModel>
+}
+
+export type NestedEnumSlackImportStatusWithAggregatesFilter<$PrismaModel = never> = {
+  equals?: $Enums.SlackImportStatus | Prisma.EnumSlackImportStatusFieldRefInput<$PrismaModel>
+  in?: $Enums.SlackImportStatus[] | Prisma.ListEnumSlackImportStatusFieldRefInput<$PrismaModel>
+  notIn?: $Enums.SlackImportStatus[] | Prisma.ListEnumSlackImportStatusFieldRefInput<$PrismaModel>
+  not?: Prisma.NestedEnumSlackImportStatusWithAggregatesFilter<$PrismaModel> | $Enums.SlackImportStatus
+  _count?: Prisma.NestedIntFilter<$PrismaModel>
+  _min?: Prisma.NestedEnumSlackImportStatusFilter<$PrismaModel>
+  _max?: Prisma.NestedEnumSlackImportStatusFilter<$PrismaModel>
 }
 
 export type NestedEnumAiTaskCandidateEventTypeFilter<$PrismaModel = never> = {

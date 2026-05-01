@@ -394,6 +394,9 @@ export const ModelName = {
   KanbanTask: 'KanbanTask',
   WorkReport: 'WorkReport',
   ProjectInput: 'ProjectInput',
+  SlackConnection: 'SlackConnection',
+  SlackImport: 'SlackImport',
+  SlackMessage: 'SlackMessage',
   AiTaskCandidateEvent: 'AiTaskCandidateEvent',
   AiTaskCandidateState: 'AiTaskCandidateState'
 } as const
@@ -411,7 +414,7 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
     omit: GlobalOmitOptions
   }
   meta: {
-    modelProps: "user" | "organization" | "organizationMember" | "project" | "projectInvitation" | "projectKanbanColumn" | "projectMember" | "kanbanTask" | "workReport" | "projectInput" | "aiTaskCandidateEvent" | "aiTaskCandidateState"
+    modelProps: "user" | "organization" | "organizationMember" | "project" | "projectInvitation" | "projectKanbanColumn" | "projectMember" | "kanbanTask" | "workReport" | "projectInput" | "slackConnection" | "slackImport" | "slackMessage" | "aiTaskCandidateEvent" | "aiTaskCandidateState"
     txIsolationLevel: TransactionIsolationLevel
   }
   model: {
@@ -1155,6 +1158,228 @@ export type TypeMap<ExtArgs extends runtime.Types.Extensions.InternalArgs = runt
         }
       }
     }
+    SlackConnection: {
+      payload: Prisma.$SlackConnectionPayload<ExtArgs>
+      fields: Prisma.SlackConnectionFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SlackConnectionFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackConnectionPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SlackConnectionFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackConnectionPayload>
+        }
+        findFirst: {
+          args: Prisma.SlackConnectionFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackConnectionPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SlackConnectionFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackConnectionPayload>
+        }
+        findMany: {
+          args: Prisma.SlackConnectionFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackConnectionPayload>[]
+        }
+        create: {
+          args: Prisma.SlackConnectionCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackConnectionPayload>
+        }
+        createMany: {
+          args: Prisma.SlackConnectionCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SlackConnectionCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackConnectionPayload>[]
+        }
+        delete: {
+          args: Prisma.SlackConnectionDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackConnectionPayload>
+        }
+        update: {
+          args: Prisma.SlackConnectionUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackConnectionPayload>
+        }
+        deleteMany: {
+          args: Prisma.SlackConnectionDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SlackConnectionUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SlackConnectionUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackConnectionPayload>[]
+        }
+        upsert: {
+          args: Prisma.SlackConnectionUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackConnectionPayload>
+        }
+        aggregate: {
+          args: Prisma.SlackConnectionAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSlackConnection>
+        }
+        groupBy: {
+          args: Prisma.SlackConnectionGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SlackConnectionGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SlackConnectionCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SlackConnectionCountAggregateOutputType> | number
+        }
+      }
+    }
+    SlackImport: {
+      payload: Prisma.$SlackImportPayload<ExtArgs>
+      fields: Prisma.SlackImportFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SlackImportFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackImportPayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SlackImportFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackImportPayload>
+        }
+        findFirst: {
+          args: Prisma.SlackImportFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackImportPayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SlackImportFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackImportPayload>
+        }
+        findMany: {
+          args: Prisma.SlackImportFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackImportPayload>[]
+        }
+        create: {
+          args: Prisma.SlackImportCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackImportPayload>
+        }
+        createMany: {
+          args: Prisma.SlackImportCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SlackImportCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackImportPayload>[]
+        }
+        delete: {
+          args: Prisma.SlackImportDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackImportPayload>
+        }
+        update: {
+          args: Prisma.SlackImportUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackImportPayload>
+        }
+        deleteMany: {
+          args: Prisma.SlackImportDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SlackImportUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SlackImportUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackImportPayload>[]
+        }
+        upsert: {
+          args: Prisma.SlackImportUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackImportPayload>
+        }
+        aggregate: {
+          args: Prisma.SlackImportAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSlackImport>
+        }
+        groupBy: {
+          args: Prisma.SlackImportGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SlackImportGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SlackImportCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SlackImportCountAggregateOutputType> | number
+        }
+      }
+    }
+    SlackMessage: {
+      payload: Prisma.$SlackMessagePayload<ExtArgs>
+      fields: Prisma.SlackMessageFieldRefs
+      operations: {
+        findUnique: {
+          args: Prisma.SlackMessageFindUniqueArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackMessagePayload> | null
+        }
+        findUniqueOrThrow: {
+          args: Prisma.SlackMessageFindUniqueOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackMessagePayload>
+        }
+        findFirst: {
+          args: Prisma.SlackMessageFindFirstArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackMessagePayload> | null
+        }
+        findFirstOrThrow: {
+          args: Prisma.SlackMessageFindFirstOrThrowArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackMessagePayload>
+        }
+        findMany: {
+          args: Prisma.SlackMessageFindManyArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackMessagePayload>[]
+        }
+        create: {
+          args: Prisma.SlackMessageCreateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackMessagePayload>
+        }
+        createMany: {
+          args: Prisma.SlackMessageCreateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        createManyAndReturn: {
+          args: Prisma.SlackMessageCreateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackMessagePayload>[]
+        }
+        delete: {
+          args: Prisma.SlackMessageDeleteArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackMessagePayload>
+        }
+        update: {
+          args: Prisma.SlackMessageUpdateArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackMessagePayload>
+        }
+        deleteMany: {
+          args: Prisma.SlackMessageDeleteManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateMany: {
+          args: Prisma.SlackMessageUpdateManyArgs<ExtArgs>
+          result: BatchPayload
+        }
+        updateManyAndReturn: {
+          args: Prisma.SlackMessageUpdateManyAndReturnArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackMessagePayload>[]
+        }
+        upsert: {
+          args: Prisma.SlackMessageUpsertArgs<ExtArgs>
+          result: runtime.Types.Utils.PayloadToResult<Prisma.$SlackMessagePayload>
+        }
+        aggregate: {
+          args: Prisma.SlackMessageAggregateArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.AggregateSlackMessage>
+        }
+        groupBy: {
+          args: Prisma.SlackMessageGroupByArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SlackMessageGroupByOutputType>[]
+        }
+        count: {
+          args: Prisma.SlackMessageCountArgs<ExtArgs>
+          result: runtime.Types.Utils.Optional<Prisma.SlackMessageCountAggregateOutputType> | number
+        }
+      }
+    }
     AiTaskCandidateEvent: {
       payload: Prisma.$AiTaskCandidateEventPayload<ExtArgs>
       fields: Prisma.AiTaskCandidateEventFieldRefs
@@ -1483,6 +1708,61 @@ export const ProjectInputScalarFieldEnum = {
 export type ProjectInputScalarFieldEnum = (typeof ProjectInputScalarFieldEnum)[keyof typeof ProjectInputScalarFieldEnum]
 
 
+export const SlackConnectionScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  teamId: 'teamId',
+  teamName: 'teamName',
+  botUserId: 'botUserId',
+  botTokenEncrypted: 'botTokenEncrypted',
+  installedByUserId: 'installedByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SlackConnectionScalarFieldEnum = (typeof SlackConnectionScalarFieldEnum)[keyof typeof SlackConnectionScalarFieldEnum]
+
+
+export const SlackImportScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  connectionId: 'connectionId',
+  channelId: 'channelId',
+  channelName: 'channelName',
+  rangePreset: 'rangePreset',
+  oldestTs: 'oldestTs',
+  latestTs: 'latestTs',
+  messageCount: 'messageCount',
+  status: 'status',
+  errorMessage: 'errorMessage',
+  projectInputId: 'projectInputId',
+  importedByUserId: 'importedByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SlackImportScalarFieldEnum = (typeof SlackImportScalarFieldEnum)[keyof typeof SlackImportScalarFieldEnum]
+
+
+export const SlackMessageScalarFieldEnum = {
+  id: 'id',
+  connectionId: 'connectionId',
+  projectId: 'projectId',
+  importId: 'importId',
+  channelId: 'channelId',
+  channelName: 'channelName',
+  messageTs: 'messageTs',
+  threadTs: 'threadTs',
+  userId: 'userId',
+  userName: 'userName',
+  text: 'text',
+  permalink: 'permalink',
+  createdAt: 'createdAt'
+} as const
+
+export type SlackMessageScalarFieldEnum = (typeof SlackMessageScalarFieldEnum)[keyof typeof SlackMessageScalarFieldEnum]
+
+
 export const AiTaskCandidateEventScalarFieldEnum = {
   id: 'id',
   createdAt: 'createdAt',
@@ -1694,6 +1974,34 @@ export type ListEnumProjectInputTypeFieldRefInput<$PrismaModel> = FieldRefInputT
 
 
 /**
+ * Reference to a field of type 'SlackImportRangePreset'
+ */
+export type EnumSlackImportRangePresetFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SlackImportRangePreset'>
+    
+
+
+/**
+ * Reference to a field of type 'SlackImportRangePreset[]'
+ */
+export type ListEnumSlackImportRangePresetFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SlackImportRangePreset[]'>
+    
+
+
+/**
+ * Reference to a field of type 'SlackImportStatus'
+ */
+export type EnumSlackImportStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SlackImportStatus'>
+    
+
+
+/**
+ * Reference to a field of type 'SlackImportStatus[]'
+ */
+export type ListEnumSlackImportStatusFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'SlackImportStatus[]'>
+    
+
+
+/**
  * Reference to a field of type 'AiTaskCandidateEventType'
  */
 export type EnumAiTaskCandidateEventTypeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'AiTaskCandidateEventType'>
@@ -1867,6 +2175,9 @@ export type GlobalOmitConfig = {
   kanbanTask?: Prisma.KanbanTaskOmit
   workReport?: Prisma.WorkReportOmit
   projectInput?: Prisma.ProjectInputOmit
+  slackConnection?: Prisma.SlackConnectionOmit
+  slackImport?: Prisma.SlackImportOmit
+  slackMessage?: Prisma.SlackMessageOmit
   aiTaskCandidateEvent?: Prisma.AiTaskCandidateEventOmit
   aiTaskCandidateState?: Prisma.AiTaskCandidateStateOmit
 }

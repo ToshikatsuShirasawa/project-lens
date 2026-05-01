@@ -187,6 +187,8 @@ export type UserWhereInput = {
   assignedTasks?: Prisma.KanbanTaskListRelationFilter
   projectInvitationsSent?: Prisma.ProjectInvitationListRelationFilter
   updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateListRelationFilter
+  slackConnectionsInstalled?: Prisma.SlackConnectionListRelationFilter
+  slackImports?: Prisma.SlackImportListRelationFilter
 }
 
 export type UserOrderByWithRelationInput = {
@@ -200,6 +202,8 @@ export type UserOrderByWithRelationInput = {
   assignedTasks?: Prisma.KanbanTaskOrderByRelationAggregateInput
   projectInvitationsSent?: Prisma.ProjectInvitationOrderByRelationAggregateInput
   updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateOrderByRelationAggregateInput
+  slackConnectionsInstalled?: Prisma.SlackConnectionOrderByRelationAggregateInput
+  slackImports?: Prisma.SlackImportOrderByRelationAggregateInput
 }
 
 export type UserWhereUniqueInput = Prisma.AtLeast<{
@@ -216,6 +220,8 @@ export type UserWhereUniqueInput = Prisma.AtLeast<{
   assignedTasks?: Prisma.KanbanTaskListRelationFilter
   projectInvitationsSent?: Prisma.ProjectInvitationListRelationFilter
   updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateListRelationFilter
+  slackConnectionsInstalled?: Prisma.SlackConnectionListRelationFilter
+  slackImports?: Prisma.SlackImportListRelationFilter
 }, "id" | "email">
 
 export type UserOrderByWithAggregationInput = {
@@ -251,6 +257,8 @@ export type UserCreateInput = {
   assignedTasks?: Prisma.KanbanTaskCreateNestedManyWithoutAssigneeInput
   projectInvitationsSent?: Prisma.ProjectInvitationCreateNestedManyWithoutInvitedByUserInput
   updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateCreateNestedManyWithoutUpdatedByUserInput
+  slackConnectionsInstalled?: Prisma.SlackConnectionCreateNestedManyWithoutInstalledByUserInput
+  slackImports?: Prisma.SlackImportCreateNestedManyWithoutImportedByUserInput
 }
 
 export type UserUncheckedCreateInput = {
@@ -264,6 +272,8 @@ export type UserUncheckedCreateInput = {
   assignedTasks?: Prisma.KanbanTaskUncheckedCreateNestedManyWithoutAssigneeInput
   projectInvitationsSent?: Prisma.ProjectInvitationUncheckedCreateNestedManyWithoutInvitedByUserInput
   updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedCreateNestedManyWithoutUpdatedByUserInput
+  slackConnectionsInstalled?: Prisma.SlackConnectionUncheckedCreateNestedManyWithoutInstalledByUserInput
+  slackImports?: Prisma.SlackImportUncheckedCreateNestedManyWithoutImportedByUserInput
 }
 
 export type UserUpdateInput = {
@@ -277,6 +287,8 @@ export type UserUpdateInput = {
   assignedTasks?: Prisma.KanbanTaskUpdateManyWithoutAssigneeNestedInput
   projectInvitationsSent?: Prisma.ProjectInvitationUpdateManyWithoutInvitedByUserNestedInput
   updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateUpdateManyWithoutUpdatedByUserNestedInput
+  slackConnectionsInstalled?: Prisma.SlackConnectionUpdateManyWithoutInstalledByUserNestedInput
+  slackImports?: Prisma.SlackImportUpdateManyWithoutImportedByUserNestedInput
 }
 
 export type UserUncheckedUpdateInput = {
@@ -290,6 +302,8 @@ export type UserUncheckedUpdateInput = {
   assignedTasks?: Prisma.KanbanTaskUncheckedUpdateManyWithoutAssigneeNestedInput
   projectInvitationsSent?: Prisma.ProjectInvitationUncheckedUpdateManyWithoutInvitedByUserNestedInput
   updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedUpdateManyWithoutUpdatedByUserNestedInput
+  slackConnectionsInstalled?: Prisma.SlackConnectionUncheckedUpdateManyWithoutInstalledByUserNestedInput
+  slackImports?: Prisma.SlackImportUncheckedUpdateManyWithoutImportedByUserNestedInput
 }
 
 export type UserCreateManyInput = {
@@ -420,6 +434,34 @@ export type UserUpdateOneWithoutAssignedTasksNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutAssignedTasksInput, Prisma.UserUpdateWithoutAssignedTasksInput>, Prisma.UserUncheckedUpdateWithoutAssignedTasksInput>
 }
 
+export type UserCreateNestedOneWithoutSlackConnectionsInstalledInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutSlackConnectionsInstalledInput, Prisma.UserUncheckedCreateWithoutSlackConnectionsInstalledInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSlackConnectionsInstalledInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutSlackConnectionsInstalledNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutSlackConnectionsInstalledInput, Prisma.UserUncheckedCreateWithoutSlackConnectionsInstalledInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSlackConnectionsInstalledInput
+  upsert?: Prisma.UserUpsertWithoutSlackConnectionsInstalledInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutSlackConnectionsInstalledInput, Prisma.UserUpdateWithoutSlackConnectionsInstalledInput>, Prisma.UserUncheckedUpdateWithoutSlackConnectionsInstalledInput>
+}
+
+export type UserCreateNestedOneWithoutSlackImportsInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutSlackImportsInput, Prisma.UserUncheckedCreateWithoutSlackImportsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSlackImportsInput
+  connect?: Prisma.UserWhereUniqueInput
+}
+
+export type UserUpdateOneRequiredWithoutSlackImportsNestedInput = {
+  create?: Prisma.XOR<Prisma.UserCreateWithoutSlackImportsInput, Prisma.UserUncheckedCreateWithoutSlackImportsInput>
+  connectOrCreate?: Prisma.UserCreateOrConnectWithoutSlackImportsInput
+  upsert?: Prisma.UserUpsertWithoutSlackImportsInput
+  connect?: Prisma.UserWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.UserUpdateToOneWithWhereWithoutSlackImportsInput, Prisma.UserUpdateWithoutSlackImportsInput>, Prisma.UserUncheckedUpdateWithoutSlackImportsInput>
+}
+
 export type UserCreateNestedOneWithoutUpdatedAiTaskCandidateStatesInput = {
   create?: Prisma.XOR<Prisma.UserCreateWithoutUpdatedAiTaskCandidateStatesInput, Prisma.UserUncheckedCreateWithoutUpdatedAiTaskCandidateStatesInput>
   connectOrCreate?: Prisma.UserCreateOrConnectWithoutUpdatedAiTaskCandidateStatesInput
@@ -446,6 +488,8 @@ export type UserCreateWithoutOrganizationMembersInput = {
   assignedTasks?: Prisma.KanbanTaskCreateNestedManyWithoutAssigneeInput
   projectInvitationsSent?: Prisma.ProjectInvitationCreateNestedManyWithoutInvitedByUserInput
   updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateCreateNestedManyWithoutUpdatedByUserInput
+  slackConnectionsInstalled?: Prisma.SlackConnectionCreateNestedManyWithoutInstalledByUserInput
+  slackImports?: Prisma.SlackImportCreateNestedManyWithoutImportedByUserInput
 }
 
 export type UserUncheckedCreateWithoutOrganizationMembersInput = {
@@ -458,6 +502,8 @@ export type UserUncheckedCreateWithoutOrganizationMembersInput = {
   assignedTasks?: Prisma.KanbanTaskUncheckedCreateNestedManyWithoutAssigneeInput
   projectInvitationsSent?: Prisma.ProjectInvitationUncheckedCreateNestedManyWithoutInvitedByUserInput
   updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedCreateNestedManyWithoutUpdatedByUserInput
+  slackConnectionsInstalled?: Prisma.SlackConnectionUncheckedCreateNestedManyWithoutInstalledByUserInput
+  slackImports?: Prisma.SlackImportUncheckedCreateNestedManyWithoutImportedByUserInput
 }
 
 export type UserCreateOrConnectWithoutOrganizationMembersInput = {
@@ -486,6 +532,8 @@ export type UserUpdateWithoutOrganizationMembersInput = {
   assignedTasks?: Prisma.KanbanTaskUpdateManyWithoutAssigneeNestedInput
   projectInvitationsSent?: Prisma.ProjectInvitationUpdateManyWithoutInvitedByUserNestedInput
   updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateUpdateManyWithoutUpdatedByUserNestedInput
+  slackConnectionsInstalled?: Prisma.SlackConnectionUpdateManyWithoutInstalledByUserNestedInput
+  slackImports?: Prisma.SlackImportUpdateManyWithoutImportedByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutOrganizationMembersInput = {
@@ -498,6 +546,8 @@ export type UserUncheckedUpdateWithoutOrganizationMembersInput = {
   assignedTasks?: Prisma.KanbanTaskUncheckedUpdateManyWithoutAssigneeNestedInput
   projectInvitationsSent?: Prisma.ProjectInvitationUncheckedUpdateManyWithoutInvitedByUserNestedInput
   updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedUpdateManyWithoutUpdatedByUserNestedInput
+  slackConnectionsInstalled?: Prisma.SlackConnectionUncheckedUpdateManyWithoutInstalledByUserNestedInput
+  slackImports?: Prisma.SlackImportUncheckedUpdateManyWithoutImportedByUserNestedInput
 }
 
 export type UserCreateWithoutProjectInvitationsSentInput = {
@@ -510,6 +560,8 @@ export type UserCreateWithoutProjectInvitationsSentInput = {
   organizationMembers?: Prisma.OrganizationMemberCreateNestedManyWithoutUserInput
   assignedTasks?: Prisma.KanbanTaskCreateNestedManyWithoutAssigneeInput
   updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateCreateNestedManyWithoutUpdatedByUserInput
+  slackConnectionsInstalled?: Prisma.SlackConnectionCreateNestedManyWithoutInstalledByUserInput
+  slackImports?: Prisma.SlackImportCreateNestedManyWithoutImportedByUserInput
 }
 
 export type UserUncheckedCreateWithoutProjectInvitationsSentInput = {
@@ -522,6 +574,8 @@ export type UserUncheckedCreateWithoutProjectInvitationsSentInput = {
   organizationMembers?: Prisma.OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
   assignedTasks?: Prisma.KanbanTaskUncheckedCreateNestedManyWithoutAssigneeInput
   updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedCreateNestedManyWithoutUpdatedByUserInput
+  slackConnectionsInstalled?: Prisma.SlackConnectionUncheckedCreateNestedManyWithoutInstalledByUserInput
+  slackImports?: Prisma.SlackImportUncheckedCreateNestedManyWithoutImportedByUserInput
 }
 
 export type UserCreateOrConnectWithoutProjectInvitationsSentInput = {
@@ -550,6 +604,8 @@ export type UserUpdateWithoutProjectInvitationsSentInput = {
   organizationMembers?: Prisma.OrganizationMemberUpdateManyWithoutUserNestedInput
   assignedTasks?: Prisma.KanbanTaskUpdateManyWithoutAssigneeNestedInput
   updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateUpdateManyWithoutUpdatedByUserNestedInput
+  slackConnectionsInstalled?: Prisma.SlackConnectionUpdateManyWithoutInstalledByUserNestedInput
+  slackImports?: Prisma.SlackImportUpdateManyWithoutImportedByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutProjectInvitationsSentInput = {
@@ -562,6 +618,8 @@ export type UserUncheckedUpdateWithoutProjectInvitationsSentInput = {
   organizationMembers?: Prisma.OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
   assignedTasks?: Prisma.KanbanTaskUncheckedUpdateManyWithoutAssigneeNestedInput
   updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedUpdateManyWithoutUpdatedByUserNestedInput
+  slackConnectionsInstalled?: Prisma.SlackConnectionUncheckedUpdateManyWithoutInstalledByUserNestedInput
+  slackImports?: Prisma.SlackImportUncheckedUpdateManyWithoutImportedByUserNestedInput
 }
 
 export type UserCreateWithoutMembershipsInput = {
@@ -574,6 +632,8 @@ export type UserCreateWithoutMembershipsInput = {
   assignedTasks?: Prisma.KanbanTaskCreateNestedManyWithoutAssigneeInput
   projectInvitationsSent?: Prisma.ProjectInvitationCreateNestedManyWithoutInvitedByUserInput
   updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateCreateNestedManyWithoutUpdatedByUserInput
+  slackConnectionsInstalled?: Prisma.SlackConnectionCreateNestedManyWithoutInstalledByUserInput
+  slackImports?: Prisma.SlackImportCreateNestedManyWithoutImportedByUserInput
 }
 
 export type UserUncheckedCreateWithoutMembershipsInput = {
@@ -586,6 +646,8 @@ export type UserUncheckedCreateWithoutMembershipsInput = {
   assignedTasks?: Prisma.KanbanTaskUncheckedCreateNestedManyWithoutAssigneeInput
   projectInvitationsSent?: Prisma.ProjectInvitationUncheckedCreateNestedManyWithoutInvitedByUserInput
   updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedCreateNestedManyWithoutUpdatedByUserInput
+  slackConnectionsInstalled?: Prisma.SlackConnectionUncheckedCreateNestedManyWithoutInstalledByUserInput
+  slackImports?: Prisma.SlackImportUncheckedCreateNestedManyWithoutImportedByUserInput
 }
 
 export type UserCreateOrConnectWithoutMembershipsInput = {
@@ -614,6 +676,8 @@ export type UserUpdateWithoutMembershipsInput = {
   assignedTasks?: Prisma.KanbanTaskUpdateManyWithoutAssigneeNestedInput
   projectInvitationsSent?: Prisma.ProjectInvitationUpdateManyWithoutInvitedByUserNestedInput
   updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateUpdateManyWithoutUpdatedByUserNestedInput
+  slackConnectionsInstalled?: Prisma.SlackConnectionUpdateManyWithoutInstalledByUserNestedInput
+  slackImports?: Prisma.SlackImportUpdateManyWithoutImportedByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutMembershipsInput = {
@@ -626,6 +690,8 @@ export type UserUncheckedUpdateWithoutMembershipsInput = {
   assignedTasks?: Prisma.KanbanTaskUncheckedUpdateManyWithoutAssigneeNestedInput
   projectInvitationsSent?: Prisma.ProjectInvitationUncheckedUpdateManyWithoutInvitedByUserNestedInput
   updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedUpdateManyWithoutUpdatedByUserNestedInput
+  slackConnectionsInstalled?: Prisma.SlackConnectionUncheckedUpdateManyWithoutInstalledByUserNestedInput
+  slackImports?: Prisma.SlackImportUncheckedUpdateManyWithoutImportedByUserNestedInput
 }
 
 export type UserCreateWithoutAssignedTasksInput = {
@@ -638,6 +704,8 @@ export type UserCreateWithoutAssignedTasksInput = {
   organizationMembers?: Prisma.OrganizationMemberCreateNestedManyWithoutUserInput
   projectInvitationsSent?: Prisma.ProjectInvitationCreateNestedManyWithoutInvitedByUserInput
   updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateCreateNestedManyWithoutUpdatedByUserInput
+  slackConnectionsInstalled?: Prisma.SlackConnectionCreateNestedManyWithoutInstalledByUserInput
+  slackImports?: Prisma.SlackImportCreateNestedManyWithoutImportedByUserInput
 }
 
 export type UserUncheckedCreateWithoutAssignedTasksInput = {
@@ -650,6 +718,8 @@ export type UserUncheckedCreateWithoutAssignedTasksInput = {
   organizationMembers?: Prisma.OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
   projectInvitationsSent?: Prisma.ProjectInvitationUncheckedCreateNestedManyWithoutInvitedByUserInput
   updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedCreateNestedManyWithoutUpdatedByUserInput
+  slackConnectionsInstalled?: Prisma.SlackConnectionUncheckedCreateNestedManyWithoutInstalledByUserInput
+  slackImports?: Prisma.SlackImportUncheckedCreateNestedManyWithoutImportedByUserInput
 }
 
 export type UserCreateOrConnectWithoutAssignedTasksInput = {
@@ -678,6 +748,8 @@ export type UserUpdateWithoutAssignedTasksInput = {
   organizationMembers?: Prisma.OrganizationMemberUpdateManyWithoutUserNestedInput
   projectInvitationsSent?: Prisma.ProjectInvitationUpdateManyWithoutInvitedByUserNestedInput
   updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateUpdateManyWithoutUpdatedByUserNestedInput
+  slackConnectionsInstalled?: Prisma.SlackConnectionUpdateManyWithoutInstalledByUserNestedInput
+  slackImports?: Prisma.SlackImportUpdateManyWithoutImportedByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutAssignedTasksInput = {
@@ -690,6 +762,152 @@ export type UserUncheckedUpdateWithoutAssignedTasksInput = {
   organizationMembers?: Prisma.OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
   projectInvitationsSent?: Prisma.ProjectInvitationUncheckedUpdateManyWithoutInvitedByUserNestedInput
   updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedUpdateManyWithoutUpdatedByUserNestedInput
+  slackConnectionsInstalled?: Prisma.SlackConnectionUncheckedUpdateManyWithoutInstalledByUserNestedInput
+  slackImports?: Prisma.SlackImportUncheckedUpdateManyWithoutImportedByUserNestedInput
+}
+
+export type UserCreateWithoutSlackConnectionsInstalledInput = {
+  id: string
+  email: string
+  name?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  memberships?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  organizationMembers?: Prisma.OrganizationMemberCreateNestedManyWithoutUserInput
+  assignedTasks?: Prisma.KanbanTaskCreateNestedManyWithoutAssigneeInput
+  projectInvitationsSent?: Prisma.ProjectInvitationCreateNestedManyWithoutInvitedByUserInput
+  updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateCreateNestedManyWithoutUpdatedByUserInput
+  slackImports?: Prisma.SlackImportCreateNestedManyWithoutImportedByUserInput
+}
+
+export type UserUncheckedCreateWithoutSlackConnectionsInstalledInput = {
+  id: string
+  email: string
+  name?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  memberships?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  organizationMembers?: Prisma.OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
+  assignedTasks?: Prisma.KanbanTaskUncheckedCreateNestedManyWithoutAssigneeInput
+  projectInvitationsSent?: Prisma.ProjectInvitationUncheckedCreateNestedManyWithoutInvitedByUserInput
+  updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedCreateNestedManyWithoutUpdatedByUserInput
+  slackImports?: Prisma.SlackImportUncheckedCreateNestedManyWithoutImportedByUserInput
+}
+
+export type UserCreateOrConnectWithoutSlackConnectionsInstalledInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutSlackConnectionsInstalledInput, Prisma.UserUncheckedCreateWithoutSlackConnectionsInstalledInput>
+}
+
+export type UserUpsertWithoutSlackConnectionsInstalledInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutSlackConnectionsInstalledInput, Prisma.UserUncheckedUpdateWithoutSlackConnectionsInstalledInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutSlackConnectionsInstalledInput, Prisma.UserUncheckedCreateWithoutSlackConnectionsInstalledInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutSlackConnectionsInstalledInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutSlackConnectionsInstalledInput, Prisma.UserUncheckedUpdateWithoutSlackConnectionsInstalledInput>
+}
+
+export type UserUpdateWithoutSlackConnectionsInstalledInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  memberships?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  organizationMembers?: Prisma.OrganizationMemberUpdateManyWithoutUserNestedInput
+  assignedTasks?: Prisma.KanbanTaskUpdateManyWithoutAssigneeNestedInput
+  projectInvitationsSent?: Prisma.ProjectInvitationUpdateManyWithoutInvitedByUserNestedInput
+  updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateUpdateManyWithoutUpdatedByUserNestedInput
+  slackImports?: Prisma.SlackImportUpdateManyWithoutImportedByUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutSlackConnectionsInstalledInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  memberships?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  organizationMembers?: Prisma.OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
+  assignedTasks?: Prisma.KanbanTaskUncheckedUpdateManyWithoutAssigneeNestedInput
+  projectInvitationsSent?: Prisma.ProjectInvitationUncheckedUpdateManyWithoutInvitedByUserNestedInput
+  updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedUpdateManyWithoutUpdatedByUserNestedInput
+  slackImports?: Prisma.SlackImportUncheckedUpdateManyWithoutImportedByUserNestedInput
+}
+
+export type UserCreateWithoutSlackImportsInput = {
+  id: string
+  email: string
+  name?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  memberships?: Prisma.ProjectMemberCreateNestedManyWithoutUserInput
+  organizationMembers?: Prisma.OrganizationMemberCreateNestedManyWithoutUserInput
+  assignedTasks?: Prisma.KanbanTaskCreateNestedManyWithoutAssigneeInput
+  projectInvitationsSent?: Prisma.ProjectInvitationCreateNestedManyWithoutInvitedByUserInput
+  updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateCreateNestedManyWithoutUpdatedByUserInput
+  slackConnectionsInstalled?: Prisma.SlackConnectionCreateNestedManyWithoutInstalledByUserInput
+}
+
+export type UserUncheckedCreateWithoutSlackImportsInput = {
+  id: string
+  email: string
+  name?: string | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  memberships?: Prisma.ProjectMemberUncheckedCreateNestedManyWithoutUserInput
+  organizationMembers?: Prisma.OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
+  assignedTasks?: Prisma.KanbanTaskUncheckedCreateNestedManyWithoutAssigneeInput
+  projectInvitationsSent?: Prisma.ProjectInvitationUncheckedCreateNestedManyWithoutInvitedByUserInput
+  updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedCreateNestedManyWithoutUpdatedByUserInput
+  slackConnectionsInstalled?: Prisma.SlackConnectionUncheckedCreateNestedManyWithoutInstalledByUserInput
+}
+
+export type UserCreateOrConnectWithoutSlackImportsInput = {
+  where: Prisma.UserWhereUniqueInput
+  create: Prisma.XOR<Prisma.UserCreateWithoutSlackImportsInput, Prisma.UserUncheckedCreateWithoutSlackImportsInput>
+}
+
+export type UserUpsertWithoutSlackImportsInput = {
+  update: Prisma.XOR<Prisma.UserUpdateWithoutSlackImportsInput, Prisma.UserUncheckedUpdateWithoutSlackImportsInput>
+  create: Prisma.XOR<Prisma.UserCreateWithoutSlackImportsInput, Prisma.UserUncheckedCreateWithoutSlackImportsInput>
+  where?: Prisma.UserWhereInput
+}
+
+export type UserUpdateToOneWithWhereWithoutSlackImportsInput = {
+  where?: Prisma.UserWhereInput
+  data: Prisma.XOR<Prisma.UserUpdateWithoutSlackImportsInput, Prisma.UserUncheckedUpdateWithoutSlackImportsInput>
+}
+
+export type UserUpdateWithoutSlackImportsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  memberships?: Prisma.ProjectMemberUpdateManyWithoutUserNestedInput
+  organizationMembers?: Prisma.OrganizationMemberUpdateManyWithoutUserNestedInput
+  assignedTasks?: Prisma.KanbanTaskUpdateManyWithoutAssigneeNestedInput
+  projectInvitationsSent?: Prisma.ProjectInvitationUpdateManyWithoutInvitedByUserNestedInput
+  updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateUpdateManyWithoutUpdatedByUserNestedInput
+  slackConnectionsInstalled?: Prisma.SlackConnectionUpdateManyWithoutInstalledByUserNestedInput
+}
+
+export type UserUncheckedUpdateWithoutSlackImportsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  email?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  memberships?: Prisma.ProjectMemberUncheckedUpdateManyWithoutUserNestedInput
+  organizationMembers?: Prisma.OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
+  assignedTasks?: Prisma.KanbanTaskUncheckedUpdateManyWithoutAssigneeNestedInput
+  projectInvitationsSent?: Prisma.ProjectInvitationUncheckedUpdateManyWithoutInvitedByUserNestedInput
+  updatedAiTaskCandidateStates?: Prisma.AiTaskCandidateStateUncheckedUpdateManyWithoutUpdatedByUserNestedInput
+  slackConnectionsInstalled?: Prisma.SlackConnectionUncheckedUpdateManyWithoutInstalledByUserNestedInput
 }
 
 export type UserCreateWithoutUpdatedAiTaskCandidateStatesInput = {
@@ -702,6 +920,8 @@ export type UserCreateWithoutUpdatedAiTaskCandidateStatesInput = {
   organizationMembers?: Prisma.OrganizationMemberCreateNestedManyWithoutUserInput
   assignedTasks?: Prisma.KanbanTaskCreateNestedManyWithoutAssigneeInput
   projectInvitationsSent?: Prisma.ProjectInvitationCreateNestedManyWithoutInvitedByUserInput
+  slackConnectionsInstalled?: Prisma.SlackConnectionCreateNestedManyWithoutInstalledByUserInput
+  slackImports?: Prisma.SlackImportCreateNestedManyWithoutImportedByUserInput
 }
 
 export type UserUncheckedCreateWithoutUpdatedAiTaskCandidateStatesInput = {
@@ -714,6 +934,8 @@ export type UserUncheckedCreateWithoutUpdatedAiTaskCandidateStatesInput = {
   organizationMembers?: Prisma.OrganizationMemberUncheckedCreateNestedManyWithoutUserInput
   assignedTasks?: Prisma.KanbanTaskUncheckedCreateNestedManyWithoutAssigneeInput
   projectInvitationsSent?: Prisma.ProjectInvitationUncheckedCreateNestedManyWithoutInvitedByUserInput
+  slackConnectionsInstalled?: Prisma.SlackConnectionUncheckedCreateNestedManyWithoutInstalledByUserInput
+  slackImports?: Prisma.SlackImportUncheckedCreateNestedManyWithoutImportedByUserInput
 }
 
 export type UserCreateOrConnectWithoutUpdatedAiTaskCandidateStatesInput = {
@@ -742,6 +964,8 @@ export type UserUpdateWithoutUpdatedAiTaskCandidateStatesInput = {
   organizationMembers?: Prisma.OrganizationMemberUpdateManyWithoutUserNestedInput
   assignedTasks?: Prisma.KanbanTaskUpdateManyWithoutAssigneeNestedInput
   projectInvitationsSent?: Prisma.ProjectInvitationUpdateManyWithoutInvitedByUserNestedInput
+  slackConnectionsInstalled?: Prisma.SlackConnectionUpdateManyWithoutInstalledByUserNestedInput
+  slackImports?: Prisma.SlackImportUpdateManyWithoutImportedByUserNestedInput
 }
 
 export type UserUncheckedUpdateWithoutUpdatedAiTaskCandidateStatesInput = {
@@ -754,6 +978,8 @@ export type UserUncheckedUpdateWithoutUpdatedAiTaskCandidateStatesInput = {
   organizationMembers?: Prisma.OrganizationMemberUncheckedUpdateManyWithoutUserNestedInput
   assignedTasks?: Prisma.KanbanTaskUncheckedUpdateManyWithoutAssigneeNestedInput
   projectInvitationsSent?: Prisma.ProjectInvitationUncheckedUpdateManyWithoutInvitedByUserNestedInput
+  slackConnectionsInstalled?: Prisma.SlackConnectionUncheckedUpdateManyWithoutInstalledByUserNestedInput
+  slackImports?: Prisma.SlackImportUncheckedUpdateManyWithoutImportedByUserNestedInput
 }
 
 
@@ -767,6 +993,8 @@ export type UserCountOutputType = {
   assignedTasks: number
   projectInvitationsSent: number
   updatedAiTaskCandidateStates: number
+  slackConnectionsInstalled: number
+  slackImports: number
 }
 
 export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
@@ -775,6 +1003,8 @@ export type UserCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.I
   assignedTasks?: boolean | UserCountOutputTypeCountAssignedTasksArgs
   projectInvitationsSent?: boolean | UserCountOutputTypeCountProjectInvitationsSentArgs
   updatedAiTaskCandidateStates?: boolean | UserCountOutputTypeCountUpdatedAiTaskCandidateStatesArgs
+  slackConnectionsInstalled?: boolean | UserCountOutputTypeCountSlackConnectionsInstalledArgs
+  slackImports?: boolean | UserCountOutputTypeCountSlackImportsArgs
 }
 
 /**
@@ -822,6 +1052,20 @@ export type UserCountOutputTypeCountUpdatedAiTaskCandidateStatesArgs<ExtArgs ext
   where?: Prisma.AiTaskCandidateStateWhereInput
 }
 
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountSlackConnectionsInstalledArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SlackConnectionWhereInput
+}
+
+/**
+ * UserCountOutputType without action
+ */
+export type UserCountOutputTypeCountSlackImportsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SlackImportWhereInput
+}
+
 
 export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -834,6 +1078,8 @@ export type UserSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = r
   assignedTasks?: boolean | Prisma.User$assignedTasksArgs<ExtArgs>
   projectInvitationsSent?: boolean | Prisma.User$projectInvitationsSentArgs<ExtArgs>
   updatedAiTaskCandidateStates?: boolean | Prisma.User$updatedAiTaskCandidateStatesArgs<ExtArgs>
+  slackConnectionsInstalled?: boolean | Prisma.User$slackConnectionsInstalledArgs<ExtArgs>
+  slackImports?: boolean | Prisma.User$slackImportsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["user"]>
 
@@ -868,6 +1114,8 @@ export type UserInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = 
   assignedTasks?: boolean | Prisma.User$assignedTasksArgs<ExtArgs>
   projectInvitationsSent?: boolean | Prisma.User$projectInvitationsSentArgs<ExtArgs>
   updatedAiTaskCandidateStates?: boolean | Prisma.User$updatedAiTaskCandidateStatesArgs<ExtArgs>
+  slackConnectionsInstalled?: boolean | Prisma.User$slackConnectionsInstalledArgs<ExtArgs>
+  slackImports?: boolean | Prisma.User$slackImportsArgs<ExtArgs>
   _count?: boolean | Prisma.UserCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type UserIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -881,6 +1129,8 @@ export type $UserPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs =
     assignedTasks: Prisma.$KanbanTaskPayload<ExtArgs>[]
     projectInvitationsSent: Prisma.$ProjectInvitationPayload<ExtArgs>[]
     updatedAiTaskCandidateStates: Prisma.$AiTaskCandidateStatePayload<ExtArgs>[]
+    slackConnectionsInstalled: Prisma.$SlackConnectionPayload<ExtArgs>[]
+    slackImports: Prisma.$SlackImportPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     /**
@@ -1290,6 +1540,8 @@ export interface Prisma__UserClient<T, Null = never, ExtArgs extends runtime.Typ
   assignedTasks<T extends Prisma.User$assignedTasksArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$assignedTasksArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$KanbanTaskPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   projectInvitationsSent<T extends Prisma.User$projectInvitationsSentArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$projectInvitationsSentArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProjectInvitationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   updatedAiTaskCandidateStates<T extends Prisma.User$updatedAiTaskCandidateStatesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$updatedAiTaskCandidateStatesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$AiTaskCandidateStatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  slackConnectionsInstalled<T extends Prisma.User$slackConnectionsInstalledArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$slackConnectionsInstalledArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SlackConnectionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  slackImports<T extends Prisma.User$slackImportsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.User$slackImportsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SlackImportPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1834,6 +2086,54 @@ export type User$updatedAiTaskCandidateStatesArgs<ExtArgs extends runtime.Types.
   take?: number
   skip?: number
   distinct?: Prisma.AiTaskCandidateStateScalarFieldEnum | Prisma.AiTaskCandidateStateScalarFieldEnum[]
+}
+
+/**
+ * User.slackConnectionsInstalled
+ */
+export type User$slackConnectionsInstalledArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SlackConnection
+   */
+  select?: Prisma.SlackConnectionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SlackConnection
+   */
+  omit?: Prisma.SlackConnectionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SlackConnectionInclude<ExtArgs> | null
+  where?: Prisma.SlackConnectionWhereInput
+  orderBy?: Prisma.SlackConnectionOrderByWithRelationInput | Prisma.SlackConnectionOrderByWithRelationInput[]
+  cursor?: Prisma.SlackConnectionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SlackConnectionScalarFieldEnum | Prisma.SlackConnectionScalarFieldEnum[]
+}
+
+/**
+ * User.slackImports
+ */
+export type User$slackImportsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SlackImport
+   */
+  select?: Prisma.SlackImportSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SlackImport
+   */
+  omit?: Prisma.SlackImportOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SlackImportInclude<ExtArgs> | null
+  where?: Prisma.SlackImportWhereInput
+  orderBy?: Prisma.SlackImportOrderByWithRelationInput | Prisma.SlackImportOrderByWithRelationInput[]
+  cursor?: Prisma.SlackImportWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SlackImportScalarFieldEnum | Prisma.SlackImportScalarFieldEnum[]
 }
 
 /**

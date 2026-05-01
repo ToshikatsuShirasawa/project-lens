@@ -61,6 +61,9 @@ export const ModelName = {
   KanbanTask: 'KanbanTask',
   WorkReport: 'WorkReport',
   ProjectInput: 'ProjectInput',
+  SlackConnection: 'SlackConnection',
+  SlackImport: 'SlackImport',
+  SlackMessage: 'SlackMessage',
   AiTaskCandidateEvent: 'AiTaskCandidateEvent',
   AiTaskCandidateState: 'AiTaskCandidateState'
 } as const
@@ -220,6 +223,61 @@ export const ProjectInputScalarFieldEnum = {
 } as const
 
 export type ProjectInputScalarFieldEnum = (typeof ProjectInputScalarFieldEnum)[keyof typeof ProjectInputScalarFieldEnum]
+
+
+export const SlackConnectionScalarFieldEnum = {
+  id: 'id',
+  organizationId: 'organizationId',
+  teamId: 'teamId',
+  teamName: 'teamName',
+  botUserId: 'botUserId',
+  botTokenEncrypted: 'botTokenEncrypted',
+  installedByUserId: 'installedByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SlackConnectionScalarFieldEnum = (typeof SlackConnectionScalarFieldEnum)[keyof typeof SlackConnectionScalarFieldEnum]
+
+
+export const SlackImportScalarFieldEnum = {
+  id: 'id',
+  projectId: 'projectId',
+  connectionId: 'connectionId',
+  channelId: 'channelId',
+  channelName: 'channelName',
+  rangePreset: 'rangePreset',
+  oldestTs: 'oldestTs',
+  latestTs: 'latestTs',
+  messageCount: 'messageCount',
+  status: 'status',
+  errorMessage: 'errorMessage',
+  projectInputId: 'projectInputId',
+  importedByUserId: 'importedByUserId',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt'
+} as const
+
+export type SlackImportScalarFieldEnum = (typeof SlackImportScalarFieldEnum)[keyof typeof SlackImportScalarFieldEnum]
+
+
+export const SlackMessageScalarFieldEnum = {
+  id: 'id',
+  connectionId: 'connectionId',
+  projectId: 'projectId',
+  importId: 'importId',
+  channelId: 'channelId',
+  channelName: 'channelName',
+  messageTs: 'messageTs',
+  threadTs: 'threadTs',
+  userId: 'userId',
+  userName: 'userName',
+  text: 'text',
+  permalink: 'permalink',
+  createdAt: 'createdAt'
+} as const
+
+export type SlackMessageScalarFieldEnum = (typeof SlackMessageScalarFieldEnum)[keyof typeof SlackMessageScalarFieldEnum]
 
 
 export const AiTaskCandidateEventScalarFieldEnum = {

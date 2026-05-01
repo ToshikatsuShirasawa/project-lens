@@ -82,3 +82,21 @@ export const ProjectInputType = {
 } as const
 
 export type ProjectInputType = (typeof ProjectInputType)[keyof typeof ProjectInputType]
+
+
+export const SlackImportRangePreset = {
+  LAST_24_HOURS: 'LAST_24_HOURS',
+  LAST_3_DAYS: 'LAST_3_DAYS',
+  LAST_7_DAYS: 'LAST_7_DAYS'
+} as const
+
+export type SlackImportRangePreset = (typeof SlackImportRangePreset)[keyof typeof SlackImportRangePreset]
+
+
+export const SlackImportStatus = {
+  RUNNING: 'RUNNING',
+  SUCCESS: 'SUCCESS',
+  FAILED: 'FAILED'
+} as const
+
+export type SlackImportStatus = (typeof SlackImportStatus)[keyof typeof SlackImportStatus]

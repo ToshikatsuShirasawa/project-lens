@@ -227,6 +227,7 @@ export type OrganizationWhereInput = {
   members?: Prisma.OrganizationMemberListRelationFilter
   projects?: Prisma.ProjectListRelationFilter
   projectInvitations?: Prisma.ProjectInvitationListRelationFilter
+  slackConnections?: Prisma.SlackConnectionListRelationFilter
 }
 
 export type OrganizationOrderByWithRelationInput = {
@@ -239,6 +240,7 @@ export type OrganizationOrderByWithRelationInput = {
   members?: Prisma.OrganizationMemberOrderByRelationAggregateInput
   projects?: Prisma.ProjectOrderByRelationAggregateInput
   projectInvitations?: Prisma.ProjectInvitationOrderByRelationAggregateInput
+  slackConnections?: Prisma.SlackConnectionOrderByRelationAggregateInput
 }
 
 export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
@@ -254,6 +256,7 @@ export type OrganizationWhereUniqueInput = Prisma.AtLeast<{
   members?: Prisma.OrganizationMemberListRelationFilter
   projects?: Prisma.ProjectListRelationFilter
   projectInvitations?: Prisma.ProjectInvitationListRelationFilter
+  slackConnections?: Prisma.SlackConnectionListRelationFilter
 }, "id" | "slug">
 
 export type OrganizationOrderByWithAggregationInput = {
@@ -292,6 +295,7 @@ export type OrganizationCreateInput = {
   members?: Prisma.OrganizationMemberCreateNestedManyWithoutOrganizationInput
   projects?: Prisma.ProjectCreateNestedManyWithoutOrganizationInput
   projectInvitations?: Prisma.ProjectInvitationCreateNestedManyWithoutOrganizationInput
+  slackConnections?: Prisma.SlackConnectionCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateInput = {
@@ -304,6 +308,7 @@ export type OrganizationUncheckedCreateInput = {
   members?: Prisma.OrganizationMemberUncheckedCreateNestedManyWithoutOrganizationInput
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutOrganizationInput
   projectInvitations?: Prisma.ProjectInvitationUncheckedCreateNestedManyWithoutOrganizationInput
+  slackConnections?: Prisma.SlackConnectionUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUpdateInput = {
@@ -316,6 +321,7 @@ export type OrganizationUpdateInput = {
   members?: Prisma.OrganizationMemberUpdateManyWithoutOrganizationNestedInput
   projects?: Prisma.ProjectUpdateManyWithoutOrganizationNestedInput
   projectInvitations?: Prisma.ProjectInvitationUpdateManyWithoutOrganizationNestedInput
+  slackConnections?: Prisma.SlackConnectionUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateInput = {
@@ -328,6 +334,7 @@ export type OrganizationUncheckedUpdateInput = {
   members?: Prisma.OrganizationMemberUncheckedUpdateManyWithoutOrganizationNestedInput
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutOrganizationNestedInput
   projectInvitations?: Prisma.ProjectInvitationUncheckedUpdateManyWithoutOrganizationNestedInput
+  slackConnections?: Prisma.SlackConnectionUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateManyInput = {
@@ -447,6 +454,20 @@ export type OrganizationUpdateOneRequiredWithoutProjectInvitationsNestedInput = 
   update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutProjectInvitationsInput, Prisma.OrganizationUpdateWithoutProjectInvitationsInput>, Prisma.OrganizationUncheckedUpdateWithoutProjectInvitationsInput>
 }
 
+export type OrganizationCreateNestedOneWithoutSlackConnectionsInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutSlackConnectionsInput, Prisma.OrganizationUncheckedCreateWithoutSlackConnectionsInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutSlackConnectionsInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+}
+
+export type OrganizationUpdateOneRequiredWithoutSlackConnectionsNestedInput = {
+  create?: Prisma.XOR<Prisma.OrganizationCreateWithoutSlackConnectionsInput, Prisma.OrganizationUncheckedCreateWithoutSlackConnectionsInput>
+  connectOrCreate?: Prisma.OrganizationCreateOrConnectWithoutSlackConnectionsInput
+  upsert?: Prisma.OrganizationUpsertWithoutSlackConnectionsInput
+  connect?: Prisma.OrganizationWhereUniqueInput
+  update?: Prisma.XOR<Prisma.XOR<Prisma.OrganizationUpdateToOneWithWhereWithoutSlackConnectionsInput, Prisma.OrganizationUpdateWithoutSlackConnectionsInput>, Prisma.OrganizationUncheckedUpdateWithoutSlackConnectionsInput>
+}
+
 export type OrganizationCreateWithoutMembersInput = {
   id?: string
   name: string
@@ -456,6 +477,7 @@ export type OrganizationCreateWithoutMembersInput = {
   updatedAt?: Date | string
   projects?: Prisma.ProjectCreateNestedManyWithoutOrganizationInput
   projectInvitations?: Prisma.ProjectInvitationCreateNestedManyWithoutOrganizationInput
+  slackConnections?: Prisma.SlackConnectionCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutMembersInput = {
@@ -467,6 +489,7 @@ export type OrganizationUncheckedCreateWithoutMembersInput = {
   updatedAt?: Date | string
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutOrganizationInput
   projectInvitations?: Prisma.ProjectInvitationUncheckedCreateNestedManyWithoutOrganizationInput
+  slackConnections?: Prisma.SlackConnectionUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutMembersInput = {
@@ -494,6 +517,7 @@ export type OrganizationUpdateWithoutMembersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   projects?: Prisma.ProjectUpdateManyWithoutOrganizationNestedInput
   projectInvitations?: Prisma.ProjectInvitationUpdateManyWithoutOrganizationNestedInput
+  slackConnections?: Prisma.SlackConnectionUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutMembersInput = {
@@ -505,6 +529,7 @@ export type OrganizationUncheckedUpdateWithoutMembersInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutOrganizationNestedInput
   projectInvitations?: Prisma.ProjectInvitationUncheckedUpdateManyWithoutOrganizationNestedInput
+  slackConnections?: Prisma.SlackConnectionUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutProjectsInput = {
@@ -516,6 +541,7 @@ export type OrganizationCreateWithoutProjectsInput = {
   updatedAt?: Date | string
   members?: Prisma.OrganizationMemberCreateNestedManyWithoutOrganizationInput
   projectInvitations?: Prisma.ProjectInvitationCreateNestedManyWithoutOrganizationInput
+  slackConnections?: Prisma.SlackConnectionCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutProjectsInput = {
@@ -527,6 +553,7 @@ export type OrganizationUncheckedCreateWithoutProjectsInput = {
   updatedAt?: Date | string
   members?: Prisma.OrganizationMemberUncheckedCreateNestedManyWithoutOrganizationInput
   projectInvitations?: Prisma.ProjectInvitationUncheckedCreateNestedManyWithoutOrganizationInput
+  slackConnections?: Prisma.SlackConnectionUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutProjectsInput = {
@@ -554,6 +581,7 @@ export type OrganizationUpdateWithoutProjectsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.OrganizationMemberUpdateManyWithoutOrganizationNestedInput
   projectInvitations?: Prisma.ProjectInvitationUpdateManyWithoutOrganizationNestedInput
+  slackConnections?: Prisma.SlackConnectionUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutProjectsInput = {
@@ -565,6 +593,7 @@ export type OrganizationUncheckedUpdateWithoutProjectsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.OrganizationMemberUncheckedUpdateManyWithoutOrganizationNestedInput
   projectInvitations?: Prisma.ProjectInvitationUncheckedUpdateManyWithoutOrganizationNestedInput
+  slackConnections?: Prisma.SlackConnectionUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationCreateWithoutProjectInvitationsInput = {
@@ -576,6 +605,7 @@ export type OrganizationCreateWithoutProjectInvitationsInput = {
   updatedAt?: Date | string
   members?: Prisma.OrganizationMemberCreateNestedManyWithoutOrganizationInput
   projects?: Prisma.ProjectCreateNestedManyWithoutOrganizationInput
+  slackConnections?: Prisma.SlackConnectionCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationUncheckedCreateWithoutProjectInvitationsInput = {
@@ -587,6 +617,7 @@ export type OrganizationUncheckedCreateWithoutProjectInvitationsInput = {
   updatedAt?: Date | string
   members?: Prisma.OrganizationMemberUncheckedCreateNestedManyWithoutOrganizationInput
   projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutOrganizationInput
+  slackConnections?: Prisma.SlackConnectionUncheckedCreateNestedManyWithoutOrganizationInput
 }
 
 export type OrganizationCreateOrConnectWithoutProjectInvitationsInput = {
@@ -614,6 +645,7 @@ export type OrganizationUpdateWithoutProjectInvitationsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.OrganizationMemberUpdateManyWithoutOrganizationNestedInput
   projects?: Prisma.ProjectUpdateManyWithoutOrganizationNestedInput
+  slackConnections?: Prisma.SlackConnectionUpdateManyWithoutOrganizationNestedInput
 }
 
 export type OrganizationUncheckedUpdateWithoutProjectInvitationsInput = {
@@ -625,6 +657,71 @@ export type OrganizationUncheckedUpdateWithoutProjectInvitationsInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   members?: Prisma.OrganizationMemberUncheckedUpdateManyWithoutOrganizationNestedInput
   projects?: Prisma.ProjectUncheckedUpdateManyWithoutOrganizationNestedInput
+  slackConnections?: Prisma.SlackConnectionUncheckedUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationCreateWithoutSlackConnectionsInput = {
+  id?: string
+  name: string
+  slug?: string | null
+  projectLimit?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.OrganizationMemberCreateNestedManyWithoutOrganizationInput
+  projects?: Prisma.ProjectCreateNestedManyWithoutOrganizationInput
+  projectInvitations?: Prisma.ProjectInvitationCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationUncheckedCreateWithoutSlackConnectionsInput = {
+  id?: string
+  name: string
+  slug?: string | null
+  projectLimit?: number | null
+  createdAt?: Date | string
+  updatedAt?: Date | string
+  members?: Prisma.OrganizationMemberUncheckedCreateNestedManyWithoutOrganizationInput
+  projects?: Prisma.ProjectUncheckedCreateNestedManyWithoutOrganizationInput
+  projectInvitations?: Prisma.ProjectInvitationUncheckedCreateNestedManyWithoutOrganizationInput
+}
+
+export type OrganizationCreateOrConnectWithoutSlackConnectionsInput = {
+  where: Prisma.OrganizationWhereUniqueInput
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutSlackConnectionsInput, Prisma.OrganizationUncheckedCreateWithoutSlackConnectionsInput>
+}
+
+export type OrganizationUpsertWithoutSlackConnectionsInput = {
+  update: Prisma.XOR<Prisma.OrganizationUpdateWithoutSlackConnectionsInput, Prisma.OrganizationUncheckedUpdateWithoutSlackConnectionsInput>
+  create: Prisma.XOR<Prisma.OrganizationCreateWithoutSlackConnectionsInput, Prisma.OrganizationUncheckedCreateWithoutSlackConnectionsInput>
+  where?: Prisma.OrganizationWhereInput
+}
+
+export type OrganizationUpdateToOneWithWhereWithoutSlackConnectionsInput = {
+  where?: Prisma.OrganizationWhereInput
+  data: Prisma.XOR<Prisma.OrganizationUpdateWithoutSlackConnectionsInput, Prisma.OrganizationUncheckedUpdateWithoutSlackConnectionsInput>
+}
+
+export type OrganizationUpdateWithoutSlackConnectionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  projectLimit?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.OrganizationMemberUpdateManyWithoutOrganizationNestedInput
+  projects?: Prisma.ProjectUpdateManyWithoutOrganizationNestedInput
+  projectInvitations?: Prisma.ProjectInvitationUpdateManyWithoutOrganizationNestedInput
+}
+
+export type OrganizationUncheckedUpdateWithoutSlackConnectionsInput = {
+  id?: Prisma.StringFieldUpdateOperationsInput | string
+  name?: Prisma.StringFieldUpdateOperationsInput | string
+  slug?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  projectLimit?: Prisma.NullableIntFieldUpdateOperationsInput | number | null
+  createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
+  members?: Prisma.OrganizationMemberUncheckedUpdateManyWithoutOrganizationNestedInput
+  projects?: Prisma.ProjectUncheckedUpdateManyWithoutOrganizationNestedInput
+  projectInvitations?: Prisma.ProjectInvitationUncheckedUpdateManyWithoutOrganizationNestedInput
 }
 
 
@@ -636,12 +733,14 @@ export type OrganizationCountOutputType = {
   members: number
   projects: number
   projectInvitations: number
+  slackConnections: number
 }
 
 export type OrganizationCountOutputTypeSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   members?: boolean | OrganizationCountOutputTypeCountMembersArgs
   projects?: boolean | OrganizationCountOutputTypeCountProjectsArgs
   projectInvitations?: boolean | OrganizationCountOutputTypeCountProjectInvitationsArgs
+  slackConnections?: boolean | OrganizationCountOutputTypeCountSlackConnectionsArgs
 }
 
 /**
@@ -675,6 +774,13 @@ export type OrganizationCountOutputTypeCountProjectInvitationsArgs<ExtArgs exten
   where?: Prisma.ProjectInvitationWhereInput
 }
 
+/**
+ * OrganizationCountOutputType without action
+ */
+export type OrganizationCountOutputTypeCountSlackConnectionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  where?: Prisma.SlackConnectionWhereInput
+}
+
 
 export type OrganizationSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
@@ -686,6 +792,7 @@ export type OrganizationSelect<ExtArgs extends runtime.Types.Extensions.Internal
   members?: boolean | Prisma.Organization$membersArgs<ExtArgs>
   projects?: boolean | Prisma.Organization$projectsArgs<ExtArgs>
   projectInvitations?: boolean | Prisma.Organization$projectInvitationsArgs<ExtArgs>
+  slackConnections?: boolean | Prisma.Organization$slackConnectionsArgs<ExtArgs>
   _count?: boolean | Prisma.OrganizationCountOutputTypeDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["organization"]>
 
@@ -721,6 +828,7 @@ export type OrganizationInclude<ExtArgs extends runtime.Types.Extensions.Interna
   members?: boolean | Prisma.Organization$membersArgs<ExtArgs>
   projects?: boolean | Prisma.Organization$projectsArgs<ExtArgs>
   projectInvitations?: boolean | Prisma.Organization$projectInvitationsArgs<ExtArgs>
+  slackConnections?: boolean | Prisma.Organization$slackConnectionsArgs<ExtArgs>
   _count?: boolean | Prisma.OrganizationCountOutputTypeDefaultArgs<ExtArgs>
 }
 export type OrganizationIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {}
@@ -732,6 +840,7 @@ export type $OrganizationPayload<ExtArgs extends runtime.Types.Extensions.Intern
     members: Prisma.$OrganizationMemberPayload<ExtArgs>[]
     projects: Prisma.$ProjectPayload<ExtArgs>[]
     projectInvitations: Prisma.$ProjectInvitationPayload<ExtArgs>[]
+    slackConnections: Prisma.$SlackConnectionPayload<ExtArgs>[]
   }
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
@@ -1140,6 +1249,7 @@ export interface Prisma__OrganizationClient<T, Null = never, ExtArgs extends run
   members<T extends Prisma.Organization$membersArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$membersArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$OrganizationMemberPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   projects<T extends Prisma.Organization$projectsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$projectsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   projectInvitations<T extends Prisma.Organization$projectInvitationsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$projectInvitationsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$ProjectInvitationPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+  slackConnections<T extends Prisma.Organization$slackConnectionsArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.Organization$slackConnectionsArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SlackConnectionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
   /**
    * Attaches callbacks for the resolution and/or rejection of the Promise.
    * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1637,6 +1747,30 @@ export type Organization$projectInvitationsArgs<ExtArgs extends runtime.Types.Ex
   take?: number
   skip?: number
   distinct?: Prisma.ProjectInvitationScalarFieldEnum | Prisma.ProjectInvitationScalarFieldEnum[]
+}
+
+/**
+ * Organization.slackConnections
+ */
+export type Organization$slackConnectionsArgs<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
+  /**
+   * Select specific fields to fetch from the SlackConnection
+   */
+  select?: Prisma.SlackConnectionSelect<ExtArgs> | null
+  /**
+   * Omit specific fields from the SlackConnection
+   */
+  omit?: Prisma.SlackConnectionOmit<ExtArgs> | null
+  /**
+   * Choose, which related nodes to fetch as well
+   */
+  include?: Prisma.SlackConnectionInclude<ExtArgs> | null
+  where?: Prisma.SlackConnectionWhereInput
+  orderBy?: Prisma.SlackConnectionOrderByWithRelationInput | Prisma.SlackConnectionOrderByWithRelationInput[]
+  cursor?: Prisma.SlackConnectionWhereUniqueInput
+  take?: number
+  skip?: number
+  distinct?: Prisma.SlackConnectionScalarFieldEnum | Prisma.SlackConnectionScalarFieldEnum[]
 }
 
 /**

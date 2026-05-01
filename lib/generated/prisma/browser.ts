@@ -68,6 +68,21 @@ export type WorkReport = Prisma.WorkReportModel
  */
 export type ProjectInput = Prisma.ProjectInputModel
 /**
+ * Model SlackConnection
+ * Slack workspace接続情報。Bot token は暗号化済み文字列のみ保存する
+ */
+export type SlackConnection = Prisma.SlackConnectionModel
+/**
+ * Model SlackImport
+ * project単位のSlack手動取り込み履歴
+ */
+export type SlackImport = Prisma.SlackImportModel
+/**
+ * Model SlackMessage
+ * Slackメッセージ単位の保存。messageTsで重複取り込みを防ぐ
+ */
+export type SlackMessage = Prisma.SlackMessageModel
+/**
  * Model AiTaskCandidateEvent
  * AI候補の表示・承認・あとで・却下の最小ログ（クライアント送信・失敗時もUIは継続）
  */

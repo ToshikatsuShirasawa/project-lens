@@ -5,9 +5,10 @@ import type { TaskCandidate } from '@/lib/types'
 export type AiTaskCandidateEventTypeApi = 'shown' | 'accepted' | 'snoozed' | 'dismissed'
 
 const SOURCE_LABEL: Record<TaskCandidate['source'], string> = {
-  slack: 'Slack',
+  slack: 'Slackメモ',
   report: '作業報告',
   meeting: '議事録',
+  memo: 'メモ',
   ai: 'AI検出',
 }
 

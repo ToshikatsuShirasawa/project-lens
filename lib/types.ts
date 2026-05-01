@@ -3,7 +3,7 @@
 // ============================================================
 
 export type UrgencyLevel = 'critical' | 'warning' | 'normal'
-export type SourceType = 'slack' | 'report' | 'meeting' | 'ai'
+export type SourceType = 'slack' | 'report' | 'meeting' | 'memo' | 'ai'
 export type SeverityLevel = 'high' | 'medium' | 'low'
 export type EffortLevel = 'low' | 'medium' | 'high'
 
@@ -306,6 +306,8 @@ export interface TaskCandidate {
   mergedCount?: number
   /** 統合前の各候補の displayTitle ?? title 一覧 */
   mergedTitles?: string[]
+  /** 統合前の各候補の source 一覧 */
+  mergedSources?: SourceType[]
 }
 
 // ============================================================

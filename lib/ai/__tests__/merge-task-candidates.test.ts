@@ -133,6 +133,20 @@ describe('mergeTaskCandidates: 重複統合', () => {
     expect(result[0].mergedCount).toBe(2)
   })
 
+  it('作業報告由来と自由テキスト由来の類似候補を横断して統合する', () => {
+    const c1 = makeCandidate({ id: 'a', title: 'API仕様確認', displayTitle: 'API仕様確認', source: 'report' })
+    const c2 = makeCandidate({
+      id: 'b',
+      title: 'API仕様ちょっと怪しいので確認必要かも',
+      displayTitle: 'API仕様を確認する',
+      source: 'slack',
+    })
+    const result = mergeTaskCandidates([c1, c2])
+    expect(result).toHaveLength(1)
+    expect(result[0].mergedCount).toBe(2)
+    expect(result[0].mergedSources).toEqual(expect.arrayContaining(['report', 'slack']))
+  })
+
   it('語順違いでも文字が十分近い候補を統合する', () => {
     const c1 = makeCandidate({ id: 'a', title: 'API修正対応', displayTitle: 'API修正対応' })
     const c2 = makeCandidate({ id: 'b', title: 'API対応修正', displayTitle: 'API対応修正' })

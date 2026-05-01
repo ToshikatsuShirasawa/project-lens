@@ -23,6 +23,56 @@ const ABSTRACT_AUGMENT: Record<string, string> = {
   準備: '準備事項の確認',
 }
 
+function compactSubject(subject: string): string {
+  return subject
+    .replace(/^(?:今日中に|明日までに|今週中に|来週までに|あとで|後で|一旦)\s*/, '')
+    .replace(/[、,。！？!?]+$/g, '')
+    .replace(/(も|が|は|を|の|に|で)$/, '')
+    .trim()
+}
+
+function normalizeConversationalTask(raw: string): string | null {
+  const withoutSpeaker = raw.replace(/^(?:自分|[一-龠ぁ-んァ-ヶA-Za-z0-9_-]{1,12})[：:]\s*/, '').trim()
+
+  const laterConfirm = withoutSpeaker.match(/(?:あとで|後で)(.+?)確認(?:します|する|したい)?[。！？!?]*$/)
+  if (laterConfirm) {
+    const subject = compactSubject(laterConfirm[1])
+    return subject ? `${subject}確認を行う` : '追加確認を行う'
+  }
+
+  const confirm = withoutSpeaker.match(/^(.+?)(?:ちょっと)?(?:怪しい|不明|未確定|不足).*(?:確認必要|確認が必要|要確認|確認したい|確認します|確認する|確認)(?:かも)?[。！？!?]*$/)
+  if (confirm) {
+    const subject = compactSubject(confirm[1])
+    if (subject) return `${subject}を確認する`
+  }
+
+  const needConfirm = withoutSpeaker.match(/^(.+?)(?:確認必要|確認が必要|要確認)(?:かも)?[。！？!?]*$/)
+  if (needConfirm) {
+    const subject = compactSubject(needConfirm[1])
+    if (subject) return `${subject}を確認する`
+  }
+
+  const fixWant = withoutSpeaker.match(/^(.+?)(?:も)?(?:変|おかしい|怪しい).*(?:修正したい|直したい|修正します|直します)[。！？!?]*$/)
+  if (fixWant) {
+    const subject = compactSubject(fixWant[1])
+    if (subject) return `${subject}を修正する`
+  }
+
+  const fixQuestion = withoutSpeaker.match(/^(.+?)(?:直せそう|修正できそう|直す必要|修正が必要)(?:ですか)?[？?]?[。！？!?]*$/)
+  if (fixQuestion) {
+    const subject = compactSubject(fixQuestion[1])
+    if (subject) return `${subject}を修正する`
+  }
+
+  const fixPlain = withoutSpeaker.match(/^(.+?)(?:を)?(?:修正したい|直したい)[。！？!?]*$/)
+  if (fixPlain) {
+    const subject = compactSubject(fixPlain[1])
+    if (subject) return `${subject}を修正する`
+  }
+
+  return null
+}
+
 /**
  * 抽出文をそのまま使うのではなく、UIに表示しやすい自然なタイトルに整形する。
  *
@@ -35,6 +85,10 @@ export function normalizeTaskCandidateTitle(raw: string): string {
 
   // 1. 先頭プレフィクス除去 ("TODO:", "要確認:" etc.)
   s = s.replace(/^(?:TODO|FIXME|要確認|要対応)[:\s]+/i, '')
+  s = s.replace(/^(?:自分|[一-龠ぁ-んァ-ヶA-Za-z0-9_-]{1,12})[：:]\s*/, '')
+
+  const conversational = normalizeConversationalTask(s)
+  if (conversational) return conversational
 
   // 2. "する必要があります" / "が必要です" 系の末尾除去
   s = s.replace(/する必要(が)?(あります|ありました|あった|ある|です|でした)(が)?$/, '')

@@ -86,9 +86,10 @@ function toDateInputValue(s: string | undefined): string {
   return ''
 }
 
-function toCandidateStateSourceType(source: TaskCandidate['source']): 'WORK_REPORT' | 'SLACK' | 'MEETING' {
+function toCandidateStateSourceType(source: TaskCandidate['source']): 'WORK_REPORT' | 'SLACK' | 'MEETING' | 'MEMO' {
   if (source === 'slack') return 'SLACK'
   if (source === 'meeting') return 'MEETING'
+  if (source === 'memo') return 'MEMO'
   return 'WORK_REPORT'
 }
 
@@ -106,7 +107,7 @@ function postCandidateState(
   candidateTitle: string,
   status: 'HELD' | 'DISMISSED' | 'ADDED',
   createdTaskId?: string | null,
-  sourceType: 'WORK_REPORT' | 'SLACK' | 'MEETING' = 'WORK_REPORT'
+  sourceType: 'WORK_REPORT' | 'SLACK' | 'MEETING' | 'MEMO' = 'WORK_REPORT'
 ): void {
   void fetch(`/api/projects/${encodeURIComponent(projectId)}/task-candidate-states`, {
     method: 'POST',

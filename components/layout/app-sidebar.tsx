@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   Kanban,
   FileText,
+  Inbox,
   Calendar,
   Settings,
   ChevronDown,
@@ -46,6 +47,7 @@ const getNavigation = (projectId: string, organizationId: string | null) => {
   return [
     { name: 'ダッシュボード', href: `${base}/dashboard`, segment: 'dashboard', icon: LayoutDashboard },
     { name: 'カンバン', href: `${base}/kanban`, segment: 'kanban', icon: Kanban },
+    { name: '議事録・メモ', href: `${base}/inputs`, segment: 'inputs', icon: Inbox },
     { name: '作業報告', href: `${base}/reports`, segment: 'reports', icon: FileText },
     { name: 'ミーティング', href: `${base}/meetings`, segment: 'meetings', icon: Calendar },
     { name: '設定', href: `${base}/settings`, segment: 'settings', icon: Settings },

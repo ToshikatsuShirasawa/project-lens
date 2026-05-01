@@ -18,9 +18,10 @@ import type { ProjectInputTypeApi } from '@/lib/types'
 
 interface ProjectInputFormProps {
   projectId: string
+  onCreated?: () => void
 }
 
-export function ProjectInputForm({ projectId }: ProjectInputFormProps) {
+export function ProjectInputForm({ projectId, onCreated }: ProjectInputFormProps) {
   const { toast } = useToast()
   const [inputType, setInputType] = useState<ProjectInputTypeApi>('MEETING')
   const [title, setTitle] = useState('')
@@ -61,6 +62,7 @@ export function ProjectInputForm({ projectId }: ProjectInputFormProps) {
       setTimeout(() => setSubmitted(false), 3000)
       toast({ title: '登録しました', description: 'AIタスク候補を更新します' })
       window.dispatchEvent(new CustomEvent('projectlens:reports-updated', { detail: { projectId } }))
+      onCreated?.()
     } catch {
       toast({ title: 'エラー', description: 'ネットワークエラーが発生しました', variant: 'destructive' })
     } finally {
@@ -73,10 +75,11 @@ export function ProjectInputForm({ projectId }: ProjectInputFormProps) {
       <CardHeader className="pb-4">
         <CardTitle className="text-lg flex items-center gap-2">
           <Sparkles className="h-4 w-4 text-primary" />
-          議事録・Slackメモ
+          メモを登録
         </CardTitle>
         <p className="text-sm text-muted-foreground">
-          Slackのやり取りや会議メモをそのまま貼り付けると、AIがタスク候補を抽出します。
+          議事録、会議メモ、打ち合わせメモなどをそのまま貼り付けてください。
+          AIがタスク候補を抽出します。
         </p>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -89,7 +92,7 @@ export function ProjectInputForm({ projectId }: ProjectInputFormProps) {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="MEETING">議事録</SelectItem>
-                <SelectItem value="SLACK">Slack</SelectItem>
+                <SelectItem value="SLACK">Slackメモ</SelectItem>
                 <SelectItem value="MEMO">メモ</SelectItem>
               </SelectContent>
             </Select>
@@ -108,7 +111,7 @@ export function ProjectInputForm({ projectId }: ProjectInputFormProps) {
           <Textarea
             value={body}
             onChange={(e) => setBody(e.target.value)}
-            placeholder="Slackログや議事録をそのまま貼り付けてください"
+            placeholder="議事録やメモをそのまま貼り付けてください"
             rows={7}
             className="resize-y text-sm"
           />

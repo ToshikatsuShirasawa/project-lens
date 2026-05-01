@@ -21,6 +21,30 @@ describe('ユーザー仕様: 候補タイトルの自然化', () => {
   })
 })
 
+describe('Slack風テキスト: 候補タイトルの自然化', () => {
+  it('発言者名と確認系の口語表現を除去する', () => {
+    expect(normalizeTaskCandidateTitle('田中：API仕様ちょっと怪しいので確認必要かも')).toBe(
+      'API仕様を確認する',
+    )
+  })
+
+  it('修正したい表現をタスク表現に寄せる', () => {
+    expect(normalizeTaskCandidateTitle('佐藤：ログも変なので修正したい')).toBe('ログを修正する')
+  })
+
+  it('疑問形の直せそうを修正タスクに寄せる', () => {
+    expect(normalizeTaskCandidateTitle('山本：明日までにエラー画面直せそう？')).toBe(
+      'エラー画面を修正する',
+    )
+  })
+
+  it('あとで追加確認しますを確認タスクに寄せる', () => {
+    expect(normalizeTaskCandidateTitle('自分：一旦修正入れて、あとで追加確認します')).toBe(
+      '追加確認を行う',
+    )
+  })
+})
+
 // ─── 抽象語のみ → 補正 ────────────────────────────────────────
 
 describe('ユーザー仕様: 抽象タスクの表現改善', () => {

@@ -68,7 +68,8 @@ export type AiTaskCandidateStatus = (typeof AiTaskCandidateStatus)[keyof typeof 
 export const AiTaskCandidateSource = {
   WORK_REPORT: 'WORK_REPORT',
   SLACK: 'SLACK',
-  MEETING: 'MEETING'
+  MEETING: 'MEETING',
+  MEMO: 'MEMO'
 } as const
 
 export type AiTaskCandidateSource = (typeof AiTaskCandidateSource)[keyof typeof AiTaskCandidateSource]

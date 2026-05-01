@@ -19,7 +19,7 @@ interface ProjectStatusCardProps {
   summary: string
   progress: number
   bottleneck?: string
-  bottleneckSource?: "slack" | "report" | "ai" | "meeting"
+  bottleneckSource?: "slack" | "report" | "ai" | "meeting" | "memo"
   bottleneckDelayDays?: number
   nextAction?: string
   nextActionHref?: string
@@ -31,10 +31,11 @@ interface ProjectStatusCardProps {
 }
 
 const sourceLabels: Record<string, string> = {
-  slack: "Slackから検出",
+  slack: "Slackメモから抽出",
   report: "作業報告から生成",
   ai: "AI分析",
   meeting: "議事録から抽出",
+  memo: "メモから抽出",
 }
 
 const urgencyConfig: Record<UrgencyLevel, { label: string; className: string; dotClassName: string }> = {

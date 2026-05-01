@@ -1,5 +1,4 @@
 import { ProjectShell } from '@/components/layout/project-shell'
-import { ProjectInputForm } from '@/components/reports/project-input-form'
 import { WorkReportForm } from '@/components/reports/work-report-form'
 import { RecentReportsPanel } from '@/components/reports/recent-reports-panel'
 
@@ -20,7 +19,6 @@ export default async function ReportsPage({ params }: ReportsPageProps) {
               AIが入力内容を整理し、タスク候補と課題を自動検出します
             </p>
           </div>
-          <ProjectInputForm projectId={projectId} />
           <WorkReportForm projectId={projectId} />
           <RecentReportsPanel projectId={projectId} />
         </div>

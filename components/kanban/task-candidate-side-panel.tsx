@@ -84,10 +84,16 @@ interface TaskCandidateDisplayGroup {
 }
 
 const sourceConfig = {
-  slack: { label: 'Slack', class: 'bg-emerald-100 text-emerald-700' },
+  slack: { label: 'Slackメモ', class: 'bg-emerald-100 text-emerald-700' },
   report: { label: '作業報告', class: 'bg-blue-100 text-blue-700' },
   meeting: { label: '議事録', class: 'bg-purple-100 text-purple-700' },
+  memo: { label: 'メモ', class: 'bg-amber-100 text-amber-700' },
   ai: { label: 'AI検出', class: 'bg-primary/10 text-primary' },
+}
+
+function candidateSourceLabel(candidate: TaskCandidate): string {
+  const sources = candidate.mergedSources?.length ? candidate.mergedSources : [candidate.source]
+  return Array.from(new Set(sources)).map((source) => sourceConfig[source].label).join(' / ')
 }
 
 const priorityLabelConfig = {
@@ -634,7 +640,7 @@ export function TaskCandidateSidePanel({
                                 {priority.label}
                               </Badge>
                               <span className="text-[10px] text-muted-foreground/50">
-                                {src.label}
+                                {candidateSourceLabel(c)}
                               </span>
                             </div>
                           </div>

@@ -12,7 +12,7 @@ interface StatusSummaryCardProps {
   data: ProjectStatus
 }
 
-const sourceLabel = { slack: 'Slack', report: '作業報告', meeting: '議事録', ai: 'AI検出' }
+const sourceLabel = { slack: 'Slackメモ', report: '作業報告', meeting: '議事録', memo: 'メモ', ai: 'AI検出' }
 
 export function StatusSummaryCard({ data }: StatusSummaryCardProps) {
   const {

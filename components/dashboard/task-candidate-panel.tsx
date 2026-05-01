@@ -14,9 +14,10 @@ interface TaskCandidatePanelProps {
 }
 
 const sourceConfig = {
-  slack: { label: 'Slack', class: 'bg-emerald-100 text-emerald-700' },
+  slack: { label: 'Slackメモ', class: 'bg-emerald-100 text-emerald-700' },
   report: { label: '作業報告', class: 'bg-blue-100 text-blue-700' },
   meeting: { label: '議事録', class: 'bg-purple-100 text-purple-700' },
+  memo: { label: 'メモ', class: 'bg-amber-100 text-amber-700' },
   ai: { label: 'AI検出', class: 'bg-primary/10 text-primary' },
 }
 

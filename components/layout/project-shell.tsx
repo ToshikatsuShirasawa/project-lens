@@ -10,7 +10,7 @@ import { setLastVisitedProjectId } from '@/lib/organization/last-visited-project
 import type { ProjectApiRecord, ProjectMember } from '@/lib/types'
 import type { ReactNode } from 'react'
 
-const REDIRECT_SEGMENTS = new Set(['dashboard', 'kanban', 'settings', 'reports', 'meetings'])
+const REDIRECT_SEGMENTS = new Set(['dashboard', 'kanban', 'settings', 'inputs', 'reports', 'meetings'])
 
 interface ProjectShellProps {
   projectId: string

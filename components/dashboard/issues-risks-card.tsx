@@ -3,13 +3,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { AlertCircle, Sparkles, MessageSquare, FileText, BookOpen, ArrowRight, Clock, Calendar, Lightbulb } from "lucide-react"
+import { AlertCircle, Sparkles, MessageSquare, FileText, BookOpen, StickyNote, ArrowRight, Clock, Calendar, Lightbulb } from "lucide-react"
 import Link from "next/link"
 import { cn } from "@/lib/utils"
 
 type Severity = "high" | "medium" | "low"
 type UrgencyLevel = "critical" | "warning" | "normal"
-type Source = "slack" | "report" | "ai" | "meeting"
+type Source = "slack" | "report" | "ai" | "meeting" | "memo"
 
 interface Issue {
   id: string
@@ -41,10 +41,11 @@ const urgencyConfig: Record<UrgencyLevel, { label: string; className: string; do
 }
 
 const sourceConfig: Record<Source, { label: string; icon: typeof MessageSquare }> = {
-  slack: { label: "Slackから検出", icon: MessageSquare },
+  slack: { label: "Slackメモから抽出", icon: MessageSquare },
   report: { label: "作業報告から生成", icon: FileText },
   ai: { label: "AI分析", icon: Sparkles },
   meeting: { label: "議事録から抽出", icon: BookOpen },
+  memo: { label: "メモから抽出", icon: StickyNote },
 }
 
 export function IssuesRisksCard({ issues }: IssuesRisksCardProps) {

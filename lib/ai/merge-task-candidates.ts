@@ -110,6 +110,7 @@ export function mergeTaskCandidates(candidates: TaskCandidate[]): TaskCandidate[
 
     representative.mergedCount = group.length
     representative.mergedTitles = group.map((c) => c.displayTitle ?? c.title)
+    representative.mergedSources = Array.from(new Set(group.map((c) => c.source)))
 
     const unionedReasons = Array.from(
       new Set(group.flatMap((c) => c.extractionReasons ?? []))

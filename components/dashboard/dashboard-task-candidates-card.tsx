@@ -14,16 +14,17 @@ import { toastError, toastSuccess } from '@/lib/operation-toast'
 import type { ProjectInputListResponse, TaskCandidate, WorkReport } from '@/lib/types'
 
 // v0 TaskCandidatesCard のソース型は "ai" を持たないため変換が必要
-type CardAISource = 'slack' | 'report' | 'meeting'
+type CardAISource = 'slack' | 'report' | 'meeting' | 'memo'
 
 function toCardSource(source: string): CardAISource {
-  if (source === 'slack' || source === 'meeting') return source
+  if (source === 'slack' || source === 'meeting' || source === 'memo') return source
   return 'report'
 }
 
-function toCandidateStateSourceType(source: TaskCandidate['source']): 'WORK_REPORT' | 'SLACK' | 'MEETING' {
+function toCandidateStateSourceType(source: TaskCandidate['source']): 'WORK_REPORT' | 'SLACK' | 'MEETING' | 'MEMO' {
   if (source === 'slack') return 'SLACK'
   if (source === 'meeting') return 'MEETING'
+  if (source === 'memo') return 'MEMO'
   return 'WORK_REPORT'
 }
 
@@ -63,7 +64,7 @@ function postCandidateState(
   candidateTitle: string,
   status: 'HELD' | 'DISMISSED' | 'ADDED',
   createdTaskId?: string | null,
-  sourceType: 'WORK_REPORT' | 'SLACK' | 'MEETING' = 'WORK_REPORT'
+  sourceType: 'WORK_REPORT' | 'SLACK' | 'MEETING' | 'MEMO' = 'WORK_REPORT'
 ): void {
   void fetch(`/api/projects/${encodeURIComponent(projectId)}/task-candidate-states`, {
     method: 'POST',
@@ -217,6 +218,7 @@ export function DashboardTaskCandidatesCard({ projectId }: DashboardTaskCandidat
     suggestedAssignee: c.suggestedAssignee,
     suggestedDueDate: c.suggestedDueDate,
     mergedCount: c.mergedCount,
+    mergedSources: c.mergedSources?.map(toCardSource),
   }))
 
   const handleAddToKanban = (id: string) => {

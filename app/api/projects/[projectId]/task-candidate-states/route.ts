@@ -20,6 +20,7 @@ const SOURCE_TYPE_FROM_API: Record<string, AiTaskCandidateSource> = {
   WORK_REPORT: AiTaskCandidateSource.WORK_REPORT,
   SLACK: AiTaskCandidateSource.SLACK,
   MEETING: AiTaskCandidateSource.MEETING,
+  MEMO: AiTaskCandidateSource.MEMO,
 }
 
 export async function GET(_request: Request, context: RouteContext) {

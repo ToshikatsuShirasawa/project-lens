@@ -61,6 +61,7 @@ enum AiTaskCandidateSource {
   WORK_REPORT
   SLACK
   MEETING
+  MEMO
 }
 
 /// 未整理テキスト入力の種類。Slack API 連携前の手動入力もこの区分で保存する

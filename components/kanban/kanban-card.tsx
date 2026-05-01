@@ -24,9 +24,10 @@ interface KanbanCardProps {
 }
 
 const aiOriginLabel = {
-  slack: 'Slack由来',
+  slack: 'Slackメモ由来',
   report: '報告由来',
   meeting: '議事録由来',
+  memo: 'メモ由来',
   ai: 'AI抽出',
 }
 

@@ -79,7 +79,7 @@ export const mockKanbanCandidates: TaskCandidate[] = [
   {
     id: 'c1',
     title: 'API仕様書の確認依頼',
-    reason: 'Slackで「仕様書の確認をお願いします」という発言を検出',
+    reason: 'Slackメモで「仕様書の確認をお願いします」という発言を検出',
     source: 'slack',
     suggestedAssignee: '高橋美咲',
     suggestedDueDate: '4/22',

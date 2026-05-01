@@ -48,6 +48,7 @@ export type ComparativeRecommendationResult = {
 const SOURCE_WEIGHTS: Record<TaskCandidate['source'], number> = {
   slack: 2,
   meeting: 1,
+  memo: 1,
   report: 1,
   ai: 0,
 }
@@ -62,7 +63,7 @@ const SOURCE_WEIGHTS: Record<TaskCandidate['source'], number> = {
 const REASON_LABEL_WEIGHTS: Record<string, number> = {
   期限が近い: 2,
   確認依頼あり: 2,
-  'Slackで確認依頼': 2,
+  'Slackメモで確認依頼': 2,
   決定事項に紐づく: 1,
   担当候補あり: 0,
   言及あり: 1,
@@ -72,7 +73,7 @@ const REASON_LABEL_WEIGHTS: Record<string, number> = {
 const MAX_REASON_SCORE = 2
 
 const REASON_LABEL_GROUPS = {
-  confirmation: ['確認依頼あり', 'Slackで確認依頼'],
+  confirmation: ['確認依頼あり', 'Slackメモで確認依頼'],
   dueSoon: ['期限が近い'],
   decision: ['決定事項に紐づく'],
   assignee: ['担当候補あり'],
@@ -172,7 +173,7 @@ type CandidateSignals = {
 function collectCandidateSignals(candidate: TaskCandidate, labels: Set<string>): CandidateSignals {
   const hasConfirmationSignal =
     labels.has('確認依頼あり') ||
-    labels.has('Slackで確認依頼') ||
+    labels.has('Slackメモで確認依頼') ||
     /確認依頼|お願いします|対応お願い/.test(candidate.reason ?? '')
   const hasDecisionSignal = labels.has('決定事項に紐づく')
   const hasDueDate = hasNonEmpty(candidate.suggestedDueDate)
@@ -299,7 +300,7 @@ export function scoreSpecificityBucket(
   const haystack = buildSpecificityHaystack(candidate, labels)
   const hasConfirmationSignal =
     labels.has('確認依頼あり') ||
-    labels.has('Slackで確認依頼') ||
+    labels.has('Slackメモで確認依頼') ||
     /確認依頼|お願いします|対応お願い/.test(candidate.reason ?? '')
 
   const concreteObject = hasConcreteObjectPattern(haystack)
@@ -360,8 +361,9 @@ function buildRecommendationReason(candidate: TaskCandidate, labels: Set<string>
   if (hasDeadline && hasConfirm) return '期限が近く、確認依頼もあるため候補化しています'
   if (candidate.source === 'slack' && hasConfirm) return '確認依頼があるため候補化しています'
   if (hasDecision) return '決定事項に紐づくため候補化しています'
-  if (candidate.source === 'slack') return 'Slack由来の情報から候補化しています'
+  if (candidate.source === 'slack') return 'Slackメモの内容から候補化しています'
   if (candidate.source === 'meeting') return '議事録の内容に基づき候補化しています'
+  if (candidate.source === 'memo') return 'メモの内容に基づき候補化しています'
   if (candidate.source === 'report') return '作業報告の内容に基づき候補化しています'
   return '複数のシグナルから候補化しています'
 }
@@ -374,7 +376,7 @@ function buildPriorityEvidenceText(score: TaskCandidateScoreResult): string {
   if (score.scoreBreakdown.hasDecisionSignal) parts.push('決定事項に紐づく')
   if (score.scoreBreakdown.hasConcreteTaskSignal) parts.push('具体的な作業内容が見えている')
   if (score.scoreBreakdown.sourceKey === 'slack' && score.scoreBreakdown.source >= 2) {
-    parts.push('Slack由来の明確な依頼')
+    parts.push('Slackメモ由来の明確な依頼')
   }
   if (parts.length === 0) return '根拠が比較的そろっている'
   return parts.slice(0, 2).join('、')

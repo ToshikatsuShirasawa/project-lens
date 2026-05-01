@@ -2,11 +2,13 @@ import type { ProjectInputApiRecord, SourceType, WorkReport } from '@/lib/types'
 
 function sourceFromInputType(inputType: ProjectInputApiRecord['inputType']): SourceType {
   if (inputType === 'SLACK') return 'slack'
+  if (inputType === 'MEMO') return 'memo'
   return 'meeting'
 }
 
 function reasonLabelFromInputType(inputType: ProjectInputApiRecord['inputType']): string {
   if (inputType === 'SLACK') return 'Slackメモ'
+  if (inputType === 'MEMO') return 'メモ'
   return '議事録'
 }
 

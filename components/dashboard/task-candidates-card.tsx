@@ -9,6 +9,7 @@ import {
   MessageSquare,
   FileText,
   BookOpen,
+  StickyNote,
   Plus,
   Clock,
   X,
@@ -22,7 +23,7 @@ import { cn } from "@/lib/utils"
 const IMMEDIATE_TASK_KEYWORDS = ["必要", "修正", "対応", "実装", "期限"]
 const REVIEW_TASK_KEYWORDS = ["確認", "調査", "検討"]
 
-type AISource = "slack" | "report" | "meeting"
+type AISource = "slack" | "report" | "meeting" | "memo"
 type TaskCandidateDisplayGroupId = "immediate" | "review"
 
 interface TaskCandidate {
@@ -33,6 +34,7 @@ interface TaskCandidate {
   suggestedAssignee?: string
   suggestedDueDate?: string
   mergedCount?: number
+  mergedSources?: AISource[]
 }
 
 interface GroupedTaskCandidate {
@@ -59,7 +61,7 @@ const sourceConfig: Record<
   { label: string; icon: typeof MessageSquare; color: string }
 > = {
   slack: {
-    label: "Slackから検出",
+    label: "Slackメモから抽出",
     icon: MessageSquare,
     color: "text-blue-400",
   },
@@ -69,6 +71,12 @@ const sourceConfig: Record<
     color: "text-green-400",
   },
   meeting: { label: "議事録から抽出", icon: BookOpen, color: "text-amber-400" },
+  memo: { label: "メモから抽出", icon: StickyNote, color: "text-orange-400" },
+}
+
+function sourceSummary(candidate: TaskCandidate): string {
+  const sources = candidate.mergedSources?.length ? candidate.mergedSources : [candidate.source]
+  return Array.from(new Set(sources)).map((source) => sourceConfig[source].label.replace(/から.*$/, '')).join(" / ")
 }
 
 function classifyTaskCandidateByTitle(
@@ -231,7 +239,7 @@ export function TaskCandidatesCard({
                     <div className="flex items-center gap-1.5 mb-3">
                       <SourceIcon className="h-3 w-3 shrink-0 text-muted-foreground/40" />
                       <span className="text-[10px] text-muted-foreground/50">
-                        {sourceInfo.label}
+                        由来: {sourceSummary(candidate)}
                       </span>
                     </div>
 

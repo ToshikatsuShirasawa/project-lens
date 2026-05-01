@@ -17,7 +17,7 @@ const typeConfig = {
   requirement: { label: '要件不明', class: 'bg-purple-100 text-purple-700' },
 }
 
-const sourceLabel = { slack: 'Slack', report: '作業報告', meeting: '議事録', ai: 'AI検出' }
+const sourceLabel = { slack: 'Slackメモ', report: '作業報告', meeting: '議事録', memo: 'メモ', ai: 'AI検出' }
 
 export function MissingInfoPanel({ items }: MissingInfoPanelProps) {
   return (

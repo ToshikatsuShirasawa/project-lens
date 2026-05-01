@@ -11,9 +11,10 @@ interface IssueRiskPanelProps {
 }
 
 const sourceLabel = {
-  slack: 'Slack',
+  slack: 'Slackメモ',
   report: '作業報告',
   meeting: '議事録',
+  memo: 'メモ',
   ai: 'AI検出',
 }
 

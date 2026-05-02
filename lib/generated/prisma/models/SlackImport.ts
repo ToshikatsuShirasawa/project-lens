@@ -37,9 +37,10 @@ export type SlackImportSumAggregateOutputType = {
 export type SlackImportMinAggregateOutputType = {
   id: string | null
   projectId: string | null
-  connectionId: string | null
+  userConnectionId: string | null
   channelId: string | null
   channelName: string | null
+  channelType: string | null
   rangePreset: $Enums.SlackImportRangePreset | null
   oldestTs: string | null
   latestTs: string | null
@@ -55,9 +56,10 @@ export type SlackImportMinAggregateOutputType = {
 export type SlackImportMaxAggregateOutputType = {
   id: string | null
   projectId: string | null
-  connectionId: string | null
+  userConnectionId: string | null
   channelId: string | null
   channelName: string | null
+  channelType: string | null
   rangePreset: $Enums.SlackImportRangePreset | null
   oldestTs: string | null
   latestTs: string | null
@@ -73,9 +75,10 @@ export type SlackImportMaxAggregateOutputType = {
 export type SlackImportCountAggregateOutputType = {
   id: number
   projectId: number
-  connectionId: number
+  userConnectionId: number
   channelId: number
   channelName: number
+  channelType: number
   rangePreset: number
   oldestTs: number
   latestTs: number
@@ -101,9 +104,10 @@ export type SlackImportSumAggregateInputType = {
 export type SlackImportMinAggregateInputType = {
   id?: true
   projectId?: true
-  connectionId?: true
+  userConnectionId?: true
   channelId?: true
   channelName?: true
+  channelType?: true
   rangePreset?: true
   oldestTs?: true
   latestTs?: true
@@ -119,9 +123,10 @@ export type SlackImportMinAggregateInputType = {
 export type SlackImportMaxAggregateInputType = {
   id?: true
   projectId?: true
-  connectionId?: true
+  userConnectionId?: true
   channelId?: true
   channelName?: true
+  channelType?: true
   rangePreset?: true
   oldestTs?: true
   latestTs?: true
@@ -137,9 +142,10 @@ export type SlackImportMaxAggregateInputType = {
 export type SlackImportCountAggregateInputType = {
   id?: true
   projectId?: true
-  connectionId?: true
+  userConnectionId?: true
   channelId?: true
   channelName?: true
+  channelType?: true
   rangePreset?: true
   oldestTs?: true
   latestTs?: true
@@ -242,9 +248,10 @@ export type SlackImportGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inte
 export type SlackImportGroupByOutputType = {
   id: string
   projectId: string
-  connectionId: string
+  userConnectionId: string
   channelId: string
   channelName: string
+  channelType: string
   rangePreset: $Enums.SlackImportRangePreset
   oldestTs: string
   latestTs: string
@@ -283,9 +290,10 @@ export type SlackImportWhereInput = {
   NOT?: Prisma.SlackImportWhereInput | Prisma.SlackImportWhereInput[]
   id?: Prisma.StringFilter<"SlackImport"> | string
   projectId?: Prisma.StringFilter<"SlackImport"> | string
-  connectionId?: Prisma.StringFilter<"SlackImport"> | string
+  userConnectionId?: Prisma.StringFilter<"SlackImport"> | string
   channelId?: Prisma.StringFilter<"SlackImport"> | string
   channelName?: Prisma.StringFilter<"SlackImport"> | string
+  channelType?: Prisma.StringFilter<"SlackImport"> | string
   rangePreset?: Prisma.EnumSlackImportRangePresetFilter<"SlackImport"> | $Enums.SlackImportRangePreset
   oldestTs?: Prisma.StringFilter<"SlackImport"> | string
   latestTs?: Prisma.StringFilter<"SlackImport"> | string
@@ -297,7 +305,7 @@ export type SlackImportWhereInput = {
   createdAt?: Prisma.DateTimeFilter<"SlackImport"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SlackImport"> | Date | string
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
-  connection?: Prisma.XOR<Prisma.SlackConnectionScalarRelationFilter, Prisma.SlackConnectionWhereInput>
+  userConnection?: Prisma.XOR<Prisma.SlackUserConnectionScalarRelationFilter, Prisma.SlackUserConnectionWhereInput>
   projectInput?: Prisma.XOR<Prisma.ProjectInputNullableScalarRelationFilter, Prisma.ProjectInputWhereInput> | null
   importedByUser?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   messages?: Prisma.SlackMessageListRelationFilter
@@ -306,9 +314,10 @@ export type SlackImportWhereInput = {
 export type SlackImportOrderByWithRelationInput = {
   id?: Prisma.SortOrder
   projectId?: Prisma.SortOrder
-  connectionId?: Prisma.SortOrder
+  userConnectionId?: Prisma.SortOrder
   channelId?: Prisma.SortOrder
   channelName?: Prisma.SortOrder
+  channelType?: Prisma.SortOrder
   rangePreset?: Prisma.SortOrder
   oldestTs?: Prisma.SortOrder
   latestTs?: Prisma.SortOrder
@@ -320,7 +329,7 @@ export type SlackImportOrderByWithRelationInput = {
   createdAt?: Prisma.SortOrder
   updatedAt?: Prisma.SortOrder
   project?: Prisma.ProjectOrderByWithRelationInput
-  connection?: Prisma.SlackConnectionOrderByWithRelationInput
+  userConnection?: Prisma.SlackUserConnectionOrderByWithRelationInput
   projectInput?: Prisma.ProjectInputOrderByWithRelationInput
   importedByUser?: Prisma.UserOrderByWithRelationInput
   messages?: Prisma.SlackMessageOrderByRelationAggregateInput
@@ -333,9 +342,10 @@ export type SlackImportWhereUniqueInput = Prisma.AtLeast<{
   OR?: Prisma.SlackImportWhereInput[]
   NOT?: Prisma.SlackImportWhereInput | Prisma.SlackImportWhereInput[]
   projectId?: Prisma.StringFilter<"SlackImport"> | string
-  connectionId?: Prisma.StringFilter<"SlackImport"> | string
+  userConnectionId?: Prisma.StringFilter<"SlackImport"> | string
   channelId?: Prisma.StringFilter<"SlackImport"> | string
   channelName?: Prisma.StringFilter<"SlackImport"> | string
+  channelType?: Prisma.StringFilter<"SlackImport"> | string
   rangePreset?: Prisma.EnumSlackImportRangePresetFilter<"SlackImport"> | $Enums.SlackImportRangePreset
   oldestTs?: Prisma.StringFilter<"SlackImport"> | string
   latestTs?: Prisma.StringFilter<"SlackImport"> | string
@@ -346,7 +356,7 @@ export type SlackImportWhereUniqueInput = Prisma.AtLeast<{
   createdAt?: Prisma.DateTimeFilter<"SlackImport"> | Date | string
   updatedAt?: Prisma.DateTimeFilter<"SlackImport"> | Date | string
   project?: Prisma.XOR<Prisma.ProjectScalarRelationFilter, Prisma.ProjectWhereInput>
-  connection?: Prisma.XOR<Prisma.SlackConnectionScalarRelationFilter, Prisma.SlackConnectionWhereInput>
+  userConnection?: Prisma.XOR<Prisma.SlackUserConnectionScalarRelationFilter, Prisma.SlackUserConnectionWhereInput>
   projectInput?: Prisma.XOR<Prisma.ProjectInputNullableScalarRelationFilter, Prisma.ProjectInputWhereInput> | null
   importedByUser?: Prisma.XOR<Prisma.UserScalarRelationFilter, Prisma.UserWhereInput>
   messages?: Prisma.SlackMessageListRelationFilter
@@ -355,9 +365,10 @@ export type SlackImportWhereUniqueInput = Prisma.AtLeast<{
 export type SlackImportOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
   projectId?: Prisma.SortOrder
-  connectionId?: Prisma.SortOrder
+  userConnectionId?: Prisma.SortOrder
   channelId?: Prisma.SortOrder
   channelName?: Prisma.SortOrder
+  channelType?: Prisma.SortOrder
   rangePreset?: Prisma.SortOrder
   oldestTs?: Prisma.SortOrder
   latestTs?: Prisma.SortOrder
@@ -381,9 +392,10 @@ export type SlackImportScalarWhereWithAggregatesInput = {
   NOT?: Prisma.SlackImportScalarWhereWithAggregatesInput | Prisma.SlackImportScalarWhereWithAggregatesInput[]
   id?: Prisma.StringWithAggregatesFilter<"SlackImport"> | string
   projectId?: Prisma.StringWithAggregatesFilter<"SlackImport"> | string
-  connectionId?: Prisma.StringWithAggregatesFilter<"SlackImport"> | string
+  userConnectionId?: Prisma.StringWithAggregatesFilter<"SlackImport"> | string
   channelId?: Prisma.StringWithAggregatesFilter<"SlackImport"> | string
   channelName?: Prisma.StringWithAggregatesFilter<"SlackImport"> | string
+  channelType?: Prisma.StringWithAggregatesFilter<"SlackImport"> | string
   rangePreset?: Prisma.EnumSlackImportRangePresetWithAggregatesFilter<"SlackImport"> | $Enums.SlackImportRangePreset
   oldestTs?: Prisma.StringWithAggregatesFilter<"SlackImport"> | string
   latestTs?: Prisma.StringWithAggregatesFilter<"SlackImport"> | string
@@ -400,6 +412,7 @@ export type SlackImportCreateInput = {
   id?: string
   channelId: string
   channelName: string
+  channelType: string
   rangePreset: $Enums.SlackImportRangePreset
   oldestTs: string
   latestTs: string
@@ -409,7 +422,7 @@ export type SlackImportCreateInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutSlackImportsInput
-  connection: Prisma.SlackConnectionCreateNestedOneWithoutImportsInput
+  userConnection: Prisma.SlackUserConnectionCreateNestedOneWithoutImportsInput
   projectInput?: Prisma.ProjectInputCreateNestedOneWithoutSlackImportInput
   importedByUser: Prisma.UserCreateNestedOneWithoutSlackImportsInput
   messages?: Prisma.SlackMessageCreateNestedManyWithoutImportInput
@@ -418,9 +431,10 @@ export type SlackImportCreateInput = {
 export type SlackImportUncheckedCreateInput = {
   id?: string
   projectId: string
-  connectionId: string
+  userConnectionId: string
   channelId: string
   channelName: string
+  channelType: string
   rangePreset: $Enums.SlackImportRangePreset
   oldestTs: string
   latestTs: string
@@ -438,6 +452,7 @@ export type SlackImportUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
   channelName?: Prisma.StringFieldUpdateOperationsInput | string
+  channelType?: Prisma.StringFieldUpdateOperationsInput | string
   rangePreset?: Prisma.EnumSlackImportRangePresetFieldUpdateOperationsInput | $Enums.SlackImportRangePreset
   oldestTs?: Prisma.StringFieldUpdateOperationsInput | string
   latestTs?: Prisma.StringFieldUpdateOperationsInput | string
@@ -447,7 +462,7 @@ export type SlackImportUpdateInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutSlackImportsNestedInput
-  connection?: Prisma.SlackConnectionUpdateOneRequiredWithoutImportsNestedInput
+  userConnection?: Prisma.SlackUserConnectionUpdateOneRequiredWithoutImportsNestedInput
   projectInput?: Prisma.ProjectInputUpdateOneWithoutSlackImportNestedInput
   importedByUser?: Prisma.UserUpdateOneRequiredWithoutSlackImportsNestedInput
   messages?: Prisma.SlackMessageUpdateManyWithoutImportNestedInput
@@ -456,9 +471,10 @@ export type SlackImportUpdateInput = {
 export type SlackImportUncheckedUpdateInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
-  connectionId?: Prisma.StringFieldUpdateOperationsInput | string
+  userConnectionId?: Prisma.StringFieldUpdateOperationsInput | string
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
   channelName?: Prisma.StringFieldUpdateOperationsInput | string
+  channelType?: Prisma.StringFieldUpdateOperationsInput | string
   rangePreset?: Prisma.EnumSlackImportRangePresetFieldUpdateOperationsInput | $Enums.SlackImportRangePreset
   oldestTs?: Prisma.StringFieldUpdateOperationsInput | string
   latestTs?: Prisma.StringFieldUpdateOperationsInput | string
@@ -475,9 +491,10 @@ export type SlackImportUncheckedUpdateInput = {
 export type SlackImportCreateManyInput = {
   id?: string
   projectId: string
-  connectionId: string
+  userConnectionId: string
   channelId: string
   channelName: string
+  channelType: string
   rangePreset: $Enums.SlackImportRangePreset
   oldestTs: string
   latestTs: string
@@ -494,6 +511,7 @@ export type SlackImportUpdateManyMutationInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
   channelName?: Prisma.StringFieldUpdateOperationsInput | string
+  channelType?: Prisma.StringFieldUpdateOperationsInput | string
   rangePreset?: Prisma.EnumSlackImportRangePresetFieldUpdateOperationsInput | $Enums.SlackImportRangePreset
   oldestTs?: Prisma.StringFieldUpdateOperationsInput | string
   latestTs?: Prisma.StringFieldUpdateOperationsInput | string
@@ -507,9 +525,10 @@ export type SlackImportUpdateManyMutationInput = {
 export type SlackImportUncheckedUpdateManyInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
-  connectionId?: Prisma.StringFieldUpdateOperationsInput | string
+  userConnectionId?: Prisma.StringFieldUpdateOperationsInput | string
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
   channelName?: Prisma.StringFieldUpdateOperationsInput | string
+  channelType?: Prisma.StringFieldUpdateOperationsInput | string
   rangePreset?: Prisma.EnumSlackImportRangePresetFieldUpdateOperationsInput | $Enums.SlackImportRangePreset
   oldestTs?: Prisma.StringFieldUpdateOperationsInput | string
   latestTs?: Prisma.StringFieldUpdateOperationsInput | string
@@ -540,9 +559,10 @@ export type SlackImportNullableScalarRelationFilter = {
 export type SlackImportCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   projectId?: Prisma.SortOrder
-  connectionId?: Prisma.SortOrder
+  userConnectionId?: Prisma.SortOrder
   channelId?: Prisma.SortOrder
   channelName?: Prisma.SortOrder
+  channelType?: Prisma.SortOrder
   rangePreset?: Prisma.SortOrder
   oldestTs?: Prisma.SortOrder
   latestTs?: Prisma.SortOrder
@@ -562,9 +582,10 @@ export type SlackImportAvgOrderByAggregateInput = {
 export type SlackImportMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   projectId?: Prisma.SortOrder
-  connectionId?: Prisma.SortOrder
+  userConnectionId?: Prisma.SortOrder
   channelId?: Prisma.SortOrder
   channelName?: Prisma.SortOrder
+  channelType?: Prisma.SortOrder
   rangePreset?: Prisma.SortOrder
   oldestTs?: Prisma.SortOrder
   latestTs?: Prisma.SortOrder
@@ -580,9 +601,10 @@ export type SlackImportMaxOrderByAggregateInput = {
 export type SlackImportMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   projectId?: Prisma.SortOrder
-  connectionId?: Prisma.SortOrder
+  userConnectionId?: Prisma.SortOrder
   channelId?: Prisma.SortOrder
   channelName?: Prisma.SortOrder
+  channelType?: Prisma.SortOrder
   rangePreset?: Prisma.SortOrder
   oldestTs?: Prisma.SortOrder
   latestTs?: Prisma.SortOrder
@@ -720,45 +742,45 @@ export type SlackImportUncheckedUpdateOneWithoutProjectInputNestedInput = {
   update?: Prisma.XOR<Prisma.XOR<Prisma.SlackImportUpdateToOneWithWhereWithoutProjectInputInput, Prisma.SlackImportUpdateWithoutProjectInputInput>, Prisma.SlackImportUncheckedUpdateWithoutProjectInputInput>
 }
 
-export type SlackImportCreateNestedManyWithoutConnectionInput = {
-  create?: Prisma.XOR<Prisma.SlackImportCreateWithoutConnectionInput, Prisma.SlackImportUncheckedCreateWithoutConnectionInput> | Prisma.SlackImportCreateWithoutConnectionInput[] | Prisma.SlackImportUncheckedCreateWithoutConnectionInput[]
-  connectOrCreate?: Prisma.SlackImportCreateOrConnectWithoutConnectionInput | Prisma.SlackImportCreateOrConnectWithoutConnectionInput[]
-  createMany?: Prisma.SlackImportCreateManyConnectionInputEnvelope
+export type SlackImportCreateNestedManyWithoutUserConnectionInput = {
+  create?: Prisma.XOR<Prisma.SlackImportCreateWithoutUserConnectionInput, Prisma.SlackImportUncheckedCreateWithoutUserConnectionInput> | Prisma.SlackImportCreateWithoutUserConnectionInput[] | Prisma.SlackImportUncheckedCreateWithoutUserConnectionInput[]
+  connectOrCreate?: Prisma.SlackImportCreateOrConnectWithoutUserConnectionInput | Prisma.SlackImportCreateOrConnectWithoutUserConnectionInput[]
+  createMany?: Prisma.SlackImportCreateManyUserConnectionInputEnvelope
   connect?: Prisma.SlackImportWhereUniqueInput | Prisma.SlackImportWhereUniqueInput[]
 }
 
-export type SlackImportUncheckedCreateNestedManyWithoutConnectionInput = {
-  create?: Prisma.XOR<Prisma.SlackImportCreateWithoutConnectionInput, Prisma.SlackImportUncheckedCreateWithoutConnectionInput> | Prisma.SlackImportCreateWithoutConnectionInput[] | Prisma.SlackImportUncheckedCreateWithoutConnectionInput[]
-  connectOrCreate?: Prisma.SlackImportCreateOrConnectWithoutConnectionInput | Prisma.SlackImportCreateOrConnectWithoutConnectionInput[]
-  createMany?: Prisma.SlackImportCreateManyConnectionInputEnvelope
+export type SlackImportUncheckedCreateNestedManyWithoutUserConnectionInput = {
+  create?: Prisma.XOR<Prisma.SlackImportCreateWithoutUserConnectionInput, Prisma.SlackImportUncheckedCreateWithoutUserConnectionInput> | Prisma.SlackImportCreateWithoutUserConnectionInput[] | Prisma.SlackImportUncheckedCreateWithoutUserConnectionInput[]
+  connectOrCreate?: Prisma.SlackImportCreateOrConnectWithoutUserConnectionInput | Prisma.SlackImportCreateOrConnectWithoutUserConnectionInput[]
+  createMany?: Prisma.SlackImportCreateManyUserConnectionInputEnvelope
   connect?: Prisma.SlackImportWhereUniqueInput | Prisma.SlackImportWhereUniqueInput[]
 }
 
-export type SlackImportUpdateManyWithoutConnectionNestedInput = {
-  create?: Prisma.XOR<Prisma.SlackImportCreateWithoutConnectionInput, Prisma.SlackImportUncheckedCreateWithoutConnectionInput> | Prisma.SlackImportCreateWithoutConnectionInput[] | Prisma.SlackImportUncheckedCreateWithoutConnectionInput[]
-  connectOrCreate?: Prisma.SlackImportCreateOrConnectWithoutConnectionInput | Prisma.SlackImportCreateOrConnectWithoutConnectionInput[]
-  upsert?: Prisma.SlackImportUpsertWithWhereUniqueWithoutConnectionInput | Prisma.SlackImportUpsertWithWhereUniqueWithoutConnectionInput[]
-  createMany?: Prisma.SlackImportCreateManyConnectionInputEnvelope
+export type SlackImportUpdateManyWithoutUserConnectionNestedInput = {
+  create?: Prisma.XOR<Prisma.SlackImportCreateWithoutUserConnectionInput, Prisma.SlackImportUncheckedCreateWithoutUserConnectionInput> | Prisma.SlackImportCreateWithoutUserConnectionInput[] | Prisma.SlackImportUncheckedCreateWithoutUserConnectionInput[]
+  connectOrCreate?: Prisma.SlackImportCreateOrConnectWithoutUserConnectionInput | Prisma.SlackImportCreateOrConnectWithoutUserConnectionInput[]
+  upsert?: Prisma.SlackImportUpsertWithWhereUniqueWithoutUserConnectionInput | Prisma.SlackImportUpsertWithWhereUniqueWithoutUserConnectionInput[]
+  createMany?: Prisma.SlackImportCreateManyUserConnectionInputEnvelope
   set?: Prisma.SlackImportWhereUniqueInput | Prisma.SlackImportWhereUniqueInput[]
   disconnect?: Prisma.SlackImportWhereUniqueInput | Prisma.SlackImportWhereUniqueInput[]
   delete?: Prisma.SlackImportWhereUniqueInput | Prisma.SlackImportWhereUniqueInput[]
   connect?: Prisma.SlackImportWhereUniqueInput | Prisma.SlackImportWhereUniqueInput[]
-  update?: Prisma.SlackImportUpdateWithWhereUniqueWithoutConnectionInput | Prisma.SlackImportUpdateWithWhereUniqueWithoutConnectionInput[]
-  updateMany?: Prisma.SlackImportUpdateManyWithWhereWithoutConnectionInput | Prisma.SlackImportUpdateManyWithWhereWithoutConnectionInput[]
+  update?: Prisma.SlackImportUpdateWithWhereUniqueWithoutUserConnectionInput | Prisma.SlackImportUpdateWithWhereUniqueWithoutUserConnectionInput[]
+  updateMany?: Prisma.SlackImportUpdateManyWithWhereWithoutUserConnectionInput | Prisma.SlackImportUpdateManyWithWhereWithoutUserConnectionInput[]
   deleteMany?: Prisma.SlackImportScalarWhereInput | Prisma.SlackImportScalarWhereInput[]
 }
 
-export type SlackImportUncheckedUpdateManyWithoutConnectionNestedInput = {
-  create?: Prisma.XOR<Prisma.SlackImportCreateWithoutConnectionInput, Prisma.SlackImportUncheckedCreateWithoutConnectionInput> | Prisma.SlackImportCreateWithoutConnectionInput[] | Prisma.SlackImportUncheckedCreateWithoutConnectionInput[]
-  connectOrCreate?: Prisma.SlackImportCreateOrConnectWithoutConnectionInput | Prisma.SlackImportCreateOrConnectWithoutConnectionInput[]
-  upsert?: Prisma.SlackImportUpsertWithWhereUniqueWithoutConnectionInput | Prisma.SlackImportUpsertWithWhereUniqueWithoutConnectionInput[]
-  createMany?: Prisma.SlackImportCreateManyConnectionInputEnvelope
+export type SlackImportUncheckedUpdateManyWithoutUserConnectionNestedInput = {
+  create?: Prisma.XOR<Prisma.SlackImportCreateWithoutUserConnectionInput, Prisma.SlackImportUncheckedCreateWithoutUserConnectionInput> | Prisma.SlackImportCreateWithoutUserConnectionInput[] | Prisma.SlackImportUncheckedCreateWithoutUserConnectionInput[]
+  connectOrCreate?: Prisma.SlackImportCreateOrConnectWithoutUserConnectionInput | Prisma.SlackImportCreateOrConnectWithoutUserConnectionInput[]
+  upsert?: Prisma.SlackImportUpsertWithWhereUniqueWithoutUserConnectionInput | Prisma.SlackImportUpsertWithWhereUniqueWithoutUserConnectionInput[]
+  createMany?: Prisma.SlackImportCreateManyUserConnectionInputEnvelope
   set?: Prisma.SlackImportWhereUniqueInput | Prisma.SlackImportWhereUniqueInput[]
   disconnect?: Prisma.SlackImportWhereUniqueInput | Prisma.SlackImportWhereUniqueInput[]
   delete?: Prisma.SlackImportWhereUniqueInput | Prisma.SlackImportWhereUniqueInput[]
   connect?: Prisma.SlackImportWhereUniqueInput | Prisma.SlackImportWhereUniqueInput[]
-  update?: Prisma.SlackImportUpdateWithWhereUniqueWithoutConnectionInput | Prisma.SlackImportUpdateWithWhereUniqueWithoutConnectionInput[]
-  updateMany?: Prisma.SlackImportUpdateManyWithWhereWithoutConnectionInput | Prisma.SlackImportUpdateManyWithWhereWithoutConnectionInput[]
+  update?: Prisma.SlackImportUpdateWithWhereUniqueWithoutUserConnectionInput | Prisma.SlackImportUpdateWithWhereUniqueWithoutUserConnectionInput[]
+  updateMany?: Prisma.SlackImportUpdateManyWithWhereWithoutUserConnectionInput | Prisma.SlackImportUpdateManyWithWhereWithoutUserConnectionInput[]
   deleteMany?: Prisma.SlackImportScalarWhereInput | Prisma.SlackImportScalarWhereInput[]
 }
 
@@ -788,6 +810,7 @@ export type SlackImportCreateWithoutImportedByUserInput = {
   id?: string
   channelId: string
   channelName: string
+  channelType: string
   rangePreset: $Enums.SlackImportRangePreset
   oldestTs: string
   latestTs: string
@@ -797,7 +820,7 @@ export type SlackImportCreateWithoutImportedByUserInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutSlackImportsInput
-  connection: Prisma.SlackConnectionCreateNestedOneWithoutImportsInput
+  userConnection: Prisma.SlackUserConnectionCreateNestedOneWithoutImportsInput
   projectInput?: Prisma.ProjectInputCreateNestedOneWithoutSlackImportInput
   messages?: Prisma.SlackMessageCreateNestedManyWithoutImportInput
 }
@@ -805,9 +828,10 @@ export type SlackImportCreateWithoutImportedByUserInput = {
 export type SlackImportUncheckedCreateWithoutImportedByUserInput = {
   id?: string
   projectId: string
-  connectionId: string
+  userConnectionId: string
   channelId: string
   channelName: string
+  channelType: string
   rangePreset: $Enums.SlackImportRangePreset
   oldestTs: string
   latestTs: string
@@ -852,9 +876,10 @@ export type SlackImportScalarWhereInput = {
   NOT?: Prisma.SlackImportScalarWhereInput | Prisma.SlackImportScalarWhereInput[]
   id?: Prisma.StringFilter<"SlackImport"> | string
   projectId?: Prisma.StringFilter<"SlackImport"> | string
-  connectionId?: Prisma.StringFilter<"SlackImport"> | string
+  userConnectionId?: Prisma.StringFilter<"SlackImport"> | string
   channelId?: Prisma.StringFilter<"SlackImport"> | string
   channelName?: Prisma.StringFilter<"SlackImport"> | string
+  channelType?: Prisma.StringFilter<"SlackImport"> | string
   rangePreset?: Prisma.EnumSlackImportRangePresetFilter<"SlackImport"> | $Enums.SlackImportRangePreset
   oldestTs?: Prisma.StringFilter<"SlackImport"> | string
   latestTs?: Prisma.StringFilter<"SlackImport"> | string
@@ -871,6 +896,7 @@ export type SlackImportCreateWithoutProjectInput = {
   id?: string
   channelId: string
   channelName: string
+  channelType: string
   rangePreset: $Enums.SlackImportRangePreset
   oldestTs: string
   latestTs: string
@@ -879,7 +905,7 @@ export type SlackImportCreateWithoutProjectInput = {
   errorMessage?: string | null
   createdAt?: Date | string
   updatedAt?: Date | string
-  connection: Prisma.SlackConnectionCreateNestedOneWithoutImportsInput
+  userConnection: Prisma.SlackUserConnectionCreateNestedOneWithoutImportsInput
   projectInput?: Prisma.ProjectInputCreateNestedOneWithoutSlackImportInput
   importedByUser: Prisma.UserCreateNestedOneWithoutSlackImportsInput
   messages?: Prisma.SlackMessageCreateNestedManyWithoutImportInput
@@ -887,9 +913,10 @@ export type SlackImportCreateWithoutProjectInput = {
 
 export type SlackImportUncheckedCreateWithoutProjectInput = {
   id?: string
-  connectionId: string
+  userConnectionId: string
   channelId: string
   channelName: string
+  channelType: string
   rangePreset: $Enums.SlackImportRangePreset
   oldestTs: string
   latestTs: string
@@ -933,6 +960,7 @@ export type SlackImportCreateWithoutProjectInputInput = {
   id?: string
   channelId: string
   channelName: string
+  channelType: string
   rangePreset: $Enums.SlackImportRangePreset
   oldestTs: string
   latestTs: string
@@ -942,7 +970,7 @@ export type SlackImportCreateWithoutProjectInputInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutSlackImportsInput
-  connection: Prisma.SlackConnectionCreateNestedOneWithoutImportsInput
+  userConnection: Prisma.SlackUserConnectionCreateNestedOneWithoutImportsInput
   importedByUser: Prisma.UserCreateNestedOneWithoutSlackImportsInput
   messages?: Prisma.SlackMessageCreateNestedManyWithoutImportInput
 }
@@ -950,9 +978,10 @@ export type SlackImportCreateWithoutProjectInputInput = {
 export type SlackImportUncheckedCreateWithoutProjectInputInput = {
   id?: string
   projectId: string
-  connectionId: string
+  userConnectionId: string
   channelId: string
   channelName: string
+  channelType: string
   rangePreset: $Enums.SlackImportRangePreset
   oldestTs: string
   latestTs: string
@@ -985,6 +1014,7 @@ export type SlackImportUpdateWithoutProjectInputInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
   channelName?: Prisma.StringFieldUpdateOperationsInput | string
+  channelType?: Prisma.StringFieldUpdateOperationsInput | string
   rangePreset?: Prisma.EnumSlackImportRangePresetFieldUpdateOperationsInput | $Enums.SlackImportRangePreset
   oldestTs?: Prisma.StringFieldUpdateOperationsInput | string
   latestTs?: Prisma.StringFieldUpdateOperationsInput | string
@@ -994,7 +1024,7 @@ export type SlackImportUpdateWithoutProjectInputInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutSlackImportsNestedInput
-  connection?: Prisma.SlackConnectionUpdateOneRequiredWithoutImportsNestedInput
+  userConnection?: Prisma.SlackUserConnectionUpdateOneRequiredWithoutImportsNestedInput
   importedByUser?: Prisma.UserUpdateOneRequiredWithoutSlackImportsNestedInput
   messages?: Prisma.SlackMessageUpdateManyWithoutImportNestedInput
 }
@@ -1002,9 +1032,10 @@ export type SlackImportUpdateWithoutProjectInputInput = {
 export type SlackImportUncheckedUpdateWithoutProjectInputInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
-  connectionId?: Prisma.StringFieldUpdateOperationsInput | string
+  userConnectionId?: Prisma.StringFieldUpdateOperationsInput | string
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
   channelName?: Prisma.StringFieldUpdateOperationsInput | string
+  channelType?: Prisma.StringFieldUpdateOperationsInput | string
   rangePreset?: Prisma.EnumSlackImportRangePresetFieldUpdateOperationsInput | $Enums.SlackImportRangePreset
   oldestTs?: Prisma.StringFieldUpdateOperationsInput | string
   latestTs?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1017,10 +1048,11 @@ export type SlackImportUncheckedUpdateWithoutProjectInputInput = {
   messages?: Prisma.SlackMessageUncheckedUpdateManyWithoutImportNestedInput
 }
 
-export type SlackImportCreateWithoutConnectionInput = {
+export type SlackImportCreateWithoutUserConnectionInput = {
   id?: string
   channelId: string
   channelName: string
+  channelType: string
   rangePreset: $Enums.SlackImportRangePreset
   oldestTs: string
   latestTs: string
@@ -1035,11 +1067,12 @@ export type SlackImportCreateWithoutConnectionInput = {
   messages?: Prisma.SlackMessageCreateNestedManyWithoutImportInput
 }
 
-export type SlackImportUncheckedCreateWithoutConnectionInput = {
+export type SlackImportUncheckedCreateWithoutUserConnectionInput = {
   id?: string
   projectId: string
   channelId: string
   channelName: string
+  channelType: string
   rangePreset: $Enums.SlackImportRangePreset
   oldestTs: string
   latestTs: string
@@ -1053,36 +1086,37 @@ export type SlackImportUncheckedCreateWithoutConnectionInput = {
   messages?: Prisma.SlackMessageUncheckedCreateNestedManyWithoutImportInput
 }
 
-export type SlackImportCreateOrConnectWithoutConnectionInput = {
+export type SlackImportCreateOrConnectWithoutUserConnectionInput = {
   where: Prisma.SlackImportWhereUniqueInput
-  create: Prisma.XOR<Prisma.SlackImportCreateWithoutConnectionInput, Prisma.SlackImportUncheckedCreateWithoutConnectionInput>
+  create: Prisma.XOR<Prisma.SlackImportCreateWithoutUserConnectionInput, Prisma.SlackImportUncheckedCreateWithoutUserConnectionInput>
 }
 
-export type SlackImportCreateManyConnectionInputEnvelope = {
-  data: Prisma.SlackImportCreateManyConnectionInput | Prisma.SlackImportCreateManyConnectionInput[]
+export type SlackImportCreateManyUserConnectionInputEnvelope = {
+  data: Prisma.SlackImportCreateManyUserConnectionInput | Prisma.SlackImportCreateManyUserConnectionInput[]
   skipDuplicates?: boolean
 }
 
-export type SlackImportUpsertWithWhereUniqueWithoutConnectionInput = {
+export type SlackImportUpsertWithWhereUniqueWithoutUserConnectionInput = {
   where: Prisma.SlackImportWhereUniqueInput
-  update: Prisma.XOR<Prisma.SlackImportUpdateWithoutConnectionInput, Prisma.SlackImportUncheckedUpdateWithoutConnectionInput>
-  create: Prisma.XOR<Prisma.SlackImportCreateWithoutConnectionInput, Prisma.SlackImportUncheckedCreateWithoutConnectionInput>
+  update: Prisma.XOR<Prisma.SlackImportUpdateWithoutUserConnectionInput, Prisma.SlackImportUncheckedUpdateWithoutUserConnectionInput>
+  create: Prisma.XOR<Prisma.SlackImportCreateWithoutUserConnectionInput, Prisma.SlackImportUncheckedCreateWithoutUserConnectionInput>
 }
 
-export type SlackImportUpdateWithWhereUniqueWithoutConnectionInput = {
+export type SlackImportUpdateWithWhereUniqueWithoutUserConnectionInput = {
   where: Prisma.SlackImportWhereUniqueInput
-  data: Prisma.XOR<Prisma.SlackImportUpdateWithoutConnectionInput, Prisma.SlackImportUncheckedUpdateWithoutConnectionInput>
+  data: Prisma.XOR<Prisma.SlackImportUpdateWithoutUserConnectionInput, Prisma.SlackImportUncheckedUpdateWithoutUserConnectionInput>
 }
 
-export type SlackImportUpdateManyWithWhereWithoutConnectionInput = {
+export type SlackImportUpdateManyWithWhereWithoutUserConnectionInput = {
   where: Prisma.SlackImportScalarWhereInput
-  data: Prisma.XOR<Prisma.SlackImportUpdateManyMutationInput, Prisma.SlackImportUncheckedUpdateManyWithoutConnectionInput>
+  data: Prisma.XOR<Prisma.SlackImportUpdateManyMutationInput, Prisma.SlackImportUncheckedUpdateManyWithoutUserConnectionInput>
 }
 
 export type SlackImportCreateWithoutMessagesInput = {
   id?: string
   channelId: string
   channelName: string
+  channelType: string
   rangePreset: $Enums.SlackImportRangePreset
   oldestTs: string
   latestTs: string
@@ -1092,7 +1126,7 @@ export type SlackImportCreateWithoutMessagesInput = {
   createdAt?: Date | string
   updatedAt?: Date | string
   project: Prisma.ProjectCreateNestedOneWithoutSlackImportsInput
-  connection: Prisma.SlackConnectionCreateNestedOneWithoutImportsInput
+  userConnection: Prisma.SlackUserConnectionCreateNestedOneWithoutImportsInput
   projectInput?: Prisma.ProjectInputCreateNestedOneWithoutSlackImportInput
   importedByUser: Prisma.UserCreateNestedOneWithoutSlackImportsInput
 }
@@ -1100,9 +1134,10 @@ export type SlackImportCreateWithoutMessagesInput = {
 export type SlackImportUncheckedCreateWithoutMessagesInput = {
   id?: string
   projectId: string
-  connectionId: string
+  userConnectionId: string
   channelId: string
   channelName: string
+  channelType: string
   rangePreset: $Enums.SlackImportRangePreset
   oldestTs: string
   latestTs: string
@@ -1135,6 +1170,7 @@ export type SlackImportUpdateWithoutMessagesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
   channelName?: Prisma.StringFieldUpdateOperationsInput | string
+  channelType?: Prisma.StringFieldUpdateOperationsInput | string
   rangePreset?: Prisma.EnumSlackImportRangePresetFieldUpdateOperationsInput | $Enums.SlackImportRangePreset
   oldestTs?: Prisma.StringFieldUpdateOperationsInput | string
   latestTs?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1144,7 +1180,7 @@ export type SlackImportUpdateWithoutMessagesInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutSlackImportsNestedInput
-  connection?: Prisma.SlackConnectionUpdateOneRequiredWithoutImportsNestedInput
+  userConnection?: Prisma.SlackUserConnectionUpdateOneRequiredWithoutImportsNestedInput
   projectInput?: Prisma.ProjectInputUpdateOneWithoutSlackImportNestedInput
   importedByUser?: Prisma.UserUpdateOneRequiredWithoutSlackImportsNestedInput
 }
@@ -1152,9 +1188,10 @@ export type SlackImportUpdateWithoutMessagesInput = {
 export type SlackImportUncheckedUpdateWithoutMessagesInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
-  connectionId?: Prisma.StringFieldUpdateOperationsInput | string
+  userConnectionId?: Prisma.StringFieldUpdateOperationsInput | string
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
   channelName?: Prisma.StringFieldUpdateOperationsInput | string
+  channelType?: Prisma.StringFieldUpdateOperationsInput | string
   rangePreset?: Prisma.EnumSlackImportRangePresetFieldUpdateOperationsInput | $Enums.SlackImportRangePreset
   oldestTs?: Prisma.StringFieldUpdateOperationsInput | string
   latestTs?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1170,9 +1207,10 @@ export type SlackImportUncheckedUpdateWithoutMessagesInput = {
 export type SlackImportCreateManyImportedByUserInput = {
   id?: string
   projectId: string
-  connectionId: string
+  userConnectionId: string
   channelId: string
   channelName: string
+  channelType: string
   rangePreset: $Enums.SlackImportRangePreset
   oldestTs: string
   latestTs: string
@@ -1188,6 +1226,7 @@ export type SlackImportUpdateWithoutImportedByUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
   channelName?: Prisma.StringFieldUpdateOperationsInput | string
+  channelType?: Prisma.StringFieldUpdateOperationsInput | string
   rangePreset?: Prisma.EnumSlackImportRangePresetFieldUpdateOperationsInput | $Enums.SlackImportRangePreset
   oldestTs?: Prisma.StringFieldUpdateOperationsInput | string
   latestTs?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1197,7 +1236,7 @@ export type SlackImportUpdateWithoutImportedByUserInput = {
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   project?: Prisma.ProjectUpdateOneRequiredWithoutSlackImportsNestedInput
-  connection?: Prisma.SlackConnectionUpdateOneRequiredWithoutImportsNestedInput
+  userConnection?: Prisma.SlackUserConnectionUpdateOneRequiredWithoutImportsNestedInput
   projectInput?: Prisma.ProjectInputUpdateOneWithoutSlackImportNestedInput
   messages?: Prisma.SlackMessageUpdateManyWithoutImportNestedInput
 }
@@ -1205,9 +1244,10 @@ export type SlackImportUpdateWithoutImportedByUserInput = {
 export type SlackImportUncheckedUpdateWithoutImportedByUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
-  connectionId?: Prisma.StringFieldUpdateOperationsInput | string
+  userConnectionId?: Prisma.StringFieldUpdateOperationsInput | string
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
   channelName?: Prisma.StringFieldUpdateOperationsInput | string
+  channelType?: Prisma.StringFieldUpdateOperationsInput | string
   rangePreset?: Prisma.EnumSlackImportRangePresetFieldUpdateOperationsInput | $Enums.SlackImportRangePreset
   oldestTs?: Prisma.StringFieldUpdateOperationsInput | string
   latestTs?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1223,9 +1263,10 @@ export type SlackImportUncheckedUpdateWithoutImportedByUserInput = {
 export type SlackImportUncheckedUpdateManyWithoutImportedByUserInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
-  connectionId?: Prisma.StringFieldUpdateOperationsInput | string
+  userConnectionId?: Prisma.StringFieldUpdateOperationsInput | string
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
   channelName?: Prisma.StringFieldUpdateOperationsInput | string
+  channelType?: Prisma.StringFieldUpdateOperationsInput | string
   rangePreset?: Prisma.EnumSlackImportRangePresetFieldUpdateOperationsInput | $Enums.SlackImportRangePreset
   oldestTs?: Prisma.StringFieldUpdateOperationsInput | string
   latestTs?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1239,9 +1280,10 @@ export type SlackImportUncheckedUpdateManyWithoutImportedByUserInput = {
 
 export type SlackImportCreateManyProjectInput = {
   id?: string
-  connectionId: string
+  userConnectionId: string
   channelId: string
   channelName: string
+  channelType: string
   rangePreset: $Enums.SlackImportRangePreset
   oldestTs: string
   latestTs: string
@@ -1258,6 +1300,7 @@ export type SlackImportUpdateWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
   channelName?: Prisma.StringFieldUpdateOperationsInput | string
+  channelType?: Prisma.StringFieldUpdateOperationsInput | string
   rangePreset?: Prisma.EnumSlackImportRangePresetFieldUpdateOperationsInput | $Enums.SlackImportRangePreset
   oldestTs?: Prisma.StringFieldUpdateOperationsInput | string
   latestTs?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1266,7 +1309,7 @@ export type SlackImportUpdateWithoutProjectInput = {
   errorMessage?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   createdAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
-  connection?: Prisma.SlackConnectionUpdateOneRequiredWithoutImportsNestedInput
+  userConnection?: Prisma.SlackUserConnectionUpdateOneRequiredWithoutImportsNestedInput
   projectInput?: Prisma.ProjectInputUpdateOneWithoutSlackImportNestedInput
   importedByUser?: Prisma.UserUpdateOneRequiredWithoutSlackImportsNestedInput
   messages?: Prisma.SlackMessageUpdateManyWithoutImportNestedInput
@@ -1274,9 +1317,10 @@ export type SlackImportUpdateWithoutProjectInput = {
 
 export type SlackImportUncheckedUpdateWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  connectionId?: Prisma.StringFieldUpdateOperationsInput | string
+  userConnectionId?: Prisma.StringFieldUpdateOperationsInput | string
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
   channelName?: Prisma.StringFieldUpdateOperationsInput | string
+  channelType?: Prisma.StringFieldUpdateOperationsInput | string
   rangePreset?: Prisma.EnumSlackImportRangePresetFieldUpdateOperationsInput | $Enums.SlackImportRangePreset
   oldestTs?: Prisma.StringFieldUpdateOperationsInput | string
   latestTs?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1292,9 +1336,10 @@ export type SlackImportUncheckedUpdateWithoutProjectInput = {
 
 export type SlackImportUncheckedUpdateManyWithoutProjectInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
-  connectionId?: Prisma.StringFieldUpdateOperationsInput | string
+  userConnectionId?: Prisma.StringFieldUpdateOperationsInput | string
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
   channelName?: Prisma.StringFieldUpdateOperationsInput | string
+  channelType?: Prisma.StringFieldUpdateOperationsInput | string
   rangePreset?: Prisma.EnumSlackImportRangePresetFieldUpdateOperationsInput | $Enums.SlackImportRangePreset
   oldestTs?: Prisma.StringFieldUpdateOperationsInput | string
   latestTs?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1307,11 +1352,12 @@ export type SlackImportUncheckedUpdateManyWithoutProjectInput = {
   updatedAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
 }
 
-export type SlackImportCreateManyConnectionInput = {
+export type SlackImportCreateManyUserConnectionInput = {
   id?: string
   projectId: string
   channelId: string
   channelName: string
+  channelType: string
   rangePreset: $Enums.SlackImportRangePreset
   oldestTs: string
   latestTs: string
@@ -1324,10 +1370,11 @@ export type SlackImportCreateManyConnectionInput = {
   updatedAt?: Date | string
 }
 
-export type SlackImportUpdateWithoutConnectionInput = {
+export type SlackImportUpdateWithoutUserConnectionInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
   channelName?: Prisma.StringFieldUpdateOperationsInput | string
+  channelType?: Prisma.StringFieldUpdateOperationsInput | string
   rangePreset?: Prisma.EnumSlackImportRangePresetFieldUpdateOperationsInput | $Enums.SlackImportRangePreset
   oldestTs?: Prisma.StringFieldUpdateOperationsInput | string
   latestTs?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1342,11 +1389,12 @@ export type SlackImportUpdateWithoutConnectionInput = {
   messages?: Prisma.SlackMessageUpdateManyWithoutImportNestedInput
 }
 
-export type SlackImportUncheckedUpdateWithoutConnectionInput = {
+export type SlackImportUncheckedUpdateWithoutUserConnectionInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
   channelName?: Prisma.StringFieldUpdateOperationsInput | string
+  channelType?: Prisma.StringFieldUpdateOperationsInput | string
   rangePreset?: Prisma.EnumSlackImportRangePresetFieldUpdateOperationsInput | $Enums.SlackImportRangePreset
   oldestTs?: Prisma.StringFieldUpdateOperationsInput | string
   latestTs?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1360,11 +1408,12 @@ export type SlackImportUncheckedUpdateWithoutConnectionInput = {
   messages?: Prisma.SlackMessageUncheckedUpdateManyWithoutImportNestedInput
 }
 
-export type SlackImportUncheckedUpdateManyWithoutConnectionInput = {
+export type SlackImportUncheckedUpdateManyWithoutUserConnectionInput = {
   id?: Prisma.StringFieldUpdateOperationsInput | string
   projectId?: Prisma.StringFieldUpdateOperationsInput | string
   channelId?: Prisma.StringFieldUpdateOperationsInput | string
   channelName?: Prisma.StringFieldUpdateOperationsInput | string
+  channelType?: Prisma.StringFieldUpdateOperationsInput | string
   rangePreset?: Prisma.EnumSlackImportRangePresetFieldUpdateOperationsInput | $Enums.SlackImportRangePreset
   oldestTs?: Prisma.StringFieldUpdateOperationsInput | string
   latestTs?: Prisma.StringFieldUpdateOperationsInput | string
@@ -1411,9 +1460,10 @@ export type SlackImportCountOutputTypeCountMessagesArgs<ExtArgs extends runtime.
 export type SlackImportSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   projectId?: boolean
-  connectionId?: boolean
+  userConnectionId?: boolean
   channelId?: boolean
   channelName?: boolean
+  channelType?: boolean
   rangePreset?: boolean
   oldestTs?: boolean
   latestTs?: boolean
@@ -1425,7 +1475,7 @@ export type SlackImportSelect<ExtArgs extends runtime.Types.Extensions.InternalA
   createdAt?: boolean
   updatedAt?: boolean
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
-  connection?: boolean | Prisma.SlackConnectionDefaultArgs<ExtArgs>
+  userConnection?: boolean | Prisma.SlackUserConnectionDefaultArgs<ExtArgs>
   projectInput?: boolean | Prisma.SlackImport$projectInputArgs<ExtArgs>
   importedByUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   messages?: boolean | Prisma.SlackImport$messagesArgs<ExtArgs>
@@ -1435,9 +1485,10 @@ export type SlackImportSelect<ExtArgs extends runtime.Types.Extensions.InternalA
 export type SlackImportSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   projectId?: boolean
-  connectionId?: boolean
+  userConnectionId?: boolean
   channelId?: boolean
   channelName?: boolean
+  channelType?: boolean
   rangePreset?: boolean
   oldestTs?: boolean
   latestTs?: boolean
@@ -1449,7 +1500,7 @@ export type SlackImportSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
   createdAt?: boolean
   updatedAt?: boolean
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
-  connection?: boolean | Prisma.SlackConnectionDefaultArgs<ExtArgs>
+  userConnection?: boolean | Prisma.SlackUserConnectionDefaultArgs<ExtArgs>
   projectInput?: boolean | Prisma.SlackImport$projectInputArgs<ExtArgs>
   importedByUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["slackImport"]>
@@ -1457,9 +1508,10 @@ export type SlackImportSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
 export type SlackImportSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   projectId?: boolean
-  connectionId?: boolean
+  userConnectionId?: boolean
   channelId?: boolean
   channelName?: boolean
+  channelType?: boolean
   rangePreset?: boolean
   oldestTs?: boolean
   latestTs?: boolean
@@ -1471,7 +1523,7 @@ export type SlackImportSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
   createdAt?: boolean
   updatedAt?: boolean
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
-  connection?: boolean | Prisma.SlackConnectionDefaultArgs<ExtArgs>
+  userConnection?: boolean | Prisma.SlackUserConnectionDefaultArgs<ExtArgs>
   projectInput?: boolean | Prisma.SlackImport$projectInputArgs<ExtArgs>
   importedByUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }, ExtArgs["result"]["slackImport"]>
@@ -1479,9 +1531,10 @@ export type SlackImportSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
 export type SlackImportSelectScalar = {
   id?: boolean
   projectId?: boolean
-  connectionId?: boolean
+  userConnectionId?: boolean
   channelId?: boolean
   channelName?: boolean
+  channelType?: boolean
   rangePreset?: boolean
   oldestTs?: boolean
   latestTs?: boolean
@@ -1494,10 +1547,10 @@ export type SlackImportSelectScalar = {
   updatedAt?: boolean
 }
 
-export type SlackImportOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "connectionId" | "channelId" | "channelName" | "rangePreset" | "oldestTs" | "latestTs" | "messageCount" | "status" | "errorMessage" | "projectInputId" | "importedByUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["slackImport"]>
+export type SlackImportOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "projectId" | "userConnectionId" | "channelId" | "channelName" | "channelType" | "rangePreset" | "oldestTs" | "latestTs" | "messageCount" | "status" | "errorMessage" | "projectInputId" | "importedByUserId" | "createdAt" | "updatedAt", ExtArgs["result"]["slackImport"]>
 export type SlackImportInclude<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
-  connection?: boolean | Prisma.SlackConnectionDefaultArgs<ExtArgs>
+  userConnection?: boolean | Prisma.SlackUserConnectionDefaultArgs<ExtArgs>
   projectInput?: boolean | Prisma.SlackImport$projectInputArgs<ExtArgs>
   importedByUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
   messages?: boolean | Prisma.SlackImport$messagesArgs<ExtArgs>
@@ -1505,13 +1558,13 @@ export type SlackImportInclude<ExtArgs extends runtime.Types.Extensions.Internal
 }
 export type SlackImportIncludeCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
-  connection?: boolean | Prisma.SlackConnectionDefaultArgs<ExtArgs>
+  userConnection?: boolean | Prisma.SlackUserConnectionDefaultArgs<ExtArgs>
   projectInput?: boolean | Prisma.SlackImport$projectInputArgs<ExtArgs>
   importedByUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
 export type SlackImportIncludeUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   project?: boolean | Prisma.ProjectDefaultArgs<ExtArgs>
-  connection?: boolean | Prisma.SlackConnectionDefaultArgs<ExtArgs>
+  userConnection?: boolean | Prisma.SlackUserConnectionDefaultArgs<ExtArgs>
   projectInput?: boolean | Prisma.SlackImport$projectInputArgs<ExtArgs>
   importedByUser?: boolean | Prisma.UserDefaultArgs<ExtArgs>
 }
@@ -1520,7 +1573,7 @@ export type $SlackImportPayload<ExtArgs extends runtime.Types.Extensions.Interna
   name: "SlackImport"
   objects: {
     project: Prisma.$ProjectPayload<ExtArgs>
-    connection: Prisma.$SlackConnectionPayload<ExtArgs>
+    userConnection: Prisma.$SlackUserConnectionPayload<ExtArgs>
     projectInput: Prisma.$ProjectInputPayload<ExtArgs> | null
     importedByUser: Prisma.$UserPayload<ExtArgs>
     messages: Prisma.$SlackMessagePayload<ExtArgs>[]
@@ -1528,9 +1581,10 @@ export type $SlackImportPayload<ExtArgs extends runtime.Types.Extensions.Interna
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: string
     projectId: string
-    connectionId: string
+    userConnectionId: string
     channelId: string
     channelName: string
+    channelType: string
     rangePreset: $Enums.SlackImportRangePreset
     oldestTs: string
     latestTs: string
@@ -1936,7 +1990,7 @@ readonly fields: SlackImportFieldRefs;
 export interface Prisma__SlackImportClient<T, Null = never, ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
   readonly [Symbol.toStringTag]: "PrismaPromise"
   project<T extends Prisma.ProjectDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.ProjectDefaultArgs<ExtArgs>>): Prisma.Prisma__ProjectClient<runtime.Types.Result.GetResult<Prisma.$ProjectPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
-  connection<T extends Prisma.SlackConnectionDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SlackConnectionDefaultArgs<ExtArgs>>): Prisma.Prisma__SlackConnectionClient<runtime.Types.Result.GetResult<Prisma.$SlackConnectionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+  userConnection<T extends Prisma.SlackUserConnectionDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SlackUserConnectionDefaultArgs<ExtArgs>>): Prisma.Prisma__SlackUserConnectionClient<runtime.Types.Result.GetResult<Prisma.$SlackUserConnectionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   projectInput<T extends Prisma.SlackImport$projectInputArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SlackImport$projectInputArgs<ExtArgs>>): Prisma.Prisma__ProjectInputClient<runtime.Types.Result.GetResult<Prisma.$ProjectInputPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
   importedByUser<T extends Prisma.UserDefaultArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.UserDefaultArgs<ExtArgs>>): Prisma.Prisma__UserClient<runtime.Types.Result.GetResult<Prisma.$UserPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
   messages<T extends Prisma.SlackImport$messagesArgs<ExtArgs> = {}>(args?: Prisma.Subset<T, Prisma.SlackImport$messagesArgs<ExtArgs>>): Prisma.PrismaPromise<runtime.Types.Result.GetResult<Prisma.$SlackMessagePayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
@@ -1971,9 +2025,10 @@ export interface Prisma__SlackImportClient<T, Null = never, ExtArgs extends runt
 export interface SlackImportFieldRefs {
   readonly id: Prisma.FieldRef<"SlackImport", 'String'>
   readonly projectId: Prisma.FieldRef<"SlackImport", 'String'>
-  readonly connectionId: Prisma.FieldRef<"SlackImport", 'String'>
+  readonly userConnectionId: Prisma.FieldRef<"SlackImport", 'String'>
   readonly channelId: Prisma.FieldRef<"SlackImport", 'String'>
   readonly channelName: Prisma.FieldRef<"SlackImport", 'String'>
+  readonly channelType: Prisma.FieldRef<"SlackImport", 'String'>
   readonly rangePreset: Prisma.FieldRef<"SlackImport", 'SlackImportRangePreset'>
   readonly oldestTs: Prisma.FieldRef<"SlackImport", 'String'>
   readonly latestTs: Prisma.FieldRef<"SlackImport", 'String'>

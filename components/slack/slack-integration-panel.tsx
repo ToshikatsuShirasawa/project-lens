@@ -15,17 +15,26 @@ import {
 } from '@/components/ui/select'
 import { useToast } from '@/components/ui/use-toast'
 
-type SlackRangePreset = 'LAST_24_HOURS' | 'LAST_3_DAYS' | 'LAST_7_DAYS'
+type SlackRangePreset =
+  | 'LAST_24_HOURS'
+  | 'LAST_3_DAYS'
+  | 'LAST_7_DAYS'
+  | 'LAST_14_DAYS'
+  | 'LAST_30_DAYS'
+  | 'LAST_60_DAYS'
+  | 'LAST_90_DAYS'
 type SlackImportStatus = 'RUNNING' | 'SUCCESS' | 'FAILED'
 
 interface SlackChannel {
   id: string
   name: string
+  type: 'public_channel' | 'private_channel'
 }
 
 interface SlackImportRecord {
   id: string
   channelName: string
+  channelType: string
   rangePreset: SlackRangePreset
   messageCount: number
   status: SlackImportStatus
@@ -42,6 +51,10 @@ const rangeLabels: Record<SlackRangePreset, string> = {
   LAST_24_HOURS: '直近24時間',
   LAST_3_DAYS: '直近3日',
   LAST_7_DAYS: '直近7日',
+  LAST_14_DAYS: '直近14日',
+  LAST_30_DAYS: '直近30日',
+  LAST_60_DAYS: '直近60日',
+  LAST_90_DAYS: '直近90日',
 }
 
 const statusLabels: Record<SlackImportStatus, string> = {
@@ -68,6 +81,7 @@ export function SlackIntegrationPanel({ projectId, organizationId: organizationI
   const [organizationId, setOrganizationId] = useState(organizationIdProp ?? '')
   const [connected, setConnected] = useState(false)
   const [teamName, setTeamName] = useState('')
+  const [slackUserName, setSlackUserName] = useState('')
   const [channels, setChannels] = useState<SlackChannel[]>([])
   const [imports, setImports] = useState<SlackImportRecord[]>([])
   const [channelId, setChannelId] = useState('')
@@ -117,9 +131,10 @@ export function SlackIntegrationPanel({ projectId, organizationId: organizationI
           : 'Slackチャンネル一覧の取得に失敗しました'
       throw new Error(msg)
     }
-    const parsed = body as { connected?: boolean; teamName?: string; channels?: SlackChannel[] }
+    const parsed = body as { connected?: boolean; teamName?: string; slackUserName?: string; channels?: SlackChannel[] }
     setConnected(Boolean(parsed.connected))
     setTeamName(parsed.teamName ?? '')
+    setSlackUserName(parsed.slackUserName ?? '')
     setChannels(parsed.channels ?? [])
     if (!channelId && parsed.channels?.[0]) setChannelId(parsed.channels[0].id)
   }, [projectId, channelId])
@@ -201,7 +216,7 @@ export function SlackIntegrationPanel({ projectId, organizationId: organizationI
             Slackから取り込む
           </CardTitle>
           <p className="text-sm text-muted-foreground">
-            public channel の会話を手動で取得し、AI候補抽出に使うテキストとして保存します。
+            自分が参加しているSlackチャンネルから、AI候補の元になる会話を取り込みます。
           </p>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -221,19 +236,21 @@ export function SlackIntegrationPanel({ projectId, organizationId: organizationI
           ) : !connected ? (
             <div className="space-y-3 rounded-lg border border-border p-4">
               <p className="text-sm text-muted-foreground">
-                Slack workspace がまだ接続されていません。接続すると public channel を選択して取り込めます。
+                Slackアカウントがまだ接続されていません。接続すると、あなたが参加しているチャンネルを選択して取り込めます。
               </p>
               <Button asChild disabled={!organizationId}>
-                <a href={connectHref}>Slackに接続</a>
+                <a href={connectHref}>Slackアカウントを接続</a>
               </Button>
               <p className="text-xs text-muted-foreground">
-                必要な権限: channels:read, channels:history, users:read, team:read
+                対象は、あなたが参加しているpublic/privateチャンネルです。DM・グループDMは対象外です。
               </p>
             </div>
           ) : (
             <>
               <div className="flex flex-wrap items-center gap-2">
-                <Badge variant="secondary">接続済み: {teamName}</Badge>
+                <Badge variant="secondary">
+                  接続済み: {slackUserName || 'Slackユーザー'} / {teamName}
+                </Badge>
                 <Button variant="ghost" size="sm" onClick={() => void reload()} className="gap-1.5">
                   <RefreshCw className="h-3.5 w-3.5" />
                   更新
@@ -249,7 +266,7 @@ export function SlackIntegrationPanel({ projectId, organizationId: organizationI
                     <SelectContent>
                       {channels.map((channel) => (
                         <SelectItem key={channel.id} value={channel.id}>
-                          #{channel.name}
+                          #{channel.name}{channel.type === 'private_channel' ? '（private）' : ''}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -265,10 +282,19 @@ export function SlackIntegrationPanel({ projectId, organizationId: organizationI
                       <SelectItem value="LAST_24_HOURS">直近24時間</SelectItem>
                       <SelectItem value="LAST_3_DAYS">直近3日</SelectItem>
                       <SelectItem value="LAST_7_DAYS">直近7日</SelectItem>
+                      <SelectItem value="LAST_14_DAYS">直近14日</SelectItem>
+                      <SelectItem value="LAST_30_DAYS">直近30日</SelectItem>
+                      <SelectItem value="LAST_60_DAYS">直近60日</SelectItem>
+                      <SelectItem value="LAST_90_DAYS">直近90日</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
               </div>
+              <p className="text-xs text-muted-foreground">
+                対象は、あなたが参加しているpublic/privateチャンネルです。DM・グループDMは対象外です。
+                最大500件まで取り込みます。
+                古い会話を取り込むと、すでに対応済みの内容も候補に含まれる場合があります。
+              </p>
               <Button onClick={handleImport} disabled={!channelId || importing} className="w-full gap-2">
                 {importing ? <Loader2 className="h-4 w-4 animate-spin" /> : <Hash className="h-4 w-4" />}
                 Slackから取り込む
@@ -295,7 +321,12 @@ export function SlackIntegrationPanel({ projectId, organizationId: organizationI
                     #{item.channelName} / {rangeLabels[item.rangePreset]}
                   </p>
                   <p className="text-xs text-muted-foreground">
-                    {formatCreatedAt(item.createdAt)} / {item.messageCount}件 / {item.projectInputId ? 'AI候補抽出に反映済み' : '未反映'}
+                    {formatCreatedAt(item.createdAt)} / {item.messageCount}件 /{' '}
+                    {item.messageCount === 0
+                      ? '対象メッセージなし'
+                      : item.projectInputId
+                        ? 'AI候補抽出に反映済み'
+                        : '未反映'}
                   </p>
                 </div>
                 <Badge

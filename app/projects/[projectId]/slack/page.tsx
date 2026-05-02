@@ -15,7 +15,7 @@ export default async function SlackPage({ params }: SlackPageProps) {
           <div>
             <h1 className="text-2xl font-bold text-foreground">Slack連携</h1>
             <p className="text-sm text-muted-foreground mt-1">
-              AI候補の元になるSlackの会話を取り込みます。
+              自分が参加しているSlackチャンネルから、AI候補の元になる会話を取り込みます。
               対象チャンネルと期間を選択して、必要な会話だけを候補抽出に使います。
             </p>
           </div>

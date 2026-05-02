@@ -1,6 +1,7 @@
 export interface SlackChannel {
   id: string
   name: string
+  type: 'public_channel' | 'private_channel'
   isArchived?: boolean
 }
 
@@ -15,9 +16,13 @@ export interface SlackHistoryMessage {
 export interface SlackOAuthAccessResult {
   teamId: string
   teamName: string
-  botUserId: string | null
-  botToken: string
+  slackUserId: string
+  slackUserName: string | null
+  userToken: string
+  scope: string | null
 }
+
+export const SLACK_IMPORT_MESSAGE_LIMIT = 500
 
 interface SlackApiBaseResponse {
   ok: boolean
@@ -26,13 +31,24 @@ interface SlackApiBaseResponse {
 }
 
 interface SlackOAuthResponse extends SlackApiBaseResponse {
-  access_token?: string
-  bot_user_id?: string
   team?: { id?: string; name?: string }
+  authed_user?: {
+    id?: string
+    access_token?: string
+    scope?: string
+  }
 }
 
 interface SlackConversationsListResponse extends SlackApiBaseResponse {
-  channels?: Array<{ id?: string; name?: string; is_archived?: boolean; is_channel?: boolean }>
+  channels?: Array<{
+    id?: string
+    name?: string
+    is_archived?: boolean
+    is_channel?: boolean
+    is_group?: boolean
+    is_private?: boolean
+    is_member?: boolean
+  }>
 }
 
 interface SlackHistoryResponse extends SlackApiBaseResponse {
@@ -88,31 +104,38 @@ export async function exchangeSlackOAuthCode(args: {
     }),
   })
   const body = await readSlackJson<SlackOAuthResponse>(response)
-  if (!body.access_token || !body.team?.id || !body.team.name) {
-    throw new Error('Slack OAuth response does not include bot token or team')
+  const userToken = body.authed_user?.access_token
+  const slackUserId = body.authed_user?.id
+  if (!userToken || !slackUserId || !body.team?.id || !body.team.name) {
+    throw new Error('Slack OAuth response does not include user token, user, or team')
   }
+  const userName = await fetchSlackUserName(userToken, slackUserId)
   return {
     teamId: body.team.id,
     teamName: body.team.name,
-    botUserId: body.bot_user_id ?? null,
-    botToken: body.access_token,
+    slackUserId,
+    slackUserName: userName,
+    userToken,
+    scope: body.authed_user?.scope ?? null,
   }
 }
 
-export async function listPublicSlackChannels(token: string): Promise<SlackChannel[]> {
+export async function listVisibleSlackChannels(token: string): Promise<SlackChannel[]> {
   const channels: SlackChannel[] = []
   let cursor = ''
 
   do {
     const body = await slackApiGet<SlackConversationsListResponse>(token, 'conversations.list', {
-      types: 'public_channel',
+      types: 'public_channel,private_channel',
       exclude_archived: true,
       limit: 200,
       cursor: cursor || undefined,
     })
     for (const channel of body.channels ?? []) {
       if (!channel.id || !channel.name) continue
-      channels.push({ id: channel.id, name: channel.name, isArchived: channel.is_archived ?? false })
+      if (channel.is_member === false) continue
+      const type = channel.is_private || channel.is_group ? 'private_channel' : 'public_channel'
+      channels.push({ id: channel.id, name: channel.name, type, isArchived: channel.is_archived ?? false })
     }
     cursor = body.response_metadata?.next_cursor ?? ''
   } while (cursor)
@@ -125,8 +148,10 @@ export async function fetchSlackChannelHistory(args: {
   channelId: string
   oldestTs: string
   latestTs: string
+  limit?: number
 }): Promise<SlackHistoryMessage[]> {
   const messages: SlackHistoryMessage[] = []
+  const maxMessages = args.limit ?? SLACK_IMPORT_MESSAGE_LIMIT
   let cursor = ''
 
   do {
@@ -139,6 +164,7 @@ export async function fetchSlackChannelHistory(args: {
       cursor: cursor || undefined,
     })
     for (const message of body.messages ?? []) {
+      if (messages.length >= maxMessages) break
       if (!message.ts || !message.text || message.subtype) continue
       messages.push({
         ts: message.ts,
@@ -149,7 +175,7 @@ export async function fetchSlackChannelHistory(args: {
       })
     }
     cursor = body.response_metadata?.next_cursor ?? ''
-  } while (cursor)
+  } while (cursor && messages.length < maxMessages)
 
   const users = await fetchSlackUserNames(args.token, Array.from(new Set(messages.map((m) => m.userId).filter(Boolean) as string[])))
   return messages
@@ -158,6 +184,11 @@ export async function fetchSlackChannelHistory(args: {
       userName: message.userName || (message.userId ? users.get(message.userId) : undefined),
     }))
     .sort((a, b) => Number(a.ts) - Number(b.ts))
+}
+
+async function fetchSlackUserName(token: string, userId: string): Promise<string | null> {
+  const users = await fetchSlackUserNames(token, [userId])
+  return users.get(userId) ?? null
 }
 
 async function fetchSlackUserNames(token: string, userIds: string[]): Promise<Map<string, string>> {

@@ -2,6 +2,7 @@ import { createHmac, randomBytes, timingSafeEqual } from 'crypto'
 
 export interface SlackOAuthStatePayload {
   organizationId: string
+  userId: string
   nonce: string
   issuedAt: number
   returnTo?: string
@@ -40,7 +41,7 @@ export function decodeSlackOAuthState(state: string): SlackOAuthStatePayload | n
 
   try {
     const parsed = JSON.parse(Buffer.from(encodedPayload, 'base64url').toString('utf8')) as SlackOAuthStatePayload
-    if (!parsed.organizationId || !parsed.nonce || typeof parsed.issuedAt !== 'number') return null
+    if (!parsed.organizationId || !parsed.userId || !parsed.nonce || typeof parsed.issuedAt !== 'number') return null
     return parsed
   } catch {
     return null

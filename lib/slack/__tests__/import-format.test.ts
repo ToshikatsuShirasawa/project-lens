@@ -12,11 +12,25 @@ describe('Slack import formatting', () => {
       latestTs: '1777593600',
       oldestTs: '1777507200',
     })
+    expect(slackRangeToTimestamps('LAST_30_DAYS', now)).toEqual({
+      latestTs: '1777593600',
+      oldestTs: '1775001600',
+    })
+    expect(slackRangeToTimestamps('LAST_90_DAYS', now)).toEqual({
+      latestTs: '1777593600',
+      oldestTs: '1769817600',
+    })
   })
 
   it('project_inputs保存用のタイトルと本文を整形する', () => {
     expect(formatSlackImportTitle('project-web-site', 'LAST_24_HOURS')).toBe(
       '#project-web-site / 直近24時間',
+    )
+    expect(formatSlackImportTitle('project-web-site', 'LAST_14_DAYS')).toBe(
+      '#project-web-site / 直近14日',
+    )
+    expect(formatSlackImportTitle('project-web-site', 'LAST_60_DAYS')).toBe(
+      '#project-web-site / 直近60日',
     )
     expect(
       formatSlackMessagesForProjectInput('project-web-site', 'LAST_24_HOURS', [

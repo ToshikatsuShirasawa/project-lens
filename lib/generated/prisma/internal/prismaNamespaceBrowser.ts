@@ -61,7 +61,7 @@ export const ModelName = {
   KanbanTask: 'KanbanTask',
   WorkReport: 'WorkReport',
   ProjectInput: 'ProjectInput',
-  SlackConnection: 'SlackConnection',
+  SlackUserConnection: 'SlackUserConnection',
   SlackImport: 'SlackImport',
   SlackMessage: 'SlackMessage',
   AiTaskCandidateEvent: 'AiTaskCandidateEvent',
@@ -225,27 +225,30 @@ export const ProjectInputScalarFieldEnum = {
 export type ProjectInputScalarFieldEnum = (typeof ProjectInputScalarFieldEnum)[keyof typeof ProjectInputScalarFieldEnum]
 
 
-export const SlackConnectionScalarFieldEnum = {
+export const SlackUserConnectionScalarFieldEnum = {
   id: 'id',
+  userId: 'userId',
   organizationId: 'organizationId',
   teamId: 'teamId',
   teamName: 'teamName',
-  botUserId: 'botUserId',
-  botTokenEncrypted: 'botTokenEncrypted',
-  installedByUserId: 'installedByUserId',
+  slackUserId: 'slackUserId',
+  slackUserName: 'slackUserName',
+  userTokenEncrypted: 'userTokenEncrypted',
+  scope: 'scope',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'
 } as const
 
-export type SlackConnectionScalarFieldEnum = (typeof SlackConnectionScalarFieldEnum)[keyof typeof SlackConnectionScalarFieldEnum]
+export type SlackUserConnectionScalarFieldEnum = (typeof SlackUserConnectionScalarFieldEnum)[keyof typeof SlackUserConnectionScalarFieldEnum]
 
 
 export const SlackImportScalarFieldEnum = {
   id: 'id',
   projectId: 'projectId',
-  connectionId: 'connectionId',
+  userConnectionId: 'userConnectionId',
   channelId: 'channelId',
   channelName: 'channelName',
+  channelType: 'channelType',
   rangePreset: 'rangePreset',
   oldestTs: 'oldestTs',
   latestTs: 'latestTs',
@@ -263,11 +266,12 @@ export type SlackImportScalarFieldEnum = (typeof SlackImportScalarFieldEnum)[key
 
 export const SlackMessageScalarFieldEnum = {
   id: 'id',
-  connectionId: 'connectionId',
+  userConnectionId: 'userConnectionId',
   projectId: 'projectId',
   importId: 'importId',
   channelId: 'channelId',
   channelName: 'channelName',
+  channelType: 'channelType',
   messageTs: 'messageTs',
   threadTs: 'threadTs',
   userId: 'userId',

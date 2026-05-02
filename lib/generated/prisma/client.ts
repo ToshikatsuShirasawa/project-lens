@@ -92,10 +92,10 @@ export type WorkReport = Prisma.WorkReportModel
  */
 export type ProjectInput = Prisma.ProjectInputModel
 /**
- * Model SlackConnection
- * Slack workspace接続情報。Bot token は暗号化済み文字列のみ保存する
+ * Model SlackUserConnection
+ * Slackユーザー接続情報。User token は暗号化済み文字列のみ保存する
  */
-export type SlackConnection = Prisma.SlackConnectionModel
+export type SlackUserConnection = Prisma.SlackUserConnectionModel
 /**
  * Model SlackImport
  * project単位のSlack手動取り込み履歴

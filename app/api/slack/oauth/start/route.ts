@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { OrganizationMemberRole } from '@/lib/generated/prisma/client'
 import { requireAppUserJson } from '@/lib/auth/require-app-user'
 import { prisma } from '@/lib/prisma'
 import {
@@ -8,7 +7,14 @@ import {
   isSafeReturnTo,
 } from '@/lib/slack/oauth-state'
 
-const SLACK_SCOPES = ['channels:read', 'channels:history', 'users:read', 'team:read'].join(',')
+const SLACK_USER_SCOPES = [
+  'channels:read',
+  'channels:history',
+  'groups:read',
+  'groups:history',
+  'users:read',
+  'team:read',
+].join(',')
 
 export async function GET(request: NextRequest) {
   try {
@@ -22,13 +28,10 @@ export async function GET(request: NextRequest) {
 
     const membership = await prisma.organizationMember.findFirst({
       where: { organizationId, userId: auth.ctx.appUser.id },
-      select: { role: true },
+      select: { id: true },
     })
     if (!membership) {
       return NextResponse.json({ message: 'このワークスペースにアクセスする権限がありません' }, { status: 403 })
-    }
-    if (membership.role !== OrganizationMemberRole.OWNER && membership.role !== OrganizationMemberRole.ADMIN) {
-      return NextResponse.json({ message: 'Slack接続はワークスペース管理者のみ実行できます' }, { status: 403 })
     }
 
     const clientId = process.env.SLACK_CLIENT_ID
@@ -42,6 +45,7 @@ export async function GET(request: NextRequest) {
     const returnToRaw = request.nextUrl.searchParams.get('returnTo') ?? undefined
     const state = encodeSlackOAuthState({
       organizationId,
+      userId: auth.ctx.appUser.id,
       nonce,
       issuedAt: Date.now(),
       returnTo: isSafeReturnTo(returnToRaw) ? returnToRaw : undefined,
@@ -49,7 +53,7 @@ export async function GET(request: NextRequest) {
 
     const authorizeUrl = new URL('https://slack.com/oauth/v2/authorize')
     authorizeUrl.searchParams.set('client_id', clientId)
-    authorizeUrl.searchParams.set('scope', SLACK_SCOPES)
+    authorizeUrl.searchParams.set('user_scope', SLACK_USER_SCOPES)
     authorizeUrl.searchParams.set('redirect_uri', redirectUri)
     authorizeUrl.searchParams.set('state', state)
 

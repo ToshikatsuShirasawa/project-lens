@@ -4,12 +4,20 @@ export const SLACK_RANGE_LABELS: Record<SlackImportRangePreset, string> = {
   LAST_24_HOURS: '直近24時間',
   LAST_3_DAYS: '直近3日',
   LAST_7_DAYS: '直近7日',
+  LAST_14_DAYS: '直近14日',
+  LAST_30_DAYS: '直近30日',
+  LAST_60_DAYS: '直近60日',
+  LAST_90_DAYS: '直近90日',
 }
 
 const RANGE_SECONDS: Record<SlackImportRangePreset, number> = {
   LAST_24_HOURS: 24 * 60 * 60,
   LAST_3_DAYS: 3 * 24 * 60 * 60,
   LAST_7_DAYS: 7 * 24 * 60 * 60,
+  LAST_14_DAYS: 14 * 24 * 60 * 60,
+  LAST_30_DAYS: 30 * 24 * 60 * 60,
+  LAST_60_DAYS: 60 * 24 * 60 * 60,
+  LAST_90_DAYS: 90 * 24 * 60 * 60,
 }
 
 export interface SlackMessageForImportText {

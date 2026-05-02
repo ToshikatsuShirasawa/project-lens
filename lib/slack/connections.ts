@@ -1,15 +1,24 @@
 import { prisma } from '@/lib/prisma'
 
-export async function getLatestSlackConnectionForOrganization(organizationId: string) {
-  return prisma.slackConnection.findFirst({
-    where: { organizationId },
-    orderBy: { updatedAt: 'desc' },
+export async function getSlackUserConnectionForProjectUser(args: {
+  userId: string
+  organizationId: string
+}) {
+  return prisma.slackUserConnection.findUnique({
+    where: {
+      userId_organizationId: {
+        userId: args.userId,
+        organizationId: args.organizationId,
+      },
+    },
     select: {
       id: true,
       organizationId: true,
       teamId: true,
       teamName: true,
-      botTokenEncrypted: true,
+      slackUserId: true,
+      slackUserName: true,
+      userTokenEncrypted: true,
       updatedAt: true,
     },
   })

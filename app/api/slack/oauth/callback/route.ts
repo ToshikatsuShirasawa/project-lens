@@ -22,35 +22,45 @@ export async function GET(request: NextRequest) {
     const state = decodeSlackOAuthState(stateRaw)
     const cookieStore = await cookies()
     const nonceCookie = cookieStore.get('projectlens_slack_oauth_nonce')?.value
-    if (!state || !nonceCookie || state.nonce !== nonceCookie || Date.now() - state.issuedAt > 10 * 60 * 1000) {
+    if (
+      !state ||
+      state.userId !== auth.ctx.appUser.id ||
+      !nonceCookie ||
+      state.nonce !== nonceCookie ||
+      Date.now() - state.issuedAt > 10 * 60 * 1000
+    ) {
       return NextResponse.json({ message: 'Slack OAuth state が不正です' }, { status: 400 })
     }
 
     const redirectUri =
       process.env.SLACK_REDIRECT_URI || `${request.nextUrl.origin}/api/slack/oauth/callback`
     const tokenResult = await exchangeSlackOAuthCode({ code, redirectUri })
-    const encryptedToken = encryptSlackToken(tokenResult.botToken)
+    const encryptedToken = encryptSlackToken(tokenResult.userToken)
 
-    await prisma.slackConnection.upsert({
+    await prisma.slackUserConnection.upsert({
       where: {
-        organizationId_teamId: {
+        userId_organizationId: {
+          userId: auth.ctx.appUser.id,
           organizationId: state.organizationId,
-          teamId: tokenResult.teamId,
         },
       },
       create: {
+        userId: auth.ctx.appUser.id,
         organizationId: state.organizationId,
         teamId: tokenResult.teamId,
         teamName: tokenResult.teamName,
-        botUserId: tokenResult.botUserId,
-        botTokenEncrypted: encryptedToken,
-        installedByUserId: auth.ctx.appUser.id,
+        slackUserId: tokenResult.slackUserId,
+        slackUserName: tokenResult.slackUserName,
+        userTokenEncrypted: encryptedToken,
+        scope: tokenResult.scope,
       },
       update: {
+        organizationId: state.organizationId,
         teamName: tokenResult.teamName,
-        botUserId: tokenResult.botUserId,
-        botTokenEncrypted: encryptedToken,
-        installedByUserId: auth.ctx.appUser.id,
+        slackUserId: tokenResult.slackUserId,
+        slackUserName: tokenResult.slackUserName,
+        userTokenEncrypted: encryptedToken,
+        scope: tokenResult.scope,
       },
     })
 

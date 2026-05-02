@@ -87,7 +87,11 @@ export type ProjectInputType = (typeof ProjectInputType)[keyof typeof ProjectInp
 export const SlackImportRangePreset = {
   LAST_24_HOURS: 'LAST_24_HOURS',
   LAST_3_DAYS: 'LAST_3_DAYS',
-  LAST_7_DAYS: 'LAST_7_DAYS'
+  LAST_7_DAYS: 'LAST_7_DAYS',
+  LAST_14_DAYS: 'LAST_14_DAYS',
+  LAST_30_DAYS: 'LAST_30_DAYS',
+  LAST_60_DAYS: 'LAST_60_DAYS',
+  LAST_90_DAYS: 'LAST_90_DAYS'
 } as const
 
 export type SlackImportRangePreset = (typeof SlackImportRangePreset)[keyof typeof SlackImportRangePreset]

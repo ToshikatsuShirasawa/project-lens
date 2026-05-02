@@ -7,8 +7,8 @@ import {
 import { requireProjectAccessJson } from '@/lib/auth/require-project-access'
 import { prisma } from '@/lib/prisma'
 import { decryptSlackToken } from '@/lib/slack/token-crypto'
-import { fetchSlackChannelHistory, listPublicSlackChannels } from '@/lib/slack/client'
-import { getLatestSlackConnectionForOrganization } from '@/lib/slack/connections'
+import { fetchSlackChannelHistory, listVisibleSlackChannels } from '@/lib/slack/client'
+import { getSlackUserConnectionForProjectUser } from '@/lib/slack/connections'
 import {
   formatSlackImportTitle,
   formatSlackMessagesForProjectInput,
@@ -23,11 +23,16 @@ const RANGE_FROM_API: Record<string, SlackImportRangePreset> = {
   LAST_24_HOURS: SlackImportRangePreset.LAST_24_HOURS,
   LAST_3_DAYS: SlackImportRangePreset.LAST_3_DAYS,
   LAST_7_DAYS: SlackImportRangePreset.LAST_7_DAYS,
+  LAST_14_DAYS: SlackImportRangePreset.LAST_14_DAYS,
+  LAST_30_DAYS: SlackImportRangePreset.LAST_30_DAYS,
+  LAST_60_DAYS: SlackImportRangePreset.LAST_60_DAYS,
+  LAST_90_DAYS: SlackImportRangePreset.LAST_90_DAYS,
 }
 
 function serializeImport(row: {
   id: string
   channelName: string
+  channelType: string
   rangePreset: SlackImportRangePreset
   messageCount: number
   status: SlackImportStatus
@@ -37,6 +42,7 @@ function serializeImport(row: {
   return {
     id: row.id,
     channelName: row.channelName,
+    channelType: row.channelType,
     rangePreset: row.rangePreset,
     messageCount: row.messageCount,
     status: row.status,
@@ -52,12 +58,16 @@ export async function GET(_request: Request, context: RouteContext) {
     if (!access.ok) return access.response
 
     const rows = await prisma.slackImport.findMany({
-      where: { projectId: access.ctx.project.id },
+      where: {
+        projectId: access.ctx.project.id,
+        importedByUserId: access.ctx.appUser.id,
+      },
       orderBy: { createdAt: 'desc' },
       take: 20,
       select: {
         id: true,
         channelName: true,
+        channelType: true,
         rangePreset: true,
         messageCount: true,
         status: true,
@@ -98,13 +108,16 @@ export async function POST(request: Request, context: RouteContext) {
       return NextResponse.json({ message: 'channelId と rangePreset は必須です' }, { status: 400 })
     }
 
-    const connection = await getLatestSlackConnectionForOrganization(access.ctx.project.organizationId)
+    const connection = await getSlackUserConnectionForProjectUser({
+      userId: access.ctx.appUser.id,
+      organizationId: access.ctx.project.organizationId,
+    })
     if (!connection) {
-      return NextResponse.json({ message: 'Slackが未接続です' }, { status: 409 })
+      return NextResponse.json({ message: 'Slackアカウントが未接続です' }, { status: 409 })
     }
 
-    const token = decryptSlackToken(connection.botTokenEncrypted)
-    const channels = await listPublicSlackChannels(token)
+    const token = decryptSlackToken(connection.userTokenEncrypted)
+    const channels = await listVisibleSlackChannels(token)
     const channel = channels.find((item) => item.id === channelId)
     if (!channel) {
       return NextResponse.json({ message: '対象チャンネルが見つかりません' }, { status: 404 })
@@ -114,9 +127,10 @@ export async function POST(request: Request, context: RouteContext) {
     const createdImport = await prisma.slackImport.create({
       data: {
         projectId: access.ctx.project.id,
-        connectionId: connection.id,
+        userConnectionId: connection.id,
         channelId,
         channelName: channel.name,
+        channelType: channel.type,
         rangePreset,
         oldestTs,
         latestTs,
@@ -128,14 +142,38 @@ export async function POST(request: Request, context: RouteContext) {
     importId = createdImport.id
 
     const messages = await fetchSlackChannelHistory({ token, channelId, oldestTs, latestTs })
+    if (messages.length === 0) {
+      const updated = await prisma.slackImport.update({
+        where: { id: createdImport.id },
+        data: {
+          status: SlackImportStatus.SUCCESS,
+          messageCount: 0,
+          projectInputId: null,
+        },
+        select: {
+          id: true,
+          channelName: true,
+          channelType: true,
+          rangePreset: true,
+          messageCount: true,
+          status: true,
+          projectInputId: true,
+          createdAt: true,
+        },
+      })
+
+      return NextResponse.json({ import: serializeImport(updated) }, { status: 201 })
+    }
+
     if (messages.length > 0) {
       await prisma.slackMessage.createMany({
         data: messages.map((message) => ({
-          connectionId: connection.id,
+          userConnectionId: connection.id,
           projectId: access.ctx.project.id,
           importId: createdImport.id,
           channelId,
           channelName: channel.name,
+          channelType: channel.type,
           messageTs: message.ts,
           threadTs: message.threadTs ?? null,
           userId: message.userId ?? null,
@@ -148,10 +186,7 @@ export async function POST(request: Request, context: RouteContext) {
     }
 
     const title = formatSlackImportTitle(channel.name, rangePreset)
-    const formattedBody =
-      messages.length > 0
-        ? formatSlackMessagesForProjectInput(channel.name, rangePreset, messages)
-        : `${title}\n対象期間のメッセージはありません。`
+    const formattedBody = formatSlackMessagesForProjectInput(channel.name, rangePreset, messages)
     const submittedBy = access.ctx.appUser.name?.trim() || access.ctx.appUser.email.trim()
 
     const projectInput = await prisma.projectInput.create({
@@ -177,6 +212,7 @@ export async function POST(request: Request, context: RouteContext) {
       select: {
         id: true,
         channelName: true,
+        channelType: true,
         rangePreset: true,
         messageCount: true,
         status: true,

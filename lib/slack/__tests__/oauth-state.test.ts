@@ -15,12 +15,14 @@ describe('Slack OAuth state', () => {
   it('署名付きstateを復元できる', () => {
     const encoded = encodeSlackOAuthState({
       organizationId: 'org1',
+      userId: 'user1',
       nonce: 'nonce1',
       issuedAt: 123,
       returnTo: '/o/org1/projects/p1/slack',
     })
     expect(decodeSlackOAuthState(encoded)).toEqual({
       organizationId: 'org1',
+      userId: 'user1',
       nonce: 'nonce1',
       issuedAt: 123,
       returnTo: '/o/org1/projects/p1/slack',
@@ -28,7 +30,7 @@ describe('Slack OAuth state', () => {
   })
 
   it('改ざんされたstateは拒否する', () => {
-    const encoded = encodeSlackOAuthState({ organizationId: 'org1', nonce: 'nonce1', issuedAt: 123 })
+    const encoded = encodeSlackOAuthState({ organizationId: 'org1', userId: 'user1', nonce: 'nonce1', issuedAt: 123 })
     expect(decodeSlackOAuthState(`${encoded}x`)).toBeNull()
   })
 
